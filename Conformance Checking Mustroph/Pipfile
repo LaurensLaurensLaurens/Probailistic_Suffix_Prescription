@@ -1,0 +1,29 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+ipykernel = "*"
+jupyter = "*"
+notebook = "*"
+pm4py = "*"
+pandas = "*"
+numpy = "*"
+torch = "*"
+scikit-learn = "*"
+imblearn = "*"
+python-levenshtein = "*"
+tensorboard = "*"
+standard-imghdr = "*"
+pyxdameraulevenshtein = "*"
+crps = "*"
+seaborn = "*"
+
+[dev-packages]
+torch-tb-profiler = "*"
+pre-commit = "*"
+nbstripout = "*"
+
+[requires]
+python_version = "3.12"

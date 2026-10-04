@@ -1,0 +1,28 @@
+{
+    "methods": ["kmeans_q"],
+    "dataset": "bpic17",
+    "n_stages": 6,
+    "encodings": ["kmeans"],
+    "model_categories": ["rl", "rl", "rl"],
+    "wandb": false,
+    
+    "cross_fitting": false,
+    "train_size": 10000,
+    "test_size": 1000,
+    "big_data": true,
+    "big_eval": true,
+    "big_tuning": true,
+    
+    "already_trained": false,
+    "already_tuned": false,
+    "already_train_tune_generated": true,
+    "already_train_tune_preprocessed": true,
+    
+    "already_eval_generated": true,
+    "already_eval_preprocessed": true,
+    "already_evaluated": false,
+    
+    "iterations_to_skip": [],
+    "num_iterations": 10,
+    "delta": 0.0
+}

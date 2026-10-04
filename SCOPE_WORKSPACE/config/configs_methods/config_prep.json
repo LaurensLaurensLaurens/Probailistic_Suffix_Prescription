@@ -1,0 +1,24 @@
+{
+    "methods": ["dtr-S-reg-R"],
+    "encodings": ["agg"],
+    "model_categories": ["ml", "ml", "ml"],
+    "cross_fitting": false,
+    
+    "train_size": 10000,
+    "test_size": 10000,
+    "big_data": true,
+    "big_eval": true,
+    
+    "already_trained": true,
+    "already_tuned": true,
+    "already_train_tune_generated": true,
+    "already_train_tune_preprocessed": false,
+    
+    "already_eval_generated": true,
+    "already_eval_preprocessed": false,
+    "already_evaluated": true,
+    
+    "iterations_to_skip": [],
+    "num_iterations": 10,
+    "delta": 0.0
+}

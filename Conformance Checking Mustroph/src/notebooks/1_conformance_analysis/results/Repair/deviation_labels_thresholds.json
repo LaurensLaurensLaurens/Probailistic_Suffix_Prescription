@@ -1,0 +1,37 @@
+[
+    {
+        "key": [
+            ">>",
+            "ACKNOWLEDGEMENT"
+        ],
+        "value": 0.08
+    },
+    {
+        "key": [
+            ">>",
+            "REPAIR"
+        ],
+        "value": 0.36
+    },
+    {
+        "key": [
+            "ACKNOWLEDGEMENT",
+            ">>"
+        ],
+        "value": 0.43
+    },
+    {
+        "key": [
+            "QUALITY_CONTROL",
+            ">>"
+        ],
+        "value": 0.47
+    },
+    {
+        "key": [
+            "REPAIR",
+            ">>"
+        ],
+        "value": 0.38
+    }
+]

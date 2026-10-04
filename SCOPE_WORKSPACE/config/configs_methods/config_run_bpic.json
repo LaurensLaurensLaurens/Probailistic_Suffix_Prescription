@@ -1,0 +1,28 @@
+{
+    "methods": ["separate-T-reg-none"],
+    "dataset": "bpic17",
+    "n_stages": 6,
+    "encodings": ["agg"],
+    "model_categories": ["ml", "ml", "ml"],
+    "wandb": false,
+    
+    "cross_fitting": false,
+    "train_size": 10000,
+    "test_size": 1000,
+    "big_data": true,
+    "big_eval": true,
+    "big_tuning": true,
+    
+    "already_trained": false,
+    "already_tuned": false,
+    "already_train_tune_generated": false,
+    "already_train_tune_preprocessed": false,
+    
+    "already_eval_generated": false,
+    "already_eval_preprocessed": false,
+    "already_evaluated": false,
+    
+    "iterations_to_skip": [],
+    "num_iterations": 10,
+    "delta": 0.0
+}

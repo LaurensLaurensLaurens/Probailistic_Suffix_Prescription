@@ -1,0 +1,111 @@
+SIMBANK – MODUS 1: NORMALE BANKPOLITIK
+=====================================
+
+AKTIVE BEDINGUNGEN
+------------------
+normal_simulation=True
+generate_under_each_action=False
+intervention_info["RCT"]=False
+
+METHODENAUFRUFE IN REIHENFOLGE
+------------------------------
+
+001. scripts.main → SimBank.generate_sequential_simbank: SimBank.generate_sequential_simbank.generate_training_and_tuning (Quelle scripts/main.py:57) [EINMAL; NUR WENN dataset=SimBank UND Trainingsdaten nicht bereits geladen werden]
+
+002. SimBank.generate_sequential_simbank → SimBank.simulation.PresProcessGenerator: SimBank.simulation.PresProcessGenerator.__init__ (Quelle SimBank/generate_sequential_simbank.py:110) [EINMAL; Generator für normale Bankdaten]
+
+003. SimBank.simulation.PresProcessGenerator → SimBank.simulation.PresProcessGenerator: SimBank.simulation.PresProcessGenerator.get_petri_net (Quelle SimBank/simulation.py:23) [EINMAL PRO GENERATORINSTANZ]
+
+004. SimBank.simulation.PresProcessGenerator → SimBank.petri_net_generator: SimBank.petri_net_generator.generate_petri_net (Quelle SimBank/simulation.py:36) [EINMAL PRO GENERATORINSTANZ]
+
+005. SimBank.petri_net_generator → SimBank.petri_net_generator: SimBank.petri_net_generator.create_PN (Quelle SimBank/petri_net_generator.py:113) [EINMAL PRO GENERATORINSTANZ]
+
+006. SimBank.generate_sequential_simbank → SimBank.simulation.PresProcessGenerator: SimBank.simulation.PresProcessGenerator.run_simulation_normal (Quelle SimBank/generate_sequential_simbank.py:113) [EINMAL; erzeugt train_normal]
+
+007. SimBank.simulation.PresProcessGenerator → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.__init__ (Quelle SimBank/simulation.py:286) [EINMAL PRO run_simulation_normal]
+
+008. SimBank.simulation.PresProcessGenerator → SimBank.extra_flow_conditions.ExtraFlowConditioner: SimBank.extra_flow_conditions.ExtraFlowConditioner.__init__ (Quelle SimBank/simulation.py:287) [EINMAL PRO run_simulation_normal]
+
+009. SimBank.simulation.PresProcessGenerator → SimBank.simulation.PresProcessGenerator: SimBank.simulation.PresProcessGenerator.simulation_of_events (Quelle SimBank/simulation.py:289) [EINMAL PRO run_simulation_normal]
+
+010. SimBank.simulation.PresProcessGenerator → SimBank.simulation.PresProcessGenerator: SimBank.simulation.PresProcessGenerator.setup (Quelle SimBank/simulation.py:41) [EINMAL ALS SIMPY-PROZESS REGISTRIERT]
+
+011. SimBank.simulation.PresProcessGenerator → SimBank.simulation.PresProcessGenerator: SimBank.simulation.PresProcessGenerator.simulate_trace (Quelle SimBank/simulation.py:65) [PRO FALL]
+
+012. SimBank.simulation.PresProcessGenerator → SimBank.extra_flow_conditions.ExtraFlowConditioner: SimBank.extra_flow_conditions.ExtraFlowConditioner.filter_enabled_trans (Quelle SimBank/simulation.py:100) [PRO EREIGNISSCHLEIFE; normale Bankregeln]
+
+013. SimBank.extra_flow_conditions.ExtraFlowConditioner → SimBank.extra_flow_conditions.ExtraFlowConditioner: SimBank.extra_flow_conditions.ExtraFlowConditioner.get_customer_decision_logic (Quelle SimBank/extra_flow_conditions.py:161) [BEDINGT: Markierung p_calc_acc, kein Abbruch wegen zu niedrigem Zinssatz]
+
+014. SimBank.extra_flow_conditions.ExtraFlowConditioner.get_customer_decision_logic → SimBank.extra_flow_conditions.ExtraFlowConditioner.get_customer_decision_logic: SimBank.extra_flow_conditions.ExtraFlowConditioner.get_customer_decision_logic.calculate_acceptance_probability (Quelle SimBank/extra_flow_conditions.py:244) [BEDINGT: Aufruf 013 wurde erreicht]
+
+015. SimBank.extra_flow_conditions.ExtraFlowConditioner.get_customer_decision_logic.calculate_acceptance_probability → SimBank.extra_flow_conditions.ExtraFlowConditioner.get_customer_decision_logic.calculate_acceptance_probability: SimBank.extra_flow_conditions.ExtraFlowConditioner.get_customer_decision_logic.calculate_acceptance_probability.prob_adjustment (Quelle SimBank/extra_flow_conditions.py:218) [BEDINGT: Aufruf 014 wurde erreicht]
+
+016. SimBank.extra_flow_conditions.ExtraFlowConditioner.get_customer_decision_logic.calculate_acceptance_probability → SimBank.extra_flow_conditions.ExtraFlowConditioner.get_customer_decision_logic.calculate_acceptance_probability: SimBank.extra_flow_conditions.ExtraFlowConditioner.get_customer_decision_logic.calculate_acceptance_probability.time_adjustment (Quelle SimBank/extra_flow_conditions.py:222) [BEDINGT: Aufruf 014 wurde erreicht]
+
+017. SimBank.simulation.PresProcessGenerator → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.set_event_variables (Quelle SimBank/simulation.py:145) [PRO SICHTBAREM EVENT]
+
+018. SimBank.activity_execution.ActivityExecutioner → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.sample_amount (Quelle SimBank/activity_execution.py:290) [BEDINGT: activity=initiate_application]
+
+019. SimBank.activity_execution.ActivityExecutioner → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.sample_quality (Quelle SimBank/activity_execution.py:291) [BEDINGT: activity=initiate_application]
+
+020. SimBank.activity_execution.ActivityExecutioner → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.sample_unc_quality (Quelle SimBank/activity_execution.py:292) [BEDINGT: activity=initiate_application]
+
+021. SimBank.activity_execution.ActivityExecutioner → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.decrease_costs_contact_headquarters (Quelle SimBank/activity_execution.py:112) [BEDINGT: Aufruf 020; passt HQ-Kosten an gezogene Unsicherheit an]
+
+022. SimBank.activity_execution.ActivityExecutioner → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.sample_est_quality (Quelle SimBank/activity_execution.py:293) [BEDINGT: activity=initiate_application]
+
+023. SimBank.activity_execution.ActivityExecutioner → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.sample_decrease_unc_quality (Quelle SimBank/activity_execution.py:305) [BEDINGT: activity=call_customer ODER email_customer]
+
+024. SimBank.activity_execution.ActivityExecutioner → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.decrease_costs_contact_headquarters (Quelle SimBank/activity_execution.py:159) [BEDINGT: Aufruf 023; passt HQ-Kosten an neue Unsicherheit an]
+
+025. SimBank.activity_execution.ActivityExecutioner → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.sample_est_quality (Quelle SimBank/activity_execution.py:306) [BEDINGT: activity=call_customer ODER email_customer]
+
+026. SimBank.activity_execution.ActivityExecutioner → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.calculate_offer (Quelle SimBank/activity_execution.py:321) [BEDINGT: activity=calculate_offer]
+
+027. SimBank.activity_execution.ActivityExecutioner → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.calc_outcome (Quelle SimBank/activity_execution.py:337) [BEDINGT: activity=cancel_application ODER receive_acceptance]
+
+028. SimBank.activity_execution.ActivityExecutioner → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.decrease_costs_contact_headquarters (Quelle SimBank/activity_execution.py:358) [BEDINGT: activity=contact_headquarters]
+
+029. SimBank.simulation.PresProcessGenerator → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.set_event_timestamp (Quelle SimBank/simulation.py:147) [PRO SICHTBAREM EVENT; nach set_event_variables]
+
+030. SimBank.activity_execution.ActivityExecutioner → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.sample_parallel_margin (Quelle SimBank/activity_execution.py:222) [PRO set_event_timestamp]
+
+031. SimBank.simulation.PresProcessGenerator → SimBank.activity_execution.ActivityExecutioner: SimBank.activity_execution.ActivityExecutioner.set_simulation_end_and_start (Quelle SimBank/simulation.py:69) [EINMAL NACH DEM LETZTEN FALL]
+
+ENDE DIESES MODUS
+-----------------
+
+run_simulation_normal gibt train_normal als pandas-DataFrame an
+generate_training_and_tuning zurück. Danach beginnt separat der RCT-Modus.
+
+NICHT AUFGERUFEN IN DIESEM MODUS
+-------------------------------
+
+- PresProcessGenerator.do_timeout
+- PresProcessGenerator.find_activity_index
+- PresProcessGenerator.sample_timing
+- PresProcessGenerator.generate_all_int_events
+- PresProcessGenerator.generate_one_int_event
+- PresProcessGenerator.start_simulation_inference
+- PresProcessGenerator.continue_simulation_inference
+- PresProcessGenerator.end_simulation_inference
+
+
+SIMREPAIR – TRAINING ÜBER scripts/main.py
+==============================
+
+Im SCOPE-Projektordner ausführen. Dieser Aufruf generiert 1.000 SimRepair-Trainingsfälle,
+verwendet 20 Testfälle, trainiert eine einstufige separate S-Learner-Methode und führt
+das kleine Tuning mit drei Versuchen aus.
+
+	cd "/Users/laurensohl/Downloads/Gitarre/Akademia/Master_Arbeit/My_Workspace/SCOPE_WORKSPACE"
+	./.venv/bin/python scripts/main.py --dataset SimRepair --train_size 1000 --test_size 20 --delta 0.5 --n_stages 1 --methods separate-S-reg-none --encodings agg --model_categories ml ml ml ml --model_specifics xgb xgb xgb --num_iterations 1 --big_tuning false
+
+main.py generiert seine Trainings- und Testdaten selbst. Die zuvor separat erzeugte
+CSV repair_log_choose_procedure_1000_delta_0.5.csv wird von diesem Befehl nicht geladen.
+Generierte/preprozessierte Daten landen unter data/SimRepair/1000/50/; Modelle und
+Evaluationsergebnisse unter res/SimRepair/1000/50/.
+
+Voraussetzungen: Abhängigkeiten aus requirements.txt sowie hyperopt, torch und xgboost
+müssen in .venv installiert sein. Der Aufruf kann erst laufen, wenn diese Pakete
+installiert sind und genügend freier Speicherplatz vorhanden ist.

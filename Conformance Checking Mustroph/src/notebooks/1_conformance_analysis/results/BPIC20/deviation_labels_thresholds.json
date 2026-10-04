@@ -1,0 +1,37 @@
+[
+    {
+        "key": [
+            ">>",
+            "Declaration APPROVED"
+        ],
+        "value": 0.06
+    },
+    {
+        "key": [
+            ">>",
+            "Declaration REJECTED"
+        ],
+        "value": 0.34
+    },
+    {
+        "key": [
+            ">>",
+            "Request Payment"
+        ],
+        "value": 0.21
+    },
+    {
+        "key": [
+            "Declaration FINAL_APPROVED",
+            ">>"
+        ],
+        "value": 0.46
+    },
+    {
+        "key": [
+            "Declaration REJECTED",
+            ">>"
+        ],
+        "value": 0.29
+    }
+]

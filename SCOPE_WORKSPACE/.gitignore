@@ -1,0 +1,13 @@
+.vscode/
+data/*
+res/*
+src/utils/model_tools/model_functions_old.py
+__pycache__/
+*.py[cod]
+!data/
+!res/
+!data/.gitkeep
+!res/.gitkeep
+data.zip
+res.zip
+res - old.zip

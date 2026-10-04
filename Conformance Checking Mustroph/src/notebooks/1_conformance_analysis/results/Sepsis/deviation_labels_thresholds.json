@@ -1,0 +1,142 @@
+[
+    {
+        "key": [
+            ">>",
+            "Admission IC"
+        ],
+        "value": 0.19
+    },
+    {
+        "key": [
+            ">>",
+            "Admission NC"
+        ],
+        "value": 0.01
+    },
+    {
+        "key": [
+            ">>",
+            "CRP"
+        ],
+        "value": 0.23
+    },
+    {
+        "key": [
+            ">>",
+            "ER Registration"
+        ],
+        "value": 0.98
+    },
+    {
+        "key": [
+            ">>",
+            "ER Sepsis Triage"
+        ],
+        "value": 0.02
+    },
+    {
+        "key": [
+            ">>",
+            "ER Triage"
+        ],
+        "value": 0.74
+    },
+    {
+        "key": [
+            ">>",
+            "Lactic Acid"
+        ],
+        "value": 0.36
+    },
+    {
+        "key": [
+            ">>",
+            "Leukocytes"
+        ],
+        "value": 0.56
+    },
+    {
+        "key": [
+            ">>",
+            "Release C"
+        ],
+        "value": 0.58
+    },
+    {
+        "key": [
+            "Admission IC",
+            ">>"
+        ],
+        "value": 0.02
+    },
+    {
+        "key": [
+            "Admission NC",
+            ">>"
+        ],
+        "value": 0.13
+    },
+    {
+        "key": [
+            "CRP",
+            ">>"
+        ],
+        "value": 0.22
+    },
+    {
+        "key": [
+            "ER Registration",
+            ">>"
+        ],
+        "value": 0.01
+    },
+    {
+        "key": [
+            "ER Sepsis Triage",
+            ">>"
+        ],
+        "value": 0.33
+    },
+    {
+        "key": [
+            "ER Triage",
+            ">>"
+        ],
+        "value": 0.35
+    },
+    {
+        "key": [
+            "IV Antibiotics",
+            ">>"
+        ],
+        "value": 0.63
+    },
+    {
+        "key": [
+            "IV Liquid",
+            ">>"
+        ],
+        "value": 0.62
+    },
+    {
+        "key": [
+            "LacticAcid",
+            ">>"
+        ],
+        "value": 0.64
+    },
+    {
+        "key": [
+            "Leucocytes",
+            ">>"
+        ],
+        "value": 0.61
+    },
+    {
+        "key": [
+            "Release B",
+            ">>"
+        ],
+        "value": 0.08
+    }
+]

@@ -1,0 +1,44 @@
+[
+    {
+        "key": [
+            ">>",
+            "Assign seriousness"
+        ],
+        "value": 0.16
+    },
+    {
+        "key": [
+            "Create SW anomaly",
+            ">>"
+        ],
+        "value": 0.03
+    },
+    {
+        "key": [
+            "Require upgrade",
+            ">>"
+        ],
+        "value": 0.03
+    },
+    {
+        "key": [
+            "Resolve ticket",
+            ">>"
+        ],
+        "value": 0.3
+    },
+    {
+        "key": [
+            "Take in charge ticket",
+            ">>"
+        ],
+        "value": 0.31
+    },
+    {
+        "key": [
+            "Wait",
+            ">>"
+        ],
+        "value": 0.31
+    }
+]

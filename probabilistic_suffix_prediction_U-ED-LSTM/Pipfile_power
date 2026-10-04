@@ -1,0 +1,25 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+ipykernel = "*"
+jupyter = "*"
+notebook = "*"
+pm4py = "*"
+pandas = "*"
+numpy = "*"
+torch = "*"
+scikit-learn = "*"
+python-levenshtein = "*"
+tensorboard = "*"
+standard-imghdr = "*"
+pyxdameraulevenshtein = "*"
+crps = "*"
+
+[dev-packages]
+torch-tb-profiler = "*"
+
+[requires]
+python_version = "3.13.1"
