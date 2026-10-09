@@ -21,7 +21,9 @@ from src.utils.mini_tools import (
     get_model_params_list_of_dicts,
     save_data, load_data
 )
-# Das kommt ins Spiel nach dem Preprocessing Step
+# Das kommt ins Spiel nach dem Preprocessing Step aus main.py
+# Preprocessing kann ja agg, tensor oder k_means sein
+# Hier geht es vor allem um das Modelltuning
 class Method():
     # args ist beispielsweise: Namespace(dataset="SimBank", methods=["dtr-S-reg-R"], n_stages=2, train_size=3, test_size=3, delta=0.95, encodings=["agg"], num_iterations=1)
     # "dtr-S-reg-R" ist die methode, also hier z.b. Dynamic Treatment Regime mit Single Stage, Regression, Ridge als Modell
@@ -268,15 +270,23 @@ class Method():
         self.prepped_data_dict = prepped_data_dict
 
         if best_model_params_list_of_dicts is None:
+            # Holt bei Initialisierung die Modellparamter.
+            # Diese werden als specified arguments übergeben und geparsed von mini_tools
+            # Modelle lassen sich reconfiguriereren über die config.py file
             self.model_params_list_of_dicts = get_model_params_list_of_dicts(method=self.method, args=args, prep_utils=prepped_data_dict["utils"])
         else:
             self.model_params_list_of_dicts = deepcopy(best_model_params_list_of_dicts)
 
         self.models_list_of_dicts = [{} for _ in range(self.args.n_stages)]
 
+        # hier wird die Methode gewählt. DTR ist dabei der Ansatz 
         # SCOPEFunctions bei Methoden mit "dtr"
         # Für Dynamic Treatment Regimes. Die Stufen werden rückwärts verarbeitet. Ergebnisse späterer Stufen beeinflussen die Zielwerte früherer Stufen. Außerdem können Outcome-, Effekt- und Propensity-Score-Modelle kombiniert werden.
+        # Nur DTR sind dynamic treatment regimes
+        # Hier wird die methode erstmal nur gesetzt. Ausgeführt wird erst mit run
+        # z.b. methods=["dtr-S-reg-R"] bei aufruf von main.py
         if "dtr" in self.method:
+            # Ich bringe das PSP bei DTR mit unter, weil es als DTR laufen soll
             self.method_functions = SCOPEFunctions(model_params_list_of_dicts=self.model_params_list_of_dicts)
         elif "separate" in self.method:
             self.method_functions = SeparateFunctions(model_params_list_of_dicts=self.model_params_list_of_dicts)
@@ -285,107 +295,54 @@ class Method():
         
     # Wird von eval in main.py aufgerufen für training und evaluation
     # Für jede Entscheidungsstufe und jedes benötigte Modell die passenden Daten vorzubereiten, das Modell trainieren oder laden und das Ergebnis speichern.
+    # Das Liegt auch an der Architektur, dass in SimBank entschieden wird, in füheren Stages NNs zu nehmen und später eher LSTMS
+    # Auch haben die Inputs unter Umständen unterschiedliche Größen pro Stage, weil sich die Präfixe unterscheiden in ihrer Länge
     def run(self, tuning=False):
         # NOTE: here we start to go over the stages in reverse order for the backward induction
         # Runtime of the full method execution (all stages/targets in this run call)
         runtime_start = time.perf_counter()
+        # Hier werdn die Daten geladen, die 
         # range(Start, Ende, Schrittweite)
-#         model_params_list_of_dicts = [
-#     # Index 0 = Entscheidungsstufe 0
-#     {
-#         "ps": "nope",
+        # model_params_list_of_dicts = [
+        #     {   # Index 0 = einzige Entscheidungsstufe (n_stages=1)
+        #         "ps": "nope",
+        #         "outcome": {
+        #             "method": "separate-S-reg-none",
+        #             "dataset": "SimRepair",
+        #             "stage": 0,
+        #             "learner_method": "S",
+        #             "action_recomm_method": "reg",
+        #             "value_function_method": "none",
+        #             "target": "outcome",
+        #             "encoding": "agg",            # fest verdrahtet, nicht aus --encodings
+        #             "model_category": "ml",
+        #             "model_specific": "xgb",
+        #             "n_estimators": 100, "max_depth": 6, "learning_rate": 0.1,
+        #             "subsample": 0.8, "colsample_bytree": 0.9,
+        #             "cross_fitting": False,
 
-#         "outcome": {
-#             "method": "dtr-S-reg-R",
-#             "dataset": "SimBank",
-#             "stage": 0,
-
-#             "learner_method": "S",
-#             "action_recomm_method": "reg",
-#             "value_function_method": "R",
-
-#             "target": "outcome",
-#             "encoding": "agg",
-#             "model_category": "ml",
-#             "model_specific": "xgb",
-
-#             # Diese Werte kommen aus prep_utils["agg"][0].
-#             # Zahlen hier nur beispielhaft:
-#             "dim_x_case": 8,
-#             "dim_x_event": 12,
-#             "dim_t": 2,
-#             "dim_output": 1,
-
-#             # XGBoost-Einstellungen
-#             "n_estimators": 100,
-#             "max_depth": 6,
-#             "learning_rate": 0.1,
-#             "subsample": 0.8,
-#             "colsample_bytree": 0.9,
-
-#             "cross_fitting": False,
-
-#             # DTR benötigt Informationen über die folgende Stufe:
-#             "prev_ps_model_params": "nope",
-#             "prev_outcome_model_params": {
-#                 # Tatsächlich steht hier eine vollständige Kopie
-#                 # der outcome-Konfiguration von Stufe 1.
-#                 "stage": 1,
-#                 "target": "outcome",
-#                 "model_category": "ml",
-#                 "model_specific": "xgb"
-#             }
-#         },
-
-#         "effect": "nope"
-#     },
-
-#     # Index 1 = Entscheidungsstufe 1
-#     {
-#         "ps": "nope",
-
-#         "outcome": {
-#             "method": "dtr-S-reg-R",
-#             "dataset": "SimBank",
-#             "stage": 1,
-
-#             "learner_method": "S",
-#             "action_recomm_method": "reg",
-#             "value_function_method": "R",
-
-#             "target": "outcome",
-#             "encoding": "agg",
-#             "model_category": "ml",
-#             "model_specific": "xgb",
-
-#             # Aus prep_utils["agg"][1].
-#             # Zahlen wieder nur beispielhaft:
-#             "dim_x_case": 10,
-#             "dim_x_event": 14,
-#             "dim_t": 3,
-#             "dim_output": 1,
-
-#             "n_estimators": 100,
-#             "max_depth": 6,
-#             "learning_rate": 0.1,
-#             "subsample": 0.8,
-#             "colsample_bytree": 0.9,
-
-#             "cross_fitting": False
-#         },
-
-#         "effect": "nope"
-#     }
-# ]
+                        # KOMMEN AUS PREP UTILS UND SIND DAS EINZIGE; WAS SICH PRO STAGE UNTERSCHEIDET. 
+                        # DIE MÜSSEN SICH UNTERSCHEIDEN, WEIL MAN PRO STAGE UNTERSCHIEDLICHE 
+                        # Sie unterscheiden sich, weil jede Stufe andere Daten hat: Der Präfix ist an einem späteren Entscheidungspunkt länger, und die Zahl der Aktionen ist verschieden (in SimBank z. B. 2 Prozeduren an Stufe 0 gegenüber 3 Zinsstufen an Stufe 1, daher dim_t 2 und 3).
+        #             "dim_x_case": ..., "dim_x_event": ..., "dim_t": ..., "dim_output": ...,
+        #         },
+        #         "effect": "nope",
+        #     }
+        # ]
+        # Es wird as beste Modell trainiert für die vorhersage jeder Stage
+        # Also es wird immer geguckt welches Modell mit welchen Parametern die besten Ergebnisse erzeilt und das wird genommen
+        # DIESER PROZESS IST EINE RÜCKWÄRTASSCHLEIFE. WIR FANGEN ALSO MIT DEM LETZTEN DECISIONPOINT an
         for stage in range(len(self.model_params_list_of_dicts) - 1, -1, -1):
             self.stage = stage
             model_params_dict = self.model_params_list_of_dicts[stage]
 
+            # Stage spezifische Merkmale
             # Also beispielsweise zuerst outcome, dann effect oder ps
             for target, model_params in model_params_dict.items():
                 print(f"    Stage: {stage}, Target: {target}")
 
                 # Init variables
+                # Alles erstmal nur Variaben laden, speichern etc.
                 if model_params == "nope": continue
                 to_add_path = "tuning" if tuning else (str(self.iter) + "_training")
                 to_add_folder = "tuning" if tuning else "training"
@@ -403,7 +360,10 @@ class Method():
                     data_train_list_ps, data_infer_list_ps = None, None
                     data_train_list_prev_ps, data_infer_list_prev_ps = None, None
                     data_train_list_prev_outcome, data_infer_list_prev_outcome = None, None
+
+                    # Für DTR brauchen wir auch das previous outcome als Datenbasis. Das machen wier hier.  
                     if "dtr" in self.method:
+                        # Effekt ist für uns erstmal uninteressant
                         if (target == "effect"):
                             # still pass the class model_params to get the correct splits
                             # data_train_list_ps → Daten zum Trainieren des Propensity-Score-Modells
@@ -445,6 +405,7 @@ class Method():
                         # model_params: bestimmt, wie die Daten aufgeteilt oder zusammengeführt werden
 
                         # len(model_params_list_of_dicts) sind die Stages
+                        # Stell vor, wir sind in der vorletzten Stage. Dann bereitet dieser Block die Trainingsdaten für die Stage für die vorletzte Stage vor
                         if (target == "outcome" or target == "effect") and stage < len(self.model_params_list_of_dicts) - 1:
                             if self.model_params_list_of_dicts[stage + 1]["ps"] != "nope":
                                 data_train_list_prev_ps, data_infer_list_prev_ps = create_splits(data_train_list=self.prepped_data_dict["train"][model_params["prev_ps_model_params"]["encoding"]], data_infer_list=self.prepped_data_dict["infer"][model_params["prev_ps_model_params"]["encoding"]], model_params=model_params)
@@ -467,7 +428,7 @@ class Method():
                                                 "prev_ps": {"train": data_train_list_prev_ps, "infer": data_infer_list_prev_ps},
                                                 "prev_outcome": {"train": data_train_list_prev_outcome, "infer": data_infer_list_prev_outcome}}
 
-                    # Split data correctly
+                    # Split data correctly. Für diese Stage auf die nächste. Wird dann in Prepare übergeben
                     data_train_list, data_infer_list = create_splits(data_train_list=self.prepped_data_dict["train"][model_params["encoding"]], data_infer_list=self.prepped_data_dict["infer"][model_params["encoding"]], model_params=model_params)
 
                     # Prepare data if needed (e.g., to calculate the targets of outcome in stage 0)
@@ -529,9 +490,21 @@ class Method():
                     # Q_stage_1(0.07) = 900
                     # Q_stage_1(0.08) = 1250
                     # Q_stage_1(0.09) = 1050
+
+                    # Dieser Teil ist nur Voerbeitung auf das Traning der modelle FÜR DIE SEQUENTELLE ENTSCHEDUNGSFINDUNG
+                    # Oben wird bei initialisierung die Methode gesetzt, z.b. Scope functions mit dem jeeweiligen Modell je nach args und params
+                    # PSP gehlört durch DTR zu SCOPE und daher wird das Prepare für PSP über Scope functons aufgerufen
+                    # Das sind de Trainingsdaten für DIESE Stage
+                    # Falls wir uns in der letzten Stage bfinden, dann haben wir hier noch kein trainiertes Modell!
+                    # --------------WICHTIG----------------
+                    # data_infer sind dabei Validierungsdaten
                     self.data_train, self.data_infer, self.weights_train, self.weights_infer, self.data_train_ps, self.data_infer_ps = self.method_functions.prepare(data_train_list=data_train_list, data_infer_list=data_infer_list, stage=self.stage, model_params=model_params, data_lists_for_other_models=data_lists_for_other_models)
 
                     # DTR bedeutet Dynamische Entscheidungs- beziehungsweise Interventionsstrategie.
+                    # Sind wir hier besiielswese in der letzten Stage, dann setzen wir hier die outcome daten, auf die trainiert werden soll
+                    # Data Train wird dynamisch gesetzt.
+                    # Ist es die letzte Stage im Geschäftsprozess (wir fangen hinten an, also dann die erste im loop), so wird auf das outcome der letzten Stage trainiert
+                    # Ist es nicht die letzte, so trainieren wir das Modell auf das outcome der Stage, welche im geschäftsprozess nach dieser kommt bzw. auf die Stage im loop vorher
                     if "dtr" in self.method and (target == "outcome") and stage > 0:
                         # BACKWARD INDUCTION:
                         prev_outcomes_train = deepcopy(self.data_train["Y"])
@@ -539,6 +512,7 @@ class Method():
                             prev_outcomes_infer = deepcopy(self.data_infer["Y"])
 
                     # Train or Tune
+                    # Für jede wird jedes modell und durch Hyperparameter optimert
                     # Ja. self.best_model ist das Modell mit dem kleinsten Fehler (loss_infer) unter allen getesteten Hyperparameter-Kombinationen.
                     if tuning:
                         self.best_loss_infer = float('inf')
@@ -557,7 +531,7 @@ class Method():
                         
                         algo = partial(tpe.suggest, n_startup_jobs=5)
 
-                        # welchee Werte darf Hyperopt für das jeweilige Modell ausprobieren?
+
                         # model_params["model_specific"] = "xgb"
                         # model_space = deepcopy(
                         #     space_dict["xgb"]
@@ -586,6 +560,8 @@ class Method():
                         # }
                         model_space = deepcopy(space_dict[model_params["model_specific"]]) if model_params["method"] != "kmeans_q" else make_kmeans_q_space(feature_names=self.data_train.columns.tolist(), args=self.args)
                         # Hyperopt wählt daraus mehrere konkrete Kombinationen aus dem Model Space
+                        # in self._objective wird dann Trainiert
+                        # WICHTIG!! DAS MODELLTRAINING WIRD HIER DURCHGEFÜHRT!!!
                         best_params = fmin(fn=self._objective,
                                         space=model_space,
                                         algo=algo,
@@ -597,11 +573,17 @@ class Method():
                         best_params = space_eval(model_space, best_params)
                         model_params.update(best_params)
                     else:
+                        # WICHTIG!! DAS MODELLTRAINING WIRD HIER DURCHGEFÜHRT!!!
+                        # Das ist auch der Ort, an dem wie die Trainingsdaten für das PSP übergeben!
+                        # Trainieren des Modells für DIESE Stage. 
+                        # Wenn letzte Stage: Dann einfach Y aus dem Datensatz
+                        # model_trainer.train ->     self.train_dl() -> self.model_functions.get_loss -> Psp wird trainiert mit der in psp_model_functions definierten vorgehnswese
                         model_trainer = ModelTrainer(args=self.args, data_train=self.data_train, data_infer=self.data_infer, weights_train=self.weights_train, weights_infer=self.weights_infer, model_params=model_params, data_train_ps=self.data_train_ps, data_infer_ps=self.data_infer_ps)
                         model_trainer.train()
                         self.best_model = model_trainer.get_model()
 
                 # Get the best model
+                # Bestes Modell pro Stage und Target
                 self.models_list_of_dicts[self.stage][target] = self.best_model
 
                 # IMPORTANT NOTE: Update
@@ -629,6 +611,7 @@ class Method():
             save_data(runtime_seconds, runtime_path)
             print(f"    Runtime ({self.method}, {to_add_path}): {runtime_seconds:.2f}s")
 
+    # Hier passiert das Training im Fall der Hyperparameteroptimerung durch Hyperopt
     def _objective(self, params):
         # Ensure alpha_max > alpha_min
         if self.model_params["method"] == "kmeans_q":

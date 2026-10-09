@@ -10,6 +10,7 @@ from copy import deepcopy
 from collections import OrderedDict
 from torch.nn.modules.module import _addindent
 from src.utils.model_tools.model_functions import MLCausalRegressor, DLCausalRegressor, KMeans_QLearning
+from src.utils.model_tools.psp_model_functions import PSPCausalRegressor
 
 def make_dirs(args, DATA_FOLDER, RESULTS_FOLDER):
     if not os.path.exists(os.path.join(os.getcwd(), DATA_FOLDER)):
@@ -82,12 +83,20 @@ def generate_dash_patterns(num_patterns, max_segments=2, max_length=10):
         dash_patterns.append(tuple(dash_pattern))
     return dash_patterns
 
+# Erstellt das Modell, dass dann weitergegeben wird für die Prediction
+# Die modelle und deren functions befinden sich in model_functions.py
+# Das wird auch von calc_target_outcomes im DTR aufgerufen, um eine Vorhersage über den outcome zu machen
 def get_model_functions(model_params, model_to_load=None):
     if model_params["target"] == "ps":
         pass
     elif model_params["target"] == "outcome":
         if model_params["model_category"] == "dl":
-            model_functions = DLCausalRegressor(model_params=model_params)
+            # Das PSP hat eigene Model Functions (siehe psp_model_functions.py)
+            # WICHTIGE NEUEURUNG!!
+            if model_params["model_specific"] == "psp":
+                model_functions = PSPCausalRegressor(model_params=model_params)
+            else:
+                model_functions = DLCausalRegressor(model_params=model_params)
 
         elif model_params["model_category"] == "ml":
             model_functions = MLCausalRegressor(model_params=model_params)
@@ -101,6 +110,9 @@ def get_model_functions(model_params, model_to_load=None):
         else:
             model_functions = DLCausalRegressor(model_params=model_params)
 
+    # Das lädt das Modell, das bereits vortrainiert sein sollte. Lädt dann die gespiechetren Gewichte rein
+    # Jedes Modell hat eine load Methode, die es ermöglicht, das Modell zu laden
+    # load_state_dict
     if model_to_load is not None:
         if model_params["model_category"] == "dl":
             if isinstance(model_to_load, list):
@@ -140,17 +152,26 @@ def get_model_params_list_of_dicts(method, args, prep_utils):
     for stage in range(n_stages):
         model_params_dict = {}
         
+        # Lädt standardeinstellungen über config
         init_model_params = deepcopy(model_params) # imported from config
         init_model_params["method"] = method
+        # z.B. 1
         init_model_params["stage"] = stage
         init_model_params["dataset"] = dataset
+        # Legt fest, ob der KMeans-Q-Ansatz den ermittelten Reward positiv verwendet. Im Code: True, wenn kmeans_config[1] == "pos_rewards"; sonst False.
         init_model_params["pos_rewards"] = True if args.kmeans_config[1] == "pos_rewards" else False
+        # Schaltet die Min-Max-Normalisierung der Rewards ein. Aktiv ist sie, wenn kmeans_config[3] == "norm"
         init_model_params["normalize_reward"] = True if args.kmeans_config[3] == "norm" else False
+        # Bestimmt, ob Null-Rewards in die Anpassung des Normalisierers einbezogen werden
         init_model_params["change_zero_reward"] = True if args.kmeans_config[5] == "change_zero" else False
+        # Bestimmt den Zeitpunkt der Reward-Normalisierung im KMeans-Q-Ablauf:
         init_model_params["norm_mdp"] = True if args.kmeans_config[4] == "norm_mdp" else False
         if "dtr" in method or "separate" in method:
+            #  Wird bei Namen wie dtr-S-reg-R aus dem zweiten Namensbestandteil gelesen: hier also S. Das bezeichnet den Learner-Ansatz, zum Beispiel S, T, RA oder AIPWE.
             init_model_params["learner_method"] = method.split("-")[1]
+            # bei dtr-S-reg-R ist es reg. Das gibt an, wie das Modell eine Aktion empfiehlt, zum Beispiel regressionsbasiert (reg) oder klassifikationsbasiert (class)
             init_model_params["action_recomm_method"] = method.split("-")[2]
+            # G verwendet den Q-Wert der beobachteten Aktion, R passt das Outcome um die geschätzte Differenz zwischen optimaler und beobachteter Aktion an
             init_model_params["value_function_method"] = method.split("-")[-1]
         init_model_params["cross_fitting"] = args.cross_fitting
 
@@ -180,7 +201,11 @@ def get_model_params_list_of_dicts(method, args, prep_utils):
             init_model_params["encoding"] = "agg"
             init_model_params["model_category"] = args.model_categories[2]
             if args.model_categories[1] == "dl":
-                if stage == 0 and dataset == "SimBank":
+                # PSP wird über --model_specifics gewählt (zweiter Eintrag = Outcome-Modell)
+                if args.model_specifics[1] == "psp":
+                    init_model_params["model_specific"] = "psp"
+                    init_model_params["encoding"] = "tensor"
+                elif stage == 0 and dataset == "SimBank":
                     init_model_params["model_specific"] = "vanilla_nn"
                 else:
                     init_model_params["model_specific"] = "lstm"
@@ -218,6 +243,11 @@ def get_model_params_list_of_dicts(method, args, prep_utils):
                     prms["dim_x_event"] = prep_utils[prms["encoding"]][stage]["dim_x_event"]
                     prms["dim_t"] = prep_utils[prms["encoding"]][stage]["dim_t"]
                     prms["dim_output"] = prep_utils[prms["encoding"]][stage]["dim_output"]
+                    if prms["model_specific"] == "psp":
+                        # Das PSP braucht die Spaltennamen, um die Aktivität einzubetten
+                        prms["event_cols_encoded"] = prep_utils[prms["encoding"]][stage]["event_cols_encoded"]
+                        # und die Spalten des Suffixes für die Decoder-Köpfe
+                        prms["suffix_cols_encoded"] = prep_utils[prms["encoding"]][stage].get("suffix_cols_encoded")
         
         model_params_list_of_dicts.append(model_params_dict)
     
@@ -299,6 +329,7 @@ def split_raw_data(data, infer_prop=0.2):
     
     return data_train, data_infer
 
+# data_train_list sind die prefixe mit, Fallnummer, Prefix
 def create_splits(data_train_list, data_infer_list, model_params):
     data_train_list = deepcopy(data_train_list)
     data_infer_list = deepcopy(data_infer_list)

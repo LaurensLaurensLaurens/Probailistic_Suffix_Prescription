@@ -1,4 +1,6 @@
 # Initialize the models here + train/validate them
+# Das hier ist die Vorbereitung der Modelle!
+# Hier wird das PSP integriert
 import os
 import time
 from torch import nn
@@ -902,14 +904,22 @@ class KMeans_QLearning():
         return q_table, avg_reward
     
 # Deep Learning
+# ---------WICHTG------------------
+# ---------WICHTG------------------
+# ---------WICHTG------------------
+# PSP ist ein DL-Model, daher hier übergeben 
 def get_dl_model(model_params, n_classes, target_type,):
     if model_params["model_specific"] == "vanilla_nn":
         if target_type == "reg":
             return Vanilla_NN(model_params=model_params)
+    elif model_params["model_specific"] == "lstm":
+        if target_type == "reg":
+            return LSTM(model_params=model_params)
     else:
-        if model_params["model_specific"] == "lstm":
-            if target_type == "reg":
-                return LSTM(model_params=model_params)
+         if target_type == "reg":
+            return PSP(model_params=model_params)
+
+    
 
 class LSTM(nn.Module):
   def __init__(self, model_params, classification=False, n_classes=2):

@@ -76,6 +76,15 @@ def generate_training_and_tuning(size, delta, max_attempts=20, test_size=10000):
         dataset_params["intervention_info"]["column"] = ["activity", "activity"]
         dataset_params["intervention_info"]["start_control_activity"] = [["initiate_case"], ["repair_priority", "repair_standard", "improve_rework"]]
         dataset_params["intervention_info"]["end_control_activity"] = [["initiate_case"], ["repair_priority", "repair_standard", "improve_rework"]]
+    elif dataset_params["intervention_info"]["name"] == ["choose_procedure", "choose_employee"]:
+        dataset_params["intervention_info"]["data_impact"] = ["direct", "indirect"]
+        dataset_params["intervention_info"]["actions"] = [["start_standard", "start_priority"], list(range(1, 11))]
+        dataset_params["intervention_info"]["action_width"] = [2, 10]
+        dataset_params["intervention_info"]["action_depth"] = [1, 1]
+        dataset_params["intervention_info"]["activities"] = [["start_standard", "start_priority"], ["choose_employee"]]
+        dataset_params["intervention_info"]["column"] = ["activity", "employee_competence"]
+        dataset_params["intervention_info"]["start_control_activity"] = [["initiate_case"], []]
+        dataset_params["intervention_info"]["end_control_activity"] = [["initiate_case"], []]
 
     dataset_params["intervention_info"]["retain_method"] = "precise"
 
@@ -146,23 +155,37 @@ def generate_training_and_tuning(size, delta, max_attempts=20, test_size=10000):
     for intervention in range(len(dataset_params["intervention_info"]["action_width"])):
         params = deepcopy(dataset_params)
         for key, value in params["intervention_info"].items():
-            if isinstance(value, list):
+            if key in {
+                "name", "data_impact", "actions", "action_width", "action_depth",
+                "activities", "column", "start_control_activity",
+                "end_control_activity", "len"
+            }:
                 params["intervention_info"][key] = value[intervention]
+        stage_actions = params["intervention_info"]["actions"]
+        params["intervention_info"]["action_combinations"] = [(action,) for action in stage_actions]
+        params["intervention_info"]["action_width_combinations"] = params["intervention_info"]["action_width"]
+        params["intervention_info"]["action_depth_combinations"] = params["intervention_info"]["action_depth"]
+        params["intervention_info"]["flat_activities"] = params["intervention_info"]["activities"]
         dataset_params_list.append(params)
 
     return dataset_params, dataset_params_list, train
 
 def generate_eval(args, dataset_params):
     eval_dfs = {}
+    eval_data_folder = os.path.join(
+        os.getcwd(), "data", "SimRepair", str(args.train_size),
+        str(int(100 * args.delta)), "eval"
+    )
+    os.makedirs(eval_data_folder, exist_ok=True)
 
     # us "action_width": is for example [2, 3], so you have 6 combinations of actions, and for each of them you need to evaluate the policy
     action_combos = list(product(*[range(width) for width in dataset_params["intervention_info"]["action_width"]]))
     for action_combo in action_combos:
-        if args.already_eval_generated and os.path.exists(os.path.join(os.getcwd(), "data", "eval", "fixed_" + str(action_combo) + "_performance.pkl")):
+        if args.already_eval_generated and os.path.exists(os.path.join(eval_data_folder, "fixed_" + str(action_combo) + "_performance.pkl")):
             # just load the data
-            performance = load_data(os.path.join(os.getcwd(), "data", "eval", "fixed_" + str(action_combo) + "_performance"))
-            outcome_df = load_data(os.path.join(os.getcwd(), "data", "eval", "fixed_" + str(action_combo) + "_outcome_df"))
-            test_df = load_data(os.path.join(os.getcwd(), "data", "eval", "fixed_" + str(action_combo) + "_test_df"))
+            performance = load_data(os.path.join(eval_data_folder, "fixed_" + str(action_combo) + "_performance"))
+            outcome_df = load_data(os.path.join(eval_data_folder, "fixed_" + str(action_combo) + "_outcome_df"))
+            test_df = load_data(os.path.join(eval_data_folder, "fixed_" + str(action_combo) + "_test_df"))
         else:
             print("Evaluating action combo: ", action_combo)
             performance, outcome_df, test_df = generate_one_eval(policy="fixed", args=args, dataset_params=dataset_params, action_combo=action_combo)
@@ -172,9 +195,9 @@ def generate_eval(args, dataset_params):
                 "test_df": test_df
             }
 
-            save_data(performance, os.path.join(os.getcwd(), "data", "eval", "fixed_" + str(action_combo) + "_performance"))
-            save_data(outcome_df, os.path.join(os.getcwd(), "data", "eval", "fixed_" + str(action_combo) + "_outcome_df"))
-            save_data(test_df, os.path.join(os.getcwd(), "data", "eval", "fixed_" + str(action_combo) + "_test_df"))
+            save_data(performance, os.path.join(eval_data_folder, "fixed_" + str(action_combo) + "_performance"))
+            save_data(outcome_df, os.path.join(eval_data_folder, "fixed_" + str(action_combo) + "_outcome_df"))
+            save_data(test_df, os.path.join(eval_data_folder, "fixed_" + str(action_combo) + "_test_df"))
 
         eval_dfs[str(action_combo)] = {
             "performance": performance,
@@ -182,11 +205,11 @@ def generate_eval(args, dataset_params):
             "test_df": test_df
         }
 
-    if args.already_eval_generated and os.path.exists(os.path.join(os.getcwd(), "data", "eval", "bank_performance.pkl")):
+    if args.already_eval_generated and os.path.exists(os.path.join(eval_data_folder, "bank_performance.pkl")):
         # Load bank policy evaluation
-        bank_performance = load_data(os.path.join(os.getcwd(), "data", "eval", "bank_performance"))
-        bank_outcome_df = load_data(os.path.join(os.getcwd(), "data", "eval", "bank_outcome_df"))
-        bank_test_df = load_data(os.path.join(os.getcwd(), "data", "eval", "bank_test_df"))
+        bank_performance = load_data(os.path.join(eval_data_folder, "bank_performance"))
+        bank_outcome_df = load_data(os.path.join(eval_data_folder, "bank_outcome_df"))
+        bank_test_df = load_data(os.path.join(eval_data_folder, "bank_test_df"))
     else:
         bank_performance, bank_outcome_df, bank_test_df = generate_one_eval(policy="bank", args=args, dataset_params=dataset_params)
         eval_dfs["bank"] = {
@@ -195,9 +218,9 @@ def generate_eval(args, dataset_params):
             "test_df": bank_test_df
         }
 
-        save_data(bank_performance, os.path.join(os.getcwd(), "data", "eval", "bank_performance"))
-        save_data(bank_outcome_df, os.path.join(os.getcwd(), "data", "eval", "bank_outcome_df"))
-        save_data(bank_test_df, os.path.join(os.getcwd(), "data", "eval", "bank_test_df"))
+        save_data(bank_performance, os.path.join(eval_data_folder, "bank_performance"))
+        save_data(bank_outcome_df, os.path.join(eval_data_folder, "bank_outcome_df"))
+        save_data(bank_test_df, os.path.join(eval_data_folder, "bank_test_df"))
 
     eval_dfs["bank"] = {
         "performance": bank_performance,
@@ -207,17 +230,17 @@ def generate_eval(args, dataset_params):
 
     # Generate random policy evaluations
     for iter in range(args.num_iterations):
-        if args.already_eval_generated and os.path.exists(os.path.join(os.getcwd(), "data", "eval", "random_" + str(iter) + "_performance.pkl")):
-            random_performance = load_data(os.path.join(os.getcwd(), "data", "eval", "random_" + str(iter) + "_performance"))
-            random_outcome_df = load_data(os.path.join(os.getcwd(), "data", "eval", "random_" + str(iter) + "_outcome_df"))
-            random_test_df = load_data(os.path.join(os.getcwd(), "data", "eval", "random_" + str(iter) + "_test_df"))
+        if args.already_eval_generated and os.path.exists(os.path.join(eval_data_folder, "random_" + str(iter) + "_performance.pkl")):
+            random_performance = load_data(os.path.join(eval_data_folder, "random_" + str(iter) + "_performance"))
+            random_outcome_df = load_data(os.path.join(eval_data_folder, "random_" + str(iter) + "_outcome_df"))
+            random_test_df = load_data(os.path.join(eval_data_folder, "random_" + str(iter) + "_test_df"))
         else:
             random_object_for_random_policy = random.Random(dataset_params["random_seed_test"] + 5*iter)
             random_performance, random_outcome_df, random_test_df = generate_one_eval(policy="random", args=args, dataset_params=dataset_params, random_object_for_random_policy=random_object_for_random_policy)
 
-            save_data(random_performance, os.path.join(os.getcwd(), "data", "eval", "random_" + str(iter) + "_performance"))
-            save_data(random_outcome_df, os.path.join(os.getcwd(), "data", "eval", "random_" + str(iter) + "_outcome_df"))
-            save_data(random_test_df, os.path.join(os.getcwd(), "data", "eval", "random_" + str(iter) + "_test_df"))
+            save_data(random_performance, os.path.join(eval_data_folder, "random_" + str(iter) + "_performance"))
+            save_data(random_outcome_df, os.path.join(eval_data_folder, "random_" + str(iter) + "_outcome_df"))
+            save_data(random_test_df, os.path.join(eval_data_folder, "random_" + str(iter) + "_test_df"))
         
         eval_dfs["random_" + str(iter)] = {
                 "performance": random_performance,
@@ -226,10 +249,10 @@ def generate_eval(args, dataset_params):
         }
 
     # Generate the optimal policy:
-    if args.already_eval_generated and os.path.exists(os.path.join(os.getcwd(), "data", "eval", "optimal_performance.pkl")):
-        optimal_performance = load_data(os.path.join(os.getcwd(), "data", "eval", "optimal_performance"))
-        optimal_outcome_df = load_data(os.path.join(os.getcwd(), "data", "eval", "optimal_outcome_df"))
-        optimal_test_df = load_data(os.path.join(os.getcwd(), "data", "eval", "optimal_test_df"))
+    if args.already_eval_generated and os.path.exists(os.path.join(eval_data_folder, "optimal_performance.pkl")):
+        optimal_performance = load_data(os.path.join(eval_data_folder, "optimal_performance"))
+        optimal_outcome_df = load_data(os.path.join(eval_data_folder, "optimal_outcome_df"))
+        optimal_test_df = load_data(os.path.join(eval_data_folder, "optimal_test_df"))
     else:
         # for every case in the test dfs of all action combo's, grab the case that has the max outcome over the action combo's
         for case_nr in range(args.test_size):
@@ -260,9 +283,9 @@ def generate_eval(args, dataset_params):
             "outcome_df": optimal_outcome_df,
             "test_df": optimal_test_df
         }
-        save_data(optimal_performance, os.path.join(os.getcwd(), "data", "eval", "optimal_performance"))
-        save_data(optimal_outcome_df, os.path.join(os.getcwd(), "data", "eval", "optimal_outcome_df"))
-        save_data(optimal_test_df, os.path.join(os.getcwd(), "data", "eval", "optimal_test_df"))
+        save_data(optimal_performance, os.path.join(eval_data_folder, "optimal_performance"))
+        save_data(optimal_outcome_df, os.path.join(eval_data_folder, "optimal_outcome_df"))
+        save_data(optimal_test_df, os.path.join(eval_data_folder, "optimal_test_df"))
     
     eval_dfs["optimal"] = {
         "performance": optimal_performance,

@@ -93,6 +93,7 @@ def make_kmeans_q_space(feature_names, args):
 space_dict = {
     'lstm': nn_space,
     'vanilla_nn': nn_space,
+    'psp': nn_space,
     'logreg': logreg_space,
     'xgb': xgb_space,
     'rf': rf_space,

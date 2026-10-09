@@ -12,7 +12,11 @@ from src.utils.mini_tools import get_model_functions
 import wandb
 RESULTS_FOLDER = "res"
 
+# Das PSP steckt als Deep learning Modell mit in DL
 class ModelTrainer():
+    # Debug: merkt sich über alle Trainer hinweg, ob die Trainingsdaten schon ausgegeben wurden
+    train_data_printed = False
+
     def __init__(self, args, data_train, data_infer, weights_train, weights_infer, model_params, data_train_ps=None, data_infer_ps=None):
         self.args = args
         self.data_train = data_train
@@ -27,6 +31,7 @@ class ModelTrainer():
         self.savepath_checkpoint = self.model_params["model_savepath_checkpoint"] + str(self.args.train_size) + str(self.args.delta) + str(self.model_params["target"]) + "_" + str(self.model_params["model_specific"]) + "_" + str(self.model_params["seed"]) + "_" + str(self.model_params["stage"]) + ".pt"
 
         # Initialize the model functions based on the target and model specific parameters
+        # hier werden Funktonen übergeben, wie forward, loss, fit_and_get_loss, predict, etc. Diese Funktionen sind in model_functions.py definiert und werden hier für das Training verwendet.
         self.model_functions = get_model_functions(model_params=self.model_params)
 
         random.seed(self.model_params["seed"])
@@ -37,6 +42,7 @@ class ModelTrainer():
         torch.backends.cudnn.benchmark = False
         torch.backends.cudnn.enabled = False
 
+    # Trainieren der Modelle
     def train(self, tuning=False):
         # if self.args.wandb:
         #     wandb.login(key="")
@@ -75,12 +81,58 @@ class ModelTrainer():
         else:
             return model_to_return
         
+    # Debug: gibt alles aus, was als Trainingsdaten in das DL_Dataset geht (vor dem Aufteilen in Batches)
+    def print_train_data(self, n_cases=2):
+        entries = {
+            "x_case": self.data_train["X_case"],
+            "x_event": self.data_train["X_event"],
+            "prefix_len": self.data_train["prefix_len"],
+            "t": self.data_train["T"],
+            "y": self.data_train["Y"],
+            "weights": self.weights_train,
+            "x_suffix": self.data_train.get("X_suffix"),
+            "suffix_len": self.data_train.get("suffix_len"),
+        }
+        print("\n=== Trainingsdaten vor dem DataLoader ===")
+        for name, value in entries.items():
+            if value is None:
+                print(f"\n{name}: None")
+                continue
+            # Große Tensoren kürzt PyTorch mit "..." ab
+            print(f"\n{name}: Form {tuple(value.shape)}, dtype {value.dtype}")
+            print(value)
+
+        # PSP: die ersten Fälle zusätzlich als lesbare Tabellen mit Spaltennamen
+        if hasattr(self.model_functions, "debug_print_batch") and entries["x_suffix"] is not None:
+            self.model_functions.debug_print_batch(**entries, n_cases=n_cases)
+        print("\n=== Ende Trainingsdaten ===\n")
+
+    # Training rein für Deep Learning. Bestes Modell übergeben
+    # Hier muss das PSP übergeben werden können.
+    # Wir sind in dem Schritt nach dem Preprocessing. jetzt wird traniert.
     def train_dl(self):
         """
         Train either a single NN (S-learner) or multiple NNs (T-learner).
         Works with get_loss() returning a single loss or a list of per-arm losses.
         """
+
+        # Sehr hilfreiche übersicht
+        # Debug: die ersten Fälle der Trainingsdaten als Tabellen (debug_print_batch gibt es nur beim PSP)
+        # if self.model_params["model_specific"] == "psp":
+        #     self.model_functions.debug_print_batch(
+        #         x_case=self.data_train["X_case"],
+        #         x_event=self.data_train["X_event"],
+        #         t=self.data_train["T"],
+        #         prefix_len=self.data_train["prefix_len"],
+        #         y=self.data_train["Y"],
+        #         weights=self.weights_train,
+        #         x_suffix=self.data_train.get("X_suffix"),
+        #         suffix_len=self.data_train.get("suffix_len"),
+        #         n_cases=2,
+        #     )
+
         # === Data loaders ===
+        # DATEN LADEN UND VORBEREITEN ZUM TRAINING
         self.data_loader_train = data.DataLoader(
             DL_Dataset(
                 x_case=self.data_train["X_case"],
@@ -89,6 +141,8 @@ class ModelTrainer():
                 t=self.data_train["T"],
                 y=self.data_train["Y"],
                 weights=self.weights_train,
+                x_suffix=self.data_train.get("X_suffix"), # Für PSP Training hinzugefügt
+                suffix_len=self.data_train.get("suffix_len"), # Für PSP Training hinzugefügt
             ),
             shuffle=True,
             batch_size=self.model_params["batch_size"],
@@ -102,12 +156,17 @@ class ModelTrainer():
                 t=self.data_infer["T"],
                 y=self.data_infer["Y"],
                 weights=self.weights_infer,
+                x_suffix=self.data_infer.get("X_suffix"),
+                suffix_len=self.data_infer.get("suffix_len"),
             ),
             shuffle=False,
+            # WICHTIG
+            # Hier wird es auf 128er inputs transformiert
             batch_size=self.model_params["batch_size"],
         )
 
         # === Optimizer(s) ===
+        # Optimieren der Parameter und Merken der beste Parameter, um das beste modell zu erhalten
         if isinstance(self.model_functions.model, list):
             # T-learner: one optimizer per model
             self.optims = [
@@ -135,14 +194,25 @@ class ModelTrainer():
         num_train_batches = 0
         best_epoch = 0
 
+        # Ausgabe während des Trainings: einmal zum Start, dann bei jeder Evaluation eine Zeile
+        n_infer = len(self.data_loader_infer.dataset)
+        print(f"    Training {self.model_params['model_specific']} (Stage {self.model_params['stage']}, Ziel {self.model_params['target']}): "
+              f"{len(self.data_loader_train.dataset)} Train / {n_infer} Val, {self.model_params['num_epochs']} Epochen, Evaluation alle {self.model_params['eval_every']}")
+
         for epoch in tqdm(range(self.model_params["num_epochs"]), disable=True):
             # === TRAINING ===
-            for x_case, x_event, prefix_len, t, y, weights in self.data_loader_train:
+            for x_case, x_event, prefix_len, t, y, weights, x_suffix, suffix_len in self.data_loader_train:
+                # Nur das PSP bekommt die Suffixe, die anderen Modelle kennen diese Argumente nicht
+                suffix_kwargs = {"x_suffix": x_suffix, "suffix_len": suffix_len} if self.model_params["model_specific"] == "psp" else {}
                 if isinstance(self.model_functions.model, list):
                     # T-learner: compute per-arm losses
+                    # Welches Netz genau trainiert wird, wird über get_model_functions(model_params) entschieden
+                    # Hier muss dann das PSP wählbar gemacht werden über die paramter
+                    # Steckt also in model_functions
+                    # ------------------WICHTIG--------------------------
                     losses = self.model_functions.get_loss(
                         x_case=x_case, x_event=x_event, prefix_len=prefix_len,
-                        t=t, y=y, weights=weights, set_eval=False
+                        t=t, y=y, weights=weights, set_eval=False, **suffix_kwargs
                     )
                     for arm_idx, (model_i, optim_i) in enumerate(zip(self.model_functions.model, self.optims)):
                         loss_i = losses[arm_idx] if arm_idx < len(losses) else None
@@ -158,9 +228,13 @@ class ModelTrainer():
                 else:
                     # S-learner: standard single-model training
                     self.optim.zero_grad()
+                    # Welches Netz genau trainiert wird, wird über get_model_functions(model_params) entschieden
+                    # mode_functions entprcht hier dann dem PSP. Es wird hier also get_loss des PSP aufgerufen
+                    # Hier muss dann das PSP wählbar gemacht werden über die paramter
+                    # Steckt also in model_functions
                     loss = self.model_functions.get_loss(
                         x_case=x_case, x_event=x_event, prefix_len=prefix_len,
-                        t=t, y=y, weights=weights, set_eval=False
+                        t=t, y=y, weights=weights, set_eval=False, **suffix_kwargs
                     )
                     loss.backward()
                     torch.nn.utils.clip_grad_norm_(self.model_functions.model.parameters(), self.model_params["grad_norm"])
@@ -184,12 +258,18 @@ class ModelTrainer():
                     #         "val_loss": loss_infer,
                     #     })
 
-                    if loss_infer < self.best_loss_infer:
+                    is_best = loss_infer < self.best_loss_infer
+                    if is_best:
                         # print('best validation loss:', loss_infer)
                         self.best_loss_infer = loss_infer
                         self.best_model = deepcopy(self.model_functions.model)
                         best_epoch = epoch
                         torch.save(self.best_model, self.savepath_checkpoint)
+
+                    self.print_progress(epoch=epoch, loss_train=avg_train_loss, loss_infer=loss_infer, is_best=is_best)
+                    # Der Trainings-Loss der nächsten Zeile gilt nur für die Epochen seit dieser Evaluation
+                    epoch_train_loss = 0.0
+                    num_train_batches = 0
 
             # === EARLY STOPPING ===
             if (
@@ -201,7 +281,10 @@ class ModelTrainer():
                 print("Early stopping triggered.")
                 break
 
+        print(f"    Bestes Modell: Epoche {best_epoch}, Val-Loss {self.best_loss_infer:.4f}")
+
         # === LOAD BEST MODEL ===
+        # Bestes Model wird gesetzt
         if self.model_params["early_stop"] and self.best_model is not None:
             print("Loading best-val-loss model (early stopping checkpoint).")
             self.model_functions.model = self.best_model
@@ -224,12 +307,19 @@ class ModelTrainer():
 
         total_loss = 0.0
         total_samples = 0
+        # Nur PSP: Teil-Losses und Kennzahlen, gewichtet mit der Batchgröße
+        total_parts = {}
 
         with torch.no_grad():
-            for x_case, x_event, prefix_len, t, y, weights in data_loader:
+            for x_case, x_event, prefix_len, t, y, weights, x_suffix, suffix_len in data_loader:
+                suffix_kwargs = {"x_suffix": x_suffix, "suffix_len": suffix_len, "return_parts": True} if self.model_params["model_specific"] == "psp" else {}
                 batch_loss = self.model_functions.get_loss(
-                    x_case=x_case, x_event=x_event, t=t, prefix_len=prefix_len, y=y, weights=weights, set_eval=True
+                    x_case=x_case, x_event=x_event, t=t, prefix_len=prefix_len, y=y, weights=weights, set_eval=True, **suffix_kwargs
                 )
+                if isinstance(batch_loss, tuple):
+                    batch_loss, batch_parts = batch_loss
+                    for key, value in batch_parts.items():
+                        total_parts[key] = total_parts.get(key, 0.0) + value * x_case.size(0)
 
                 if isinstance(batch_loss, list):
                     # T-learner: list of per-arm losses
@@ -258,7 +348,22 @@ class ModelTrainer():
         else:
             self.model_functions.model.train()
 
+        self.last_eval_parts = {key: value / total_samples for key, value in total_parts.items()} if total_samples > 0 else {}
         return total_loss / total_samples if total_samples > 0 else float("inf")
+
+    def print_progress(self, epoch, loss_train, loss_infer, is_best):
+        # Eine Zeile pro Evaluation. Der Train-Loss enthält ggf. Regularisierer, der Val-Loss nicht.
+        line = f"      Epoche {epoch:4d} | Train-Loss {loss_train:9.4f} | Val-Loss {loss_infer:9.4f}"
+        parts = getattr(self, "last_eval_parts", {})
+        if parts:
+            # PSP (Val, Teacher Forcing): Teil-Losses und lesbare Kennzahlen, Outcome in der skalierten Einheit von Y
+            line += f" | Aktivität CE {parts['activity_ce']:.4f} Acc {parts['activity_acc']:.3f}"
+            if "event_nll" in parts:
+                line += f" | Attribute NLL {parts['event_nll']:.4f}"
+            line += f" | Outcome NLL {parts['outcome_nll']:.4f} MAE {parts['outcome_mae']:.4f}"
+        if is_best:
+            line += " *"
+        print(line)
 
     def train_ml(self, tuning=False):
         # Initialize data loaders NOTE: we don't use data_infer here, as it is contained in the data_train (we use cross-validation)

@@ -128,6 +128,7 @@ class SCOPEFunctions():
         self.models_list_of_dicts = [{} for _ in range(self.n_stages)]  # List of dictionaries for each stage
         self.model_params_list_of_dicts = model_params_list_of_dicts
     
+    # Prepare haben alle method_functions
     # Die prepare()-Methode bereitet die bereits vorverarbeiteten Daten für genau das Modell vor, das gerade trainiert werden soll.
     # Welches Y soll das aktuelle Modell als Trainingsziel bekommen?
     # Alles was passiert, ist das Y angepasst wird auf das Ergebnis der Backward induction: Y wird für die Backward Induction angepasst.
@@ -185,6 +186,7 @@ class SCOPEFunctions():
 
         self.model_params = model_params
         # Y = Outcome, also resultierendes Ergebnis
+        # Lädt für die Stage, in der wir gerade sind, das korrekte modell
         self.learner_method = self.model_params_list_of_dicts[self.stage]["outcome"]["learner_method"]
         self.action_recomm_method = self.model_params_list_of_dicts[self.stage]["outcome"]["action_recomm_method"]
         self.value_function_method = self.model_params_list_of_dicts[self.stage]["outcome"]["value_function_method"]
@@ -192,9 +194,13 @@ class SCOPEFunctions():
         weights_train = None
         target_train = self.data_train_list[self.stage]["Y"]
 
-        # If it is outcome model in stage <n_stages - 1>, we need to set the target outcomes using inference of previous model
+        # Hier berechnen wir die outcomes, um die für die Stage davor als training weiterzugeben
+        # Welches Modell wir haben wollen für diese Stage ist in den Parametern und die werden in calc_target_effect nochmal geladen
         if model_params["target"] == "effect":
+            # Weights_Train braucht man nur für Effekt
             target_train, weights_train = self.calc_target_effect()
+        # DAS WIRD NICHT AUSGEFÜHRT, WENN WIR IN DER LETZTEN STAGE SIND. Da haben wir auch noch kein trainiertes Modell
+        # In der letzten Stage werden also keine outcomes berechnet
         elif (model_params["target"] == "outcome" and stage < self.n_stages -1):
             target_train = self.calc_target_outcomes()
         
@@ -205,7 +211,7 @@ class SCOPEFunctions():
 
         # Wenn das Training ein angepasstes Pseudo-Outcome verwendet, darf die Validierung nicht weiterhin das ursprüngliche Outcome verwenden.
         # „Inferenzdaten“ bedeutet hier Validierungsdaten
-        # NOCH NICHT GANZ VERSTANDEN
+        # Inferenzdate für die Stage gerade, damit wir das Modell in der Stage davor auf den outcome des modells in dieser Stage traineren können
         if data_infer_list is not None:
             # If there is inference data, we need to adjust it as well
             weights_infer = None
@@ -226,6 +232,7 @@ class SCOPEFunctions():
         self.data_infer_ps = self.data_lists_for_other_models["ps"]["infer"][self.stage] if self.data_lists_for_other_models["ps"]["infer"] is not None else None
 
         # Einfach statt Y [0.75, 0.10, 0.20] jetzt Y [1.00, 0.10, 0.35] durch Backward Induction angepasst.
+        # Das sind die Trainings und Inferenzdaten, für DIESE Stage
         return data_train_adj, data_infer_adj, weights_train, weights_infer, self.data_train_ps, self.data_infer_ps
 
     def calc_target_effect(self, infer=False):
@@ -329,22 +336,26 @@ class SCOPEFunctions():
 
             # Diese Zeile holt das bereits trainierte Outcome-Modell der nächsten Stage und macht es über eine einheitliche forward()-Schnittstelle benutzbar
             prev_outcome_model_functions = get_model_functions(model_params=self.model_params_list_of_dicts[self.stage+1]["outcome"], model_to_load=self.models_list_of_dicts[self.stage+1]["outcome"])
+            # WICHTIG: HIER WERDEN DIE ERGEBNISSE ALLER AKTIONEN durch das jeweilige Modell GESCHÄTZT, also z.b. ergebnis bei zins 0.08, 0.09 etc.
             prev_q_values_all_actions = self.get_q_values(model_functions=prev_outcome_model_functions, data=prev_data, target_outcomes=prev_data["Y"])
             
             # Stage 0 uses the M- or R-method to set up the target variable
+            # M ist vanulla Q-Learning. Also bester geschätzter Q wert über alle aktionen
             if self.model_params["value_function_method"] == "M":
                 # Take the max over the Q-values for all actions
                 target_outcomes = np.max(prev_q_values_all_actions, axis=0) if isinstance(prev_q_values_all_actions[0],np.ndarray) else torch.max(torch.stack(prev_q_values_all_actions), dim=0).values
             else:
-                # Hier wird aus pre
                 prev_obs_actions = torch.argmax(prev_data["T"], dim=1) if prev_data["T"].shape[1] > 2 else prev_data["T"].squeeze(1).long()  # Convert to class labels if one-hot encoded
+                # Holt die korrekten Werte der tatsächlich beobachteten Aktionen, damit wir sie gleich in der regret basierten funktion nutzen können
                 prev_q_values_obs_actions = self.get_correct_values(values_all_actions=prev_q_values_all_actions, actions=prev_obs_actions)
                 q_obs = prev_q_values_obs_actions
 
+                # q ops ist der geschätzte Q-Wert der tatsächlich beobachteten Aktion
                 if self.model_params["value_function_method"] == "G":
                     # Used for example in g-computation
                     target_outcomes = q_obs
 
+                # R steht hier für regret, da wir eine regreat basierte Value Function haben
                 elif self.model_params["value_function_method"] == "R":
                     # Grab any ps modelling if necessary
                     prev_ps = None
@@ -376,6 +387,7 @@ class SCOPEFunctions():
 
                     # Outcome-Modell
                     #     → liefert das erwartete Outcome dieser Aktion
+                    # Es ist wie AIPWE ein Learner mit Pseudo-Outcomes: Aus den Outcome-Modellen wird pro Fall ein künstlicher „Effekt“-Zielwert gebaut, und darauf wird ein separates Effekt-Modell trainiert.
                     if "RA" in self.learner_method or "AIPW" in self.learner_method:
                         # prev_effect_model_params = {
                         #     "method": "dtr-AIPWE-reg-R",
@@ -637,11 +649,13 @@ class SCOPEFunctions():
         
     def get_correct_values(self, values_all_actions, actions):
         # Check if actions is a tensor or numpy array and edit accordingly
+        # Reine Typ-Angleichung. XGBoost liefert numpy-Arrays bzw. Listen, die DL-Modelle Tensoren; danach ist beides ein Tensor der Form [n_aktionen, n_fälle].
         actions = torch.tensor(actions, dtype=torch.int64) if isinstance(actions, (list, np.ndarray)) else actions
         stacked = torch.stack([
             (torch.tensor(v, dtype=torch.float32)) if isinstance(v, (list, np.ndarray)) else v for v in values_all_actions
         ]) if isinstance(values_all_actions, (list, np.ndarray)) else values_all_actions
 
+        # Die eigentliche Auswahl. stacked[actions, torch.arange(n_fälle)] liest für Fall i den Eintrag in Zeile actions[i] und Spalte i. Das unsqueeze(1) macht daraus die Form [n_fälle, 1], passend zu Y
         values_correct = stacked[actions.long(), torch.arange(stacked.shape[1])].unsqueeze(1)
 
         return values_correct

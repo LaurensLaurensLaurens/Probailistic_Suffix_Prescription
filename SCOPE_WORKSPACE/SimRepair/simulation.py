@@ -77,6 +77,7 @@ class PresProcessGenerator():
             # Do timeout if necessary
             if timeout:
                 self.do_timeout(env, timeout)
+            #"-------------WICHTIG--------------"
             # Simulate trace
             proc = env.process(self.simulate_trace(simulation_state))
             yield proc
@@ -113,6 +114,9 @@ class PresProcessGenerator():
             # GET THE ENABLED ACTIVITIES BASED ON (EXTRA) FLOW CONDITIONS (MOSTLY POLICIES)
             control_flow_enabled_trans = list(semantics.enabled_transitions(net, marking))
             control_flow_enabled_trans = sorted(control_flow_enabled_trans, key=lambda x: x.label)
+
+            #"-----------WICHTIG-----------------"
+            # Hier wird dann die Decision Logik übergeben der Policies und die policies durchgeführt
             all_enabled_trans = self.extra_flow_conditioner.filter_enabled_trans(net, marking, control_flow_enabled_trans, trace, self.policies_info, self.intervention_info)
             
             # 
@@ -402,6 +406,7 @@ class PresProcessGenerator():
         self.activity_executioner = ActivityExecutioner(self.random_obj)
         self.extra_flow_conditioner = ExtraFlowConditioner(deepcopy(self.random_obj))
         self.log = []
+        #Eiegtnliche Simulation
         self.simulation_of_events(self.net, self.net.initial_marking, n_cases=self.n_cases)
         self.log = pd.DataFrame(self.log)
         return deepcopy(self.log)

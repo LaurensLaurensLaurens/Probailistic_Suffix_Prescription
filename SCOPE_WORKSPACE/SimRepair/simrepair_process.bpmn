@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_SimRepair" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_SimRepair" name="SimRepair Reparaturprozess" isExecutable="false">
+    <bpmn:startEvent id="start" name="Fall startet">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="initiate_case" name="initiate_case">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="G_proc" name="Verfahren?">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="start_priority" name="start_priority">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="start_standard" name="start_standard">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="M_wait">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="wait_for_employee" name="wait_for_employee">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="G_take" name="Mitarbeiter nehmen?&#10;(Werkstatt-Policy)">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="use_spare_parts" name="use_spare_parts">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="repair_priority" name="repair_priority">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="G_x1" name="Reparatur gut?&#10;(Zufall)">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="prepare_rerepair_priority" name="prepare_rerepair_priority">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="M_emp">
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+      <bpmn:incoming>Flow_24</bpmn:incoming>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="choose_employee" name="choose_employee">
+      <bpmn:incoming>Flow_16</bpmn:incoming>
+      <bpmn:outgoing>Flow_17</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="M_mat">
+      <bpmn:incoming>Flow_17</bpmn:incoming>
+      <bpmn:incoming>Flow_20</bpmn:incoming>
+      <bpmn:outgoing>Flow_18</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="choose_material" name="choose_material">
+      <bpmn:incoming>Flow_18</bpmn:incoming>
+      <bpmn:outgoing>Flow_19</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="G_x2" name="Material bestellt?&#10;(Zufall)">
+      <bpmn:incoming>Flow_19</bpmn:incoming>
+      <bpmn:outgoing>Flow_20</bpmn:outgoing>
+      <bpmn:outgoing>Flow_21</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="repair_standard" name="repair_standard">
+      <bpmn:incoming>Flow_21</bpmn:incoming>
+      <bpmn:outgoing>Flow_22</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="G_x3" name="Reparatur gut?&#10;(Zufall)">
+      <bpmn:incoming>Flow_22</bpmn:incoming>
+      <bpmn:outgoing>Flow_23</bpmn:outgoing>
+      <bpmn:outgoing>Flow_25</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="prepare_rerepair_standard" name="prepare_rerepair_standard">
+      <bpmn:incoming>Flow_23</bpmn:incoming>
+      <bpmn:outgoing>Flow_24</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="M_qc">
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:incoming>Flow_25</bpmn:incoming>
+      <bpmn:incoming>Flow_29</bpmn:incoming>
+      <bpmn:outgoing>Flow_26</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="G_qc" name="Qualitätskontrolle?&#10;(Werkstatt-Policy)">
+      <bpmn:incoming>Flow_26</bpmn:incoming>
+      <bpmn:outgoing>Flow_27</bpmn:outgoing>
+      <bpmn:outgoing>Flow_30</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="conduct_qc" name="conduct_qc">
+      <bpmn:incoming>Flow_27</bpmn:incoming>
+      <bpmn:outgoing>Flow_28</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="improve_rework" name="improve_rework">
+      <bpmn:incoming>Flow_28</bpmn:incoming>
+      <bpmn:outgoing>Flow_29</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="shipping" name="shipping">
+      <bpmn:incoming>Flow_30</bpmn:incoming>
+      <bpmn:outgoing>Flow_31</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="G_accept" name="Kunde nimmt an?&#10;(Zufall)">
+      <bpmn:incoming>Flow_31</bpmn:incoming>
+      <bpmn:outgoing>Flow_32</bpmn:outgoing>
+      <bpmn:outgoing>Flow_33</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="customer_acceptance" name="customer_acceptance">
+      <bpmn:incoming>Flow_32</bpmn:incoming>
+      <bpmn:outgoing>Flow_34</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="customer_refusal" name="customer_refusal">
+      <bpmn:incoming>Flow_33</bpmn:incoming>
+      <bpmn:outgoing>Flow_35</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="end_accept" name="Angenommen">
+      <bpmn:incoming>Flow_34</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="end_refuse" name="Abgelehnt">
+      <bpmn:incoming>Flow_35</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="start" targetRef="initiate_case" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="initiate_case" targetRef="G_proc" />
+    <bpmn:sequenceFlow id="Flow_3" name="start_priority" sourceRef="G_proc" targetRef="start_priority" />
+    <bpmn:sequenceFlow id="Flow_4" name="start_standard" sourceRef="G_proc" targetRef="start_standard" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="start_priority" targetRef="M_wait" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="M_wait" targetRef="wait_for_employee" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="wait_for_employee" targetRef="G_take" />
+    <bpmn:sequenceFlow id="Flow_8" name="ja" sourceRef="G_take" targetRef="use_spare_parts" />
+    <bpmn:sequenceFlow id="Flow_9" name="nein, weiter warten (max. 3x)" sourceRef="G_take" targetRef="M_wait" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="use_spare_parts" targetRef="repair_priority" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="repair_priority" targetRef="G_x1" />
+    <bpmn:sequenceFlow id="Flow_12" name="nein (max. 3x)" sourceRef="G_x1" targetRef="prepare_rerepair_priority" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="prepare_rerepair_priority" targetRef="M_wait" />
+    <bpmn:sequenceFlow id="Flow_14" name="ja" sourceRef="G_x1" targetRef="M_qc" />
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="start_standard" targetRef="M_emp" />
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="M_emp" targetRef="choose_employee" />
+    <bpmn:sequenceFlow id="Flow_17" sourceRef="choose_employee" targetRef="M_mat" />
+    <bpmn:sequenceFlow id="Flow_18" sourceRef="M_mat" targetRef="choose_material" />
+    <bpmn:sequenceFlow id="Flow_19" sourceRef="choose_material" targetRef="G_x2" />
+    <bpmn:sequenceFlow id="Flow_20" name="nein, vergessen" sourceRef="G_x2" targetRef="M_mat" />
+    <bpmn:sequenceFlow id="Flow_21" name="ja" sourceRef="G_x2" targetRef="repair_standard" />
+    <bpmn:sequenceFlow id="Flow_22" sourceRef="repair_standard" targetRef="G_x3" />
+    <bpmn:sequenceFlow id="Flow_23" name="nein (max. 3x)" sourceRef="G_x3" targetRef="prepare_rerepair_standard" />
+    <bpmn:sequenceFlow id="Flow_24" sourceRef="prepare_rerepair_standard" targetRef="M_emp" />
+    <bpmn:sequenceFlow id="Flow_25" name="ja" sourceRef="G_x3" targetRef="M_qc" />
+    <bpmn:sequenceFlow id="Flow_26" sourceRef="M_qc" targetRef="G_qc" />
+    <bpmn:sequenceFlow id="Flow_27" name="conduct_qc (max. 3x)" sourceRef="G_qc" targetRef="conduct_qc" />
+    <bpmn:sequenceFlow id="Flow_28" sourceRef="conduct_qc" targetRef="improve_rework" />
+    <bpmn:sequenceFlow id="Flow_29" sourceRef="improve_rework" targetRef="M_qc" />
+    <bpmn:sequenceFlow id="Flow_30" name="shipping" sourceRef="G_qc" targetRef="shipping" />
+    <bpmn:sequenceFlow id="Flow_31" sourceRef="shipping" targetRef="G_accept" />
+    <bpmn:sequenceFlow id="Flow_32" name="ja" sourceRef="G_accept" targetRef="customer_acceptance" />
+    <bpmn:sequenceFlow id="Flow_33" name="nein" sourceRef="G_accept" targetRef="customer_refusal" />
+    <bpmn:sequenceFlow id="Flow_34" sourceRef="customer_acceptance" targetRef="end_accept" />
+    <bpmn:sequenceFlow id="Flow_35" sourceRef="customer_refusal" targetRef="end_refuse" />
+    <bpmn:textAnnotation id="A_proc"><bpmn:text>Entscheidungspunkt der Intervention choose_procedure (aktiv, Stage 1): Prefix endet mit initiate_case, Aktion = start_standard oder start_priority. Historisch entscheidet die Werkstatt-Policy nach bike_value, repair_severity, quality_uncertainty.</bpmn:text></bpmn:textAnnotation>
+    <bpmn:textAnnotation id="A_qc"><bpmn:text>Möglicher weiterer Entscheidungspunkt (Intervention conduct_qc, derzeit nicht aktiv): nach repair_priority, repair_standard oder improve_rework. Aktion = shipping oder conduct_qc.</bpmn:text></bpmn:textAnnotation>
+    <bpmn:textAnnotation id="A_qc_effect"><bpmn:text>conduct_qc senkt quality_uncertainty auf 40 % des bisherigen Werts (mindestens 0,05).</bpmn:text></bpmn:textAnnotation>
+    <bpmn:textAnnotation id="A_outcome"><bpmn:text>Outcome am Fallende: bei Annahme (10 + 2*bike_value + repair_severity) * (1 - 0,3*quality_uncertainty) - Tage; bei Ablehnung -Tage.</bpmn:text></bpmn:textAnnotation>
+    <bpmn:textAnnotation id="A_branches"><bpmn:text>Priority: Mitarbeiter und Material werden zufällig zugeteilt (schnell). Standard: Werkstatt wählt Mitarbeiter und Material passend zum Fall (langsamer).</bpmn:text></bpmn:textAnnotation>
+    <bpmn:association id="Assoc_A_proc" sourceRef="G_proc" targetRef="A_proc" />
+    <bpmn:association id="Assoc_A_qc" sourceRef="G_qc" targetRef="A_qc" />
+    <bpmn:association id="Assoc_A_qc_effect" sourceRef="conduct_qc" targetRef="A_qc_effect" />
+    <bpmn:association id="Assoc_A_outcome" sourceRef="customer_refusal" targetRef="A_outcome" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_SimRepair">
+    <bpmndi:BPMNPlane id="Plane_SimRepair" bpmnElement="Process_SimRepair">
+      <bpmndi:BPMNShape id="start_di" bpmnElement="start">
+        <dc:Bounds x="152" y="382" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="140" y="422" width="60" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="initiate_case_di" bpmnElement="initiate_case">
+        <dc:Bounds x="220" y="360" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="G_proc_di" bpmnElement="G_proc" isMarkerVisible="true">
+        <dc:Bounds x="345" y="375" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="400" y="386" width="70" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="start_priority_di" bpmnElement="start_priority">
+        <dc:Bounds x="430" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="start_standard_di" bpmnElement="start_standard">
+        <dc:Bounds x="430" y="560" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="M_wait_di" bpmnElement="M_wait" isMarkerVisible="true">
+        <dc:Bounds x="565" y="175" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="wait_for_employee_di" bpmnElement="wait_for_employee">
+        <dc:Bounds x="640" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="G_take_di" bpmnElement="G_take" isMarkerVisible="true">
+        <dc:Bounds x="775" y="175" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="745" y="138" width="110" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="use_spare_parts_di" bpmnElement="use_spare_parts">
+        <dc:Bounds x="860" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="repair_priority_di" bpmnElement="repair_priority">
+        <dc:Bounds x="1000" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="G_x1_di" bpmnElement="G_x1" isMarkerVisible="true">
+        <dc:Bounds x="1135" y="175" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1105" y="232" width="110" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="prepare_rerepair_priority_di" bpmnElement="prepare_rerepair_priority">
+        <dc:Bounds x="860" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="M_emp_di" bpmnElement="M_emp" isMarkerVisible="true">
+        <dc:Bounds x="565" y="575" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="choose_employee_di" bpmnElement="choose_employee">
+        <dc:Bounds x="640" y="560" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="M_mat_di" bpmnElement="M_mat" isMarkerVisible="true">
+        <dc:Bounds x="775" y="575" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="choose_material_di" bpmnElement="choose_material">
+        <dc:Bounds x="860" y="560" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="G_x2_di" bpmnElement="G_x2" isMarkerVisible="true">
+        <dc:Bounds x="995" y="575" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="965" y="540" width="110" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="repair_standard_di" bpmnElement="repair_standard">
+        <dc:Bounds x="1080" y="560" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="G_x3_di" bpmnElement="G_x3" isMarkerVisible="true">
+        <dc:Bounds x="1215" y="575" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1185" y="540" width="110" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="prepare_rerepair_standard_di" bpmnElement="prepare_rerepair_standard">
+        <dc:Bounds x="860" y="700" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="M_qc_di" bpmnElement="M_qc" isMarkerVisible="true">
+        <dc:Bounds x="1315" y="375" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="G_qc_di" bpmnElement="G_qc" isMarkerVisible="true">
+        <dc:Bounds x="1535" y="375" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1440" y="350" width="110" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="conduct_qc_di" bpmnElement="conduct_qc">
+        <dc:Bounds x="1510" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="improve_rework_di" bpmnElement="improve_rework">
+        <dc:Bounds x="1370" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shipping_di" bpmnElement="shipping">
+        <dc:Bounds x="1640" y="360" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="G_accept_di" bpmnElement="G_accept" isMarkerVisible="true">
+        <dc:Bounds x="1775" y="375" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1830" y="386" width="100" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="customer_acceptance_di" bpmnElement="customer_acceptance">
+        <dc:Bounds x="1870" y="260" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="customer_refusal_di" bpmnElement="customer_refusal">
+        <dc:Bounds x="1870" y="460" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="end_accept_di" bpmnElement="end_accept">
+        <dc:Bounds x="2012" y="282" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="2000" y="322" width="60" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="end_refuse_di" bpmnElement="end_refuse">
+        <dc:Bounds x="2012" y="482" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="2000" y="522" width="60" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="188" y="400" />
+        <di:waypoint x="220" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="320" y="400" />
+        <di:waypoint x="345" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="370" y="375" />
+        <di:waypoint x="370" y="200" />
+        <di:waypoint x="430" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="370" y="425" />
+        <di:waypoint x="370" y="600" />
+        <di:waypoint x="430" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="530" y="200" />
+        <di:waypoint x="565" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="615" y="200" />
+        <di:waypoint x="640" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="740" y="200" />
+        <di:waypoint x="775" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="825" y="200" />
+        <di:waypoint x="860" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="800" y="225" />
+        <di:waypoint x="800" y="280" />
+        <di:waypoint x="590" y="280" />
+        <di:waypoint x="590" y="225" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="960" y="200" />
+        <di:waypoint x="1000" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1100" y="200" />
+        <di:waypoint x="1135" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="1160" y="175" />
+        <di:waypoint x="1160" y="70" />
+        <di:waypoint x="960" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="860" y="70" />
+        <di:waypoint x="590" y="70" />
+        <di:waypoint x="590" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <di:waypoint x="1185" y="200" />
+        <di:waypoint x="1280" y="200" />
+        <di:waypoint x="1280" y="400" />
+        <di:waypoint x="1315" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15_di" bpmnElement="Flow_15">
+        <di:waypoint x="530" y="600" />
+        <di:waypoint x="565" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">
+        <di:waypoint x="615" y="600" />
+        <di:waypoint x="640" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17_di" bpmnElement="Flow_17">
+        <di:waypoint x="740" y="600" />
+        <di:waypoint x="775" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18_di" bpmnElement="Flow_18">
+        <di:waypoint x="825" y="600" />
+        <di:waypoint x="860" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19_di" bpmnElement="Flow_19">
+        <di:waypoint x="960" y="600" />
+        <di:waypoint x="995" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_20_di" bpmnElement="Flow_20">
+        <di:waypoint x="1020" y="625" />
+        <di:waypoint x="1020" y="670" />
+        <di:waypoint x="800" y="670" />
+        <di:waypoint x="800" y="625" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_21_di" bpmnElement="Flow_21">
+        <di:waypoint x="1045" y="600" />
+        <di:waypoint x="1080" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_22_di" bpmnElement="Flow_22">
+        <di:waypoint x="1180" y="600" />
+        <di:waypoint x="1215" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_23_di" bpmnElement="Flow_23">
+        <di:waypoint x="1240" y="625" />
+        <di:waypoint x="1240" y="740" />
+        <di:waypoint x="960" y="740" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_24_di" bpmnElement="Flow_24">
+        <di:waypoint x="860" y="740" />
+        <di:waypoint x="590" y="740" />
+        <di:waypoint x="590" y="625" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_25_di" bpmnElement="Flow_25">
+        <di:waypoint x="1265" y="600" />
+        <di:waypoint x="1340" y="600" />
+        <di:waypoint x="1340" y="425" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_26_di" bpmnElement="Flow_26">
+        <di:waypoint x="1365" y="400" />
+        <di:waypoint x="1535" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_27_di" bpmnElement="Flow_27">
+        <di:waypoint x="1560" y="375" />
+        <di:waypoint x="1560" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_28_di" bpmnElement="Flow_28">
+        <di:waypoint x="1510" y="270" />
+        <di:waypoint x="1470" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_29_di" bpmnElement="Flow_29">
+        <di:waypoint x="1370" y="270" />
+        <di:waypoint x="1340" y="270" />
+        <di:waypoint x="1340" y="375" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_30_di" bpmnElement="Flow_30">
+        <di:waypoint x="1585" y="400" />
+        <di:waypoint x="1640" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_31_di" bpmnElement="Flow_31">
+        <di:waypoint x="1740" y="400" />
+        <di:waypoint x="1775" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_32_di" bpmnElement="Flow_32">
+        <di:waypoint x="1800" y="375" />
+        <di:waypoint x="1800" y="300" />
+        <di:waypoint x="1870" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_33_di" bpmnElement="Flow_33">
+        <di:waypoint x="1800" y="425" />
+        <di:waypoint x="1800" y="500" />
+        <di:waypoint x="1870" y="500" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_34_di" bpmnElement="Flow_34">
+        <di:waypoint x="1970" y="300" />
+        <di:waypoint x="2012" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_35_di" bpmnElement="Flow_35">
+        <di:waypoint x="1970" y="500" />
+        <di:waypoint x="2012" y="500" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="A_proc_di" bpmnElement="A_proc"><dc:Bounds x="110" y="480" width="230" height="62" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Assoc_A_proc_di" bpmnElement="Assoc_A_proc">
+        <di:waypoint x="355" y="415" />
+        <di:waypoint x="300" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="A_qc_di" bpmnElement="A_qc"><dc:Bounds x="1440" y="480" width="250" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Assoc_A_qc_di" bpmnElement="Assoc_A_qc">
+        <di:waypoint x="1560" y="425" />
+        <di:waypoint x="1560" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="A_qc_effect_di" bpmnElement="A_qc_effect"><dc:Bounds x="1470" y="150" width="220" height="30" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Assoc_A_qc_effect_di" bpmnElement="Assoc_A_qc_effect">
+        <di:waypoint x="1570" y="230" />
+        <di:waypoint x="1575" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="A_outcome_di" bpmnElement="A_outcome"><dc:Bounds x="1840" y="580" width="260" height="40" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Assoc_A_outcome_di" bpmnElement="Assoc_A_outcome">
+        <di:waypoint x="1920" y="540" />
+        <di:waypoint x="1920" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="A_branches_di" bpmnElement="A_branches"><dc:Bounds x="480" y="360" width="230" height="50" /></bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

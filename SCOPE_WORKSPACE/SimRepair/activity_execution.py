@@ -1,7 +1,7 @@
 import numpy as np
 import random
 from datetime import timedelta
-from SimRepair.workshop_policy import WorkshopPolicy
+from SimRepair.workshop_policy import WorkshopPolicy, completed_time
 
 
 STATE_FIELDS = [
@@ -18,6 +18,11 @@ STATE_FIELDS = [
 
 class ActivityExecutioner():
     def __init__(self, random_obj=random.Random()):
+        #OUTCOME params (all in days, the same unit as the cumulative time cost)
+        self.reward_base = 10
+        self.reward_per_bike_value = 2
+        self.reward_per_repair_severity = 1
+        self.risk_weight = 0.3
         self.times_dic = {
             "initiate_case": 1,
             "start_priority": 1,
@@ -34,7 +39,7 @@ class ActivityExecutioner():
             "improve_rework": 3,
             "shipping": 1,
             "customer_acceptance": 0,
-            "customer_refusal": 100,
+            "customer_refusal": 0,
         }
         self.times_dic = {key: value * 86400 for key, value in self.times_dic.items()}
         self.random_obj = random_obj
@@ -52,12 +57,18 @@ class ActivityExecutioner():
     def set_time_repair(self, repair_activity, repair_severity, employee_competence):
         self.times_dic[repair_activity] = (2 + 0.6 * repair_severity) / (0.8 + 0.08 * employee_competence) * 86400
 
-    def calc_outcome(self, current_event):
+    def calc_outcome(self, current_event, prev_event):
+        cum_cost = completed_time(prev_event) # days spent on the case, counterpart of cum_cost in SimBank
         if current_event["activity"] == "customer_acceptance":
-            return 0
-        if current_event["activity"] == "customer_refusal":
-            return -100
-        return np.nan
+            V = current_event["bike_value"]
+            S = current_event["repair_severity"]
+            revenue = self.reward_base + self.reward_per_bike_value * V + self.reward_per_repair_severity * S
+            risk_factor = self.risk_weight * current_event["quality_uncertainty"] # remaining uncertainty discounts the revenue
+            discounted_revenue = revenue * (1 - risk_factor)
+            exp_profit = discounted_revenue - cum_cost
+            return exp_profit
+        else:
+            return -cum_cost
 
     def sample_clipped(self, mean, std_dev, lo, hi, as_int=False):
         while True:
@@ -147,7 +158,7 @@ class ActivityExecutioner():
                 current_event["quality_uncertainty"] = max(0.05, 0.4 * prev_event["quality_uncertainty"])
 
             elif current_activity == "customer_acceptance" or current_activity == "customer_refusal":
-                current_event["outcome"] = self.calc_outcome(current_event)
+                current_event["outcome"] = self.calc_outcome(current_event, prev_event)
 
         current_event["duration"] = self.times_dic[current_activity]
 

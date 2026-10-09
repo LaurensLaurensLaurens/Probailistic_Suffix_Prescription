@@ -2,8 +2,21 @@ import torch
 from torch.utils import data
 
 class DL_Dataset(data.Dataset):
-    def __init__(self, x_case, x_event, prefix_len, t, y, weights):
+    def __init__(self, x_case, x_event, prefix_len, t, y, weights, x_suffix=None, suffix_len=None):
         self.x_case = x_case.to(torch.float32).detach().requires_grad_(False)
+
+        # Suffixe gibt es nur bei der Tensor-Kodierung und sie werden nur vom PSP genutzt.
+        # Ohne Suffix bleiben leere Platzhalter, damit jeder Batch gleich aufgebaut ist.
+        self.x_suffix = (
+            x_suffix.to(torch.float32).detach().requires_grad_(False)
+            if x_suffix is not None
+            else torch.zeros(x_case.size(0), 0, 0)
+        )
+        self.suffix_len = (
+            suffix_len.detach().requires_grad_(False)
+            if suffix_len is not None
+            else torch.zeros(x_case.size(0), dtype=torch.int64)
+        )
 
         self.x_event = (
             x_event.to(torch.float32).detach().requires_grad_(False)
@@ -40,7 +53,9 @@ class DL_Dataset(data.Dataset):
             self.prefix_len[index],
             self.t[index],
             self.y[index],
-            self.weights[index]
+            self.weights[index],
+            self.x_suffix[index],
+            self.suffix_len[index]
         )
 
 class ML_Dataset():
