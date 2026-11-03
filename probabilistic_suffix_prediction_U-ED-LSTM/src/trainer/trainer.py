@@ -36,7 +36,7 @@ class Trainer:
         
         ARGS:
         - device: Device (GPU or CPU).
-        - model: Model that is trained and validated. Sieht z.B. so aus: DropoutUncertaintyModel
+        - model: Model that is trained and validated.
         - data_train: Training data.
         - data_val: Validation data.
         - loss_obj: object for loss functions
@@ -116,7 +116,6 @@ class Trainer:
         self.saving_path = saving_path
 
         # Gradnorm parameters
-        # TODO: GRADNORN NOCHMAL ANSEHEN
         self.gradnorm_values = gradnorm_values
         self.use_gradnorm = False
         if gradnorm_values is not None:
@@ -176,7 +175,7 @@ class Trainer:
             # Reduce Teacher forcing ratio dynamically (scheduled sampling)
             self.teacher_forcing_ratio = max(self.min_teacher_forcing_value, self.max_teacher_forcing_value - epoch / (self.epochs * 0.5))
             
-            # Batch Loop
+            # Bacth Loop
             for i, train_data in enumerate(train_dataloader): 
                 # Data
                 # batch data

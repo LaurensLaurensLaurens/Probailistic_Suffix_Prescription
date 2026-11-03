@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             id="definitions_bpic17" targetNamespace="http://bpic17">
+  <process id="bpic17" name="BPIC17 Kreditantrag" isExecutable="false">
+    <documentation>BPIC17-Prozessmodell, abgeleitet aus einer Process Map mit Häufigkeiten (Zhipeng He et al., ResearchGate 354379461). Beschreibt den beobachteten Ablauf (As-Is), kein normatives Soll-Modell. W_-Aktivitäten stehen je Arbeitsschritt einmal. Ergänzt gegenüber dem Bild: die Enden nach W_Validate application, W_Call incomplete files und O_Cancelled (Häufigkeit aus dem Log).</documentation>
+    <task id="task_A_Accepted" name="A_Accepted">
+      <incoming>flow_31</incoming>
+      <outgoing>flow_33</outgoing>
+    </task>
+    <task id="task_A_Cancelled" name="A_Cancelled">
+      <incoming>flow_42</incoming>
+      <outgoing>flow_44</outgoing>
+    </task>
+    <task id="task_A_Complete" name="A_Complete">
+      <incoming>flow_0</incoming>
+      <outgoing>flow_12</outgoing>
+    </task>
+    <task id="task_A_Concept" name="A_Concept">
+      <incoming>flow_1</incoming>
+      <outgoing>flow_13</outgoing>
+    </task>
+    <task id="task_A_Create_Application" name="A_Create Application">
+      <incoming>flow_25</incoming>
+      <outgoing>flow_14</outgoing>
+    </task>
+    <task id="task_A_Denied" name="A_Denied">
+      <incoming>flow_2</incoming>
+      <outgoing>flow_59</outgoing>
+    </task>
+    <task id="task_A_Incomplete" name="A_Incomplete">
+      <incoming>flow_3</incoming>
+      <outgoing>flow_15</outgoing>
+    </task>
+    <task id="task_A_Pending" name="A_Pending">
+      <incoming>flow_64</incoming>
+      <outgoing>flow_16</outgoing>
+    </task>
+    <task id="task_A_Submitted" name="A_Submitted">
+      <incoming>flow_26</incoming>
+      <outgoing>flow_27</outgoing>
+    </task>
+    <task id="task_A_Validating" name="A_Validating">
+      <incoming>flow_4</incoming>
+      <outgoing>flow_17</outgoing>
+    </task>
+    <task id="task_O_Accepted" name="O_Accepted">
+      <incoming>flow_5</incoming>
+      <outgoing>flow_64</outgoing>
+    </task>
+    <task id="task_O_Cancelled" name="O_Cancelled">
+      <incoming>flow_44</incoming>
+      <outgoing>flow_18</outgoing>
+    </task>
+    <task id="task_O_Create_Offer" name="O_Create Offer">
+      <incoming>flow_6</incoming>
+      <outgoing>flow_34</outgoing>
+    </task>
+    <task id="task_O_Created" name="O_Created">
+      <incoming>flow_34</incoming>
+      <outgoing>flow_19</outgoing>
+    </task>
+    <task id="task_O_Refused" name="O_Refused">
+      <incoming>flow_59</incoming>
+      <outgoing>flow_60</outgoing>
+    </task>
+    <task id="task_O_Returned" name="O_Returned">
+      <incoming>flow_49</incoming>
+      <outgoing>flow_20</outgoing>
+    </task>
+    <task id="task_O_Sent_mail_and_online" name="O_Sent (mail and online)">
+      <incoming>flow_35</incoming>
+      <outgoing>flow_21</outgoing>
+    </task>
+    <task id="task_O_Sent_online_only" name="O_Sent (online only)">
+      <incoming>flow_36</incoming>
+      <outgoing>flow_39</outgoing>
+    </task>
+    <task id="task_W_Assess_potential_fraud" name="W_Assess potential fraud">
+      <incoming>flow_53</incoming>
+      <outgoing>flow_58</outgoing>
+    </task>
+    <task id="task_W_Call_after_offers" name="W_Call after offers">
+      <incoming>flow_7</incoming>
+      <outgoing>flow_22</outgoing>
+    </task>
+    <task id="task_W_Call_incomplete_files" name="W_Call incomplete files">
+      <incoming>flow_8</incoming>
+      <outgoing>flow_23</outgoing>
+    </task>
+    <task id="task_W_Complete_application" name="W_Complete application">
+      <incoming>flow_9</incoming>
+      <outgoing>flow_40</outgoing>
+    </task>
+    <task id="task_W_Handle_leads" name="W_Handle leads">
+      <incoming>flow_27</incoming>
+      <outgoing>flow_28</outgoing>
+    </task>
+    <task id="task_W_Validate_application" name="W_Validate application">
+      <incoming>flow_10</incoming>
+      <outgoing>flow_24</outgoing>
+    </task>
+    <startEvent id="start">
+      <outgoing>flow_25</outgoing>
+    </startEvent>
+    <endEvent id="end">
+      <incoming>flow_11</incoming>
+    </endEvent>
+    <exclusiveGateway id="join_task_A_Complete" gatewayDirection="Converging">
+      <incoming>flow_38</incoming>
+      <incoming>flow_40</incoming>
+      <outgoing>flow_0</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="join_task_A_Concept" gatewayDirection="Converging">
+      <incoming>flow_28</incoming>
+      <incoming>flow_29</incoming>
+      <outgoing>flow_1</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="join_task_A_Denied" gatewayDirection="Converging">
+      <incoming>flow_54</incoming>
+      <incoming>flow_58</incoming>
+      <outgoing>flow_2</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="join_task_A_Incomplete" gatewayDirection="Converging">
+      <incoming>flow_51</incoming>
+      <incoming>flow_56</incoming>
+      <incoming>flow_61</incoming>
+      <outgoing>flow_3</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="join_task_A_Validating" gatewayDirection="Converging">
+      <incoming>flow_46</incoming>
+      <incoming>flow_67</incoming>
+      <outgoing>flow_4</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="join_task_O_Accepted" gatewayDirection="Converging">
+      <incoming>flow_52</incoming>
+      <incoming>flow_57</incoming>
+      <incoming>flow_62</incoming>
+      <outgoing>flow_5</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="join_task_O_Create_Offer" gatewayDirection="Converging">
+      <incoming>flow_33</incoming>
+      <incoming>flow_41</incoming>
+      <outgoing>flow_6</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="join_task_W_Call_after_offers" gatewayDirection="Converging">
+      <incoming>flow_43</incoming>
+      <incoming>flow_45</incoming>
+      <outgoing>flow_7</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="join_task_W_Call_incomplete_files" gatewayDirection="Converging">
+      <incoming>flow_39</incoming>
+      <incoming>flow_63</incoming>
+      <incoming>flow_66</incoming>
+      <outgoing>flow_8</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="join_task_W_Complete_application" gatewayDirection="Converging">
+      <incoming>flow_30</incoming>
+      <incoming>flow_32</incoming>
+      <incoming>flow_37</incoming>
+      <outgoing>flow_9</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="join_task_W_Validate_application" gatewayDirection="Converging">
+      <incoming>flow_47</incoming>
+      <incoming>flow_50</incoming>
+      <incoming>flow_55</incoming>
+      <incoming>flow_60</incoming>
+      <incoming>flow_65</incoming>
+      <outgoing>flow_10</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="join_end" gatewayDirection="Converging">
+      <incoming>flow_48</incoming>
+      <incoming>flow_68</incoming>
+      <incoming>flow_69</incoming>
+      <incoming>flow_70</incoming>
+      <outgoing>flow_11</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="split_task_A_Complete" gatewayDirection="Diverging">
+      <incoming>flow_12</incoming>
+      <outgoing>flow_41</outgoing>
+      <outgoing>flow_42</outgoing>
+      <outgoing>flow_43</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="split_task_A_Concept" gatewayDirection="Diverging">
+      <incoming>flow_13</incoming>
+      <outgoing>flow_31</outgoing>
+      <outgoing>flow_32</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="split_task_A_Create_Application" gatewayDirection="Diverging">
+      <incoming>flow_14</incoming>
+      <outgoing>flow_26</outgoing>
+      <outgoing>flow_29</outgoing>
+      <outgoing>flow_30</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="split_task_A_Incomplete" gatewayDirection="Diverging">
+      <incoming>flow_15</incoming>
+      <outgoing>flow_62</outgoing>
+      <outgoing>flow_63</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="split_task_A_Pending" gatewayDirection="Diverging">
+      <incoming>flow_16</incoming>
+      <outgoing>flow_65</outgoing>
+      <outgoing>flow_66</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="split_task_A_Validating" gatewayDirection="Diverging">
+      <incoming>flow_17</incoming>
+      <outgoing>flow_49</outgoing>
+      <outgoing>flow_50</outgoing>
+      <outgoing>flow_51</outgoing>
+      <outgoing>flow_52</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="split_task_O_Cancelled" gatewayDirection="Diverging">
+      <incoming>flow_18</incoming>
+      <outgoing>flow_45</outgoing>
+      <outgoing>flow_70</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="split_task_O_Created" gatewayDirection="Diverging">
+      <incoming>flow_19</incoming>
+      <outgoing>flow_35</outgoing>
+      <outgoing>flow_36</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="split_task_O_Returned" gatewayDirection="Diverging">
+      <incoming>flow_20</incoming>
+      <outgoing>flow_53</outgoing>
+      <outgoing>flow_54</outgoing>
+      <outgoing>flow_55</outgoing>
+      <outgoing>flow_56</outgoing>
+      <outgoing>flow_57</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="split_task_O_Sent_mail_and_online" gatewayDirection="Diverging">
+      <incoming>flow_21</incoming>
+      <outgoing>flow_37</outgoing>
+      <outgoing>flow_38</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="split_task_W_Call_after_offers" gatewayDirection="Diverging">
+      <incoming>flow_22</incoming>
+      <outgoing>flow_46</outgoing>
+      <outgoing>flow_47</outgoing>
+      <outgoing>flow_48</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="split_task_W_Call_incomplete_files" gatewayDirection="Diverging">
+      <incoming>flow_23</incoming>
+      <outgoing>flow_67</outgoing>
+      <outgoing>flow_69</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="split_task_W_Validate_application" gatewayDirection="Diverging">
+      <incoming>flow_24</incoming>
+      <outgoing>flow_61</outgoing>
+      <outgoing>flow_68</outgoing>
+    </exclusiveGateway>
+    <sequenceFlow id="flow_0" sourceRef="join_task_A_Complete" targetRef="task_A_Complete"/>
+    <sequenceFlow id="flow_1" sourceRef="join_task_A_Concept" targetRef="task_A_Concept"/>
+    <sequenceFlow id="flow_2" sourceRef="join_task_A_Denied" targetRef="task_A_Denied"/>
+    <sequenceFlow id="flow_3" sourceRef="join_task_A_Incomplete" targetRef="task_A_Incomplete"/>
+    <sequenceFlow id="flow_4" sourceRef="join_task_A_Validating" targetRef="task_A_Validating"/>
+    <sequenceFlow id="flow_5" sourceRef="join_task_O_Accepted" targetRef="task_O_Accepted"/>
+    <sequenceFlow id="flow_6" sourceRef="join_task_O_Create_Offer" targetRef="task_O_Create_Offer"/>
+    <sequenceFlow id="flow_7" sourceRef="join_task_W_Call_after_offers" targetRef="task_W_Call_after_offers"/>
+    <sequenceFlow id="flow_8" sourceRef="join_task_W_Call_incomplete_files" targetRef="task_W_Call_incomplete_files"/>
+    <sequenceFlow id="flow_9" sourceRef="join_task_W_Complete_application" targetRef="task_W_Complete_application"/>
+    <sequenceFlow id="flow_10" sourceRef="join_task_W_Validate_application" targetRef="task_W_Validate_application"/>
+    <sequenceFlow id="flow_11" sourceRef="join_end" targetRef="end"/>
+    <sequenceFlow id="flow_12" sourceRef="task_A_Complete" targetRef="split_task_A_Complete"/>
+    <sequenceFlow id="flow_13" sourceRef="task_A_Concept" targetRef="split_task_A_Concept"/>
+    <sequenceFlow id="flow_14" sourceRef="task_A_Create_Application" targetRef="split_task_A_Create_Application"/>
+    <sequenceFlow id="flow_15" sourceRef="task_A_Incomplete" targetRef="split_task_A_Incomplete"/>
+    <sequenceFlow id="flow_16" sourceRef="task_A_Pending" targetRef="split_task_A_Pending"/>
+    <sequenceFlow id="flow_17" sourceRef="task_A_Validating" targetRef="split_task_A_Validating"/>
+    <sequenceFlow id="flow_18" sourceRef="task_O_Cancelled" targetRef="split_task_O_Cancelled"/>
+    <sequenceFlow id="flow_19" sourceRef="task_O_Created" targetRef="split_task_O_Created"/>
+    <sequenceFlow id="flow_20" sourceRef="task_O_Returned" targetRef="split_task_O_Returned"/>
+    <sequenceFlow id="flow_21" sourceRef="task_O_Sent_mail_and_online" targetRef="split_task_O_Sent_mail_and_online"/>
+    <sequenceFlow id="flow_22" sourceRef="task_W_Call_after_offers" targetRef="split_task_W_Call_after_offers"/>
+    <sequenceFlow id="flow_23" sourceRef="task_W_Call_incomplete_files" targetRef="split_task_W_Call_incomplete_files"/>
+    <sequenceFlow id="flow_24" sourceRef="task_W_Validate_application" targetRef="split_task_W_Validate_application"/>
+    <sequenceFlow id="flow_25" sourceRef="start" targetRef="task_A_Create_Application" name="31509"/>
+    <sequenceFlow id="flow_26" sourceRef="split_task_A_Create_Application" targetRef="task_A_Submitted" name="20423"/>
+    <sequenceFlow id="flow_27" sourceRef="task_A_Submitted" targetRef="task_W_Handle_leads" name="20423"/>
+    <sequenceFlow id="flow_28" sourceRef="task_W_Handle_leads" targetRef="join_task_A_Concept" name="20423"/>
+    <sequenceFlow id="flow_29" sourceRef="split_task_A_Create_Application" targetRef="join_task_A_Concept" name="11086"/>
+    <sequenceFlow id="flow_30" sourceRef="split_task_A_Create_Application" targetRef="join_task_W_Complete_application" name="6953"/>
+    <sequenceFlow id="flow_31" sourceRef="split_task_A_Concept" targetRef="task_A_Accepted" name="31495"/>
+    <sequenceFlow id="flow_32" sourceRef="split_task_A_Concept" targetRef="join_task_W_Complete_application" name="10492"/>
+    <sequenceFlow id="flow_33" sourceRef="task_A_Accepted" targetRef="join_task_O_Create_Offer" name="31502"/>
+    <sequenceFlow id="flow_34" sourceRef="task_O_Create_Offer" targetRef="task_O_Created" name="42995"/>
+    <sequenceFlow id="flow_35" sourceRef="split_task_O_Created" targetRef="task_O_Sent_mail_and_online" name="36212"/>
+    <sequenceFlow id="flow_36" sourceRef="split_task_O_Created" targetRef="task_O_Sent_online_only" name="1920"/>
+    <sequenceFlow id="flow_37" sourceRef="split_task_O_Sent_mail_and_online" targetRef="join_task_W_Complete_application" name="12215"/>
+    <sequenceFlow id="flow_38" sourceRef="split_task_O_Sent_mail_and_online" targetRef="join_task_A_Complete" name="18697"/>
+    <sequenceFlow id="flow_39" sourceRef="task_O_Sent_online_only" targetRef="join_task_W_Call_incomplete_files" name="588"/>
+    <sequenceFlow id="flow_40" sourceRef="task_W_Complete_application" targetRef="join_task_A_Complete" name="31112"/>
+    <sequenceFlow id="flow_41" sourceRef="split_task_A_Complete" targetRef="join_task_O_Create_Offer" name="3906"/>
+    <sequenceFlow id="flow_42" sourceRef="split_task_A_Complete" targetRef="task_A_Cancelled" name="7150"/>
+    <sequenceFlow id="flow_43" sourceRef="split_task_A_Complete" targetRef="join_task_W_Call_after_offers" name="19513"/>
+    <sequenceFlow id="flow_44" sourceRef="task_A_Cancelled" targetRef="task_O_Cancelled" name="10270"/>
+    <sequenceFlow id="flow_45" sourceRef="split_task_O_Cancelled" targetRef="join_task_W_Call_after_offers" name="9439"/>
+    <sequenceFlow id="flow_46" sourceRef="split_task_W_Call_after_offers" targetRef="join_task_A_Validating" name="21694"/>
+    <sequenceFlow id="flow_47" sourceRef="split_task_W_Call_after_offers" targetRef="join_task_W_Validate_application" name="10918"/>
+    <sequenceFlow id="flow_48" sourceRef="split_task_W_Call_after_offers" targetRef="join_end" name="9323"/>
+    <sequenceFlow id="flow_49" sourceRef="split_task_A_Validating" targetRef="task_O_Returned" name="21537"/>
+    <sequenceFlow id="flow_50" sourceRef="split_task_A_Validating" targetRef="join_task_W_Validate_application" name="4515"/>
+    <sequenceFlow id="flow_51" sourceRef="split_task_A_Validating" targetRef="join_task_A_Incomplete" name="4429"/>
+    <sequenceFlow id="flow_52" sourceRef="split_task_A_Validating" targetRef="join_task_O_Accepted" name="7134"/>
+    <sequenceFlow id="flow_53" sourceRef="split_task_O_Returned" targetRef="task_W_Assess_potential_fraud" name="88"/>
+    <sequenceFlow id="flow_54" sourceRef="split_task_O_Returned" targetRef="join_task_A_Denied" name="2187"/>
+    <sequenceFlow id="flow_55" sourceRef="split_task_O_Returned" targetRef="join_task_W_Validate_application" name="7939"/>
+    <sequenceFlow id="flow_56" sourceRef="split_task_O_Returned" targetRef="join_task_A_Incomplete" name="6184"/>
+    <sequenceFlow id="flow_57" sourceRef="split_task_O_Returned" targetRef="join_task_O_Accepted" name="5279"/>
+    <sequenceFlow id="flow_58" sourceRef="task_W_Assess_potential_fraud" targetRef="join_task_A_Denied" name="56"/>
+    <sequenceFlow id="flow_59" sourceRef="task_A_Denied" targetRef="task_O_Refused" name="3720"/>
+    <sequenceFlow id="flow_60" sourceRef="task_O_Refused" targetRef="join_task_W_Validate_application" name="1739"/>
+    <sequenceFlow id="flow_61" sourceRef="split_task_W_Validate_application" targetRef="join_task_A_Incomplete" name="21563"/>
+    <sequenceFlow id="flow_62" sourceRef="split_task_A_Incomplete" targetRef="join_task_O_Accepted" name="4780"/>
+    <sequenceFlow id="flow_63" sourceRef="split_task_A_Incomplete" targetRef="join_task_W_Call_incomplete_files" name="12290"/>
+    <sequenceFlow id="flow_64" sourceRef="task_O_Accepted" targetRef="task_A_Pending" name="17228"/>
+    <sequenceFlow id="flow_65" sourceRef="split_task_A_Pending" targetRef="join_task_W_Validate_application" name="8939"/>
+    <sequenceFlow id="flow_66" sourceRef="split_task_A_Pending" targetRef="join_task_W_Call_incomplete_files" name="4876"/>
+    <sequenceFlow id="flow_67" sourceRef="split_task_W_Call_incomplete_files" targetRef="join_task_A_Validating" name="16427"/>
+    <sequenceFlow id="flow_68" sourceRef="split_task_W_Validate_application" targetRef="join_end" name="ergänzt: 12660"/>
+    <sequenceFlow id="flow_69" sourceRef="split_task_W_Call_incomplete_files" targetRef="join_end" name="ergänzt: 4639"/>
+    <sequenceFlow id="flow_70" sourceRef="split_task_O_Cancelled" targetRef="join_end" name="ergänzt: 4437"/>
+  </process>
+  <bpmndi:BPMNDiagram id="diagram_bpic17">
+    <bpmndi:BPMNPlane id="plane_bpic17" bpmnElement="bpic17">
+      <bpmndi:BPMNShape id="shape_task_A_Accepted" bpmnElement="task_A_Accepted"><dc:Bounds x="550.0" y="769.8" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_A_Cancelled" bpmnElement="task_A_Cancelled"><dc:Bounds x="806.0" y="1990.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_A_Complete" bpmnElement="task_A_Complete"><dc:Bounds x="681.0" y="1797.3" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_A_Concept" bpmnElement="task_A_Concept"><dc:Bounds x="574.0" y="577.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_A_Create_Application" bpmnElement="task_A_Create_Application"><dc:Bounds x="629.0" y="85.8" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_A_Denied" bpmnElement="task_A_Denied"><dc:Bounds x="547.0" y="3242.2" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_A_Incomplete" bpmnElement="task_A_Incomplete"><dc:Bounds x="181.0" y="3838.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_A_Pending" bpmnElement="task_A_Pending"><dc:Bounds x="293.0" y="4232.2" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_A_Submitted" bpmnElement="task_A_Submitted"><dc:Bounds x="629.0" y="278.5" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_A_Validating" bpmnElement="task_A_Validating"><dc:Bounds x="164.0" y="2655.2" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_O_Accepted" bpmnElement="task_O_Accepted"><dc:Bounds x="293.0" y="4126.5" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_O_Cancelled" bpmnElement="task_O_Cancelled"><dc:Bounds x="807.0" y="2095.7" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_O_Create_Offer" bpmnElement="task_O_Create_Offer"><dc:Bounds x="400.0" y="962.5" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_O_Created" bpmnElement="task_O_Created"><dc:Bounds x="400.0" y="1068.3" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_O_Refused" bpmnElement="task_O_Refused"><dc:Bounds x="547.0" y="3348.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_O_Returned" bpmnElement="task_O_Returned"><dc:Bounds x="274.0" y="2848.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_O_Sent_mail_and_online" bpmnElement="task_O_Sent_mail_and_online"><dc:Bounds x="400.0" y="1261.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_O_Sent_online_only" bpmnElement="task_O_Sent_online_only"><dc:Bounds x="141.0" y="1337.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_W_Assess_potential_fraud" bpmnElement="task_W_Assess_potential_fraud"><dc:Bounds x="475.0" y="3040.7" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_W_Call_after_offers" bpmnElement="task_W_Call_after_offers"><dc:Bounds x="744.0" y="2375.5" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_W_Call_incomplete_files" bpmnElement="task_W_Call_incomplete_files"><dc:Bounds x="169.0" y="4512.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_W_Complete_application" bpmnElement="task_W_Complete_application"><dc:Bounds x="714.0" y="1604.5" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_W_Handle_leads" bpmnElement="task_W_Handle_leads"><dc:Bounds x="629.0" y="384.3" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_W_Validate_application" bpmnElement="task_W_Validate_application"><dc:Bounds x="423.0" y="3549.5" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_start" bpmnElement="start"><dc:Bounds x="686.0" y="0.0" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_end" bpmnElement="end"><dc:Bounds x="686.0" y="4791.7" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_join_task_A_Complete" bpmnElement="join_task_A_Complete"><dc:Bounds x="733.0" y="1710.3" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_join_task_A_Concept" bpmnElement="join_task_A_Concept"><dc:Bounds x="626.0" y="490.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_join_task_A_Denied" bpmnElement="join_task_A_Denied"><dc:Bounds x="599.0" y="3146.5" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_join_task_A_Incomplete" bpmnElement="join_task_A_Incomplete"><dc:Bounds x="262.0" y="3751.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_join_task_A_Validating" bpmnElement="join_task_A_Validating"><dc:Bounds x="216.0" y="2568.3" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_join_task_O_Accepted" bpmnElement="join_task_O_Accepted"><dc:Bounds x="319.0" y="4039.5" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_join_task_O_Create_Offer" bpmnElement="join_task_O_Create_Offer"><dc:Bounds x="576.0" y="875.5" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_join_task_W_Call_after_offers" bpmnElement="join_task_W_Call_after_offers"><dc:Bounds x="796.0" y="2288.5" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_join_task_W_Call_incomplete_files" bpmnElement="join_task_W_Call_incomplete_files"><dc:Bounds x="221.0" y="4425.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_join_task_W_Complete_application" bpmnElement="join_task_W_Complete_application"><dc:Bounds x="751.0" y="1508.7" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_join_task_W_Validate_application" bpmnElement="join_task_W_Validate_application"><dc:Bounds x="599.0" y="3453.7" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_join_end" bpmnElement="join_end"><dc:Bounds x="681.0" y="4704.7" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_split_task_A_Complete" bpmnElement="split_task_A_Complete"><dc:Bounds x="733.0" y="1894.2" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_split_task_A_Concept" bpmnElement="split_task_A_Concept"><dc:Bounds x="626.0" y="674.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_split_task_A_Create_Application" bpmnElement="split_task_A_Create_Application"><dc:Bounds x="681.0" y="182.8" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_split_task_A_Incomplete" bpmnElement="split_task_A_Incomplete"><dc:Bounds x="233.0" y="3943.8" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_split_task_A_Pending" bpmnElement="split_task_A_Pending"><dc:Bounds x="345.0" y="4329.2" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_split_task_A_Validating" bpmnElement="split_task_A_Validating"><dc:Bounds x="216.0" y="2752.2" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_split_task_O_Cancelled" bpmnElement="split_task_O_Cancelled"><dc:Bounds x="859.0" y="2192.7" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_split_task_O_Created" bpmnElement="split_task_O_Created"><dc:Bounds x="452.0" y="1165.2" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_split_task_O_Returned" bpmnElement="split_task_O_Returned"><dc:Bounds x="392.0" y="2945.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_split_task_O_Sent_mail_and_online" bpmnElement="split_task_O_Sent_mail_and_online"><dc:Bounds x="646.0" y="1413.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_split_task_W_Call_after_offers" bpmnElement="split_task_W_Call_after_offers"><dc:Bounds x="796.0" y="2472.5" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_split_task_W_Call_incomplete_files" bpmnElement="split_task_W_Call_incomplete_files"><dc:Bounds x="221.0" y="4609.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_split_task_W_Validate_application" bpmnElement="split_task_W_Validate_application"><dc:Bounds x="475.0" y="3655.3" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge_flow_0" bpmnElement="flow_0"><di:waypoint x="756.0" y="1756.5"/><di:waypoint x="756.0" y="1785.5"/><di:waypoint x="756.0" y="1785.5"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_1" bpmnElement="flow_1"><di:waypoint x="649.0" y="536.3"/><di:waypoint x="649.0" y="565.2"/><di:waypoint x="649.0" y="565.2"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_2" bpmnElement="flow_2"><di:waypoint x="622.0" y="3192.9"/><di:waypoint x="622.0" y="3230.6"/><di:waypoint x="622.0" y="3230.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_3" bpmnElement="flow_3"><di:waypoint x="279.5" y="3792.0"/><di:waypoint x="268.3" y="3826.7"/><di:waypoint x="268.3" y="3826.7"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_4" bpmnElement="flow_4"><di:waypoint x="239.0" y="2614.5"/><di:waypoint x="239.0" y="2643.5"/><di:waypoint x="239.0" y="2643.5"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_5" bpmnElement="flow_5"><di:waypoint x="347.0" y="4080.8"/><di:waypoint x="357.0" y="4115.5"/><di:waypoint x="357.0" y="4115.5"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_6" bpmnElement="flow_6"><di:waypoint x="586.2" y="908.8"/><di:waypoint x="521.7" y="955.6"/><di:waypoint x="521.7" y="955.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_7" bpmnElement="flow_7"><di:waypoint x="819.0" y="2334.7"/><di:waypoint x="819.0" y="2363.7"/><di:waypoint x="819.0" y="2363.7"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_8" bpmnElement="flow_8"><di:waypoint x="244.0" y="4471.2"/><di:waypoint x="244.0" y="4500.2"/><di:waypoint x="244.0" y="4500.2"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_9" bpmnElement="flow_9"><di:waypoint x="777.0" y="1552.2"/><di:waypoint x="783.1" y="1592.9"/><di:waypoint x="783.1" y="1592.9"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_10" bpmnElement="flow_10"><di:waypoint x="609.7" y="3487.6"/><di:waypoint x="541.2" y="3542.1"/><di:waypoint x="541.2" y="3542.1"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_11" bpmnElement="flow_11"><di:waypoint x="704.0" y="4751.0"/><di:waypoint x="704.0" y="4780.0"/><di:waypoint x="704.0" y="4780.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_12" bpmnElement="flow_12"><di:waypoint x="756.0" y="1853.7"/><di:waypoint x="756.0" y="1882.3"/><di:waypoint x="756.0" y="1882.3"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_13" bpmnElement="flow_13"><di:waypoint x="649.0" y="633.5"/><di:waypoint x="649.0" y="662.0"/><di:waypoint x="649.0" y="662.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_14" bpmnElement="flow_14"><di:waypoint x="704.0" y="142.2"/><di:waypoint x="704.0" y="170.8"/><di:waypoint x="704.0" y="170.8"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_15" bpmnElement="flow_15"><di:waypoint x="256.0" y="3894.3"/><di:waypoint x="256.0" y="3932.0"/><di:waypoint x="256.0" y="3932.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_16" bpmnElement="flow_16"><di:waypoint x="368.0" y="4288.7"/><di:waypoint x="368.0" y="4317.3"/><di:waypoint x="368.0" y="4317.3"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_17" bpmnElement="flow_17"><di:waypoint x="239.0" y="2711.7"/><di:waypoint x="239.0" y="2740.3"/><di:waypoint x="239.0" y="2740.3"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_18" bpmnElement="flow_18"><di:waypoint x="882.0" y="2152.2"/><di:waypoint x="882.0" y="2180.8"/><di:waypoint x="882.0" y="2180.8"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_19" bpmnElement="flow_19"><di:waypoint x="475.0" y="1124.7"/><di:waypoint x="475.0" y="1153.3"/><di:waypoint x="475.0" y="1153.3"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_20" bpmnElement="flow_20"><di:waypoint x="369.2" y="2904.5"/><di:waypoint x="399.0" y="2945.2"/><di:waypoint x="399.0" y="2945.2"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_21" bpmnElement="flow_21"><di:waypoint x="511.5" y="1317.2"/><di:waypoint x="647.2" y="1418.7"/><di:waypoint x="647.2" y="1418.7"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_22" bpmnElement="flow_22"><di:waypoint x="819.0" y="2432.0"/><di:waypoint x="819.0" y="2460.5"/><di:waypoint x="819.0" y="2460.5"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_23" bpmnElement="flow_23"><di:waypoint x="244.0" y="4568.5"/><di:waypoint x="244.0" y="4597.1"/><di:waypoint x="244.0" y="4597.1"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_24" bpmnElement="flow_24"><di:waypoint x="498.0" y="3605.8"/><di:waypoint x="498.0" y="3643.5"/><di:waypoint x="498.0" y="3643.5"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_25" bpmnElement="flow_25"><di:waypoint x="704.0" y="36.2"/><di:waypoint x="704.0" y="74.1"/><di:waypoint x="704.0" y="74.1"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_26" bpmnElement="flow_26"><di:waypoint x="704.0" y="229.2"/><di:waypoint x="704.0" y="266.9"/><di:waypoint x="704.0" y="266.9"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_27" bpmnElement="flow_27"><di:waypoint x="704.0" y="334.7"/><di:waypoint x="704.0" y="372.7"/><di:waypoint x="704.0" y="372.7"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_28" bpmnElement="flow_28"><di:waypoint x="688.8" y="440.5"/><di:waypoint x="662.4" y="488.0"/><di:waypoint x="662.4" y="488.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_29" bpmnElement="flow_29"><di:waypoint x="688.5" y="213.6"/><di:waypoint x="613.0" y="278.5"/><di:waypoint x="613.0" y="440.2"/><di:waypoint x="634.1" y="489.2"/><di:waypoint x="634.1" y="489.2"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_30" bpmnElement="flow_30"><di:waypoint x="721.5" y="211.7"/><di:waypoint x="828.0" y="305.5"/><di:waypoint x="828.0" y="1437.0"/><di:waypoint x="793.1" y="1511.5"/><di:waypoint x="793.1" y="1511.5"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_31" bpmnElement="flow_31"><di:waypoint x="644.6" y="716.1"/><di:waypoint x="634.3" y="758.6"/><di:waypoint x="634.3" y="758.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_32" bpmnElement="flow_32"><di:waypoint x="665.4" y="703.7"/><di:waypoint x="760.0" y="796.8"/><di:waypoint x="760.0" y="1437.0"/><di:waypoint x="767.3" y="1501.4"/><di:waypoint x="767.3" y="1501.4"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_33" bpmnElement="flow_33"><di:waypoint x="617.8" y="826.0"/><di:waypoint x="606.6" y="868.6"/><di:waypoint x="606.6" y="868.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_34" bpmnElement="flow_34"><di:waypoint x="475.0" y="1018.7"/><di:waypoint x="475.0" y="1056.7"/><di:waypoint x="475.0" y="1056.7"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_35" bpmnElement="flow_35"><di:waypoint x="475.0" y="1211.6"/><di:waypoint x="475.0" y="1249.4"/><di:waypoint x="475.0" y="1249.4"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_36" bpmnElement="flow_36"><di:waypoint x="461.8" y="1198.2"/><di:waypoint x="265.8" y="1330.4"/><di:waypoint x="265.8" y="1330.4"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_37" bpmnElement="flow_37"><di:waypoint x="678.9" y="1449.1"/><di:waypoint x="716.2" y="1488.7"/><di:waypoint x="751.2" y="1515.7"/><di:waypoint x="751.2" y="1515.7"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_38" bpmnElement="flow_38"><di:waypoint x="668.0" y="1458.6"/><di:waypoint x="698.0" y="1660.5"/><di:waypoint x="736.3" y="1714.0"/><di:waypoint x="736.3" y="1714.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_39" bpmnElement="flow_39"><di:waypoint x="140.8" y="1375.6"/><di:waypoint x="0.0" y="1482.8"/><di:waypoint x="0.0" y="4353.2"/><di:waypoint x="213.7" y="4441.9"/><di:waypoint x="213.7" y="4441.9"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_40" bpmnElement="flow_40"><di:waypoint x="779.9" y="1660.8"/><di:waypoint x="765.2" y="1704.6"/><di:waypoint x="765.2" y="1704.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_41" bpmnElement="flow_41"><di:waypoint x="735.8" y="1914.1"/><di:waypoint x="599.0" y="1826.2"/><di:waypoint x="599.0" y="989.5"/><di:waypoint x="599.0" y="933.6"/><di:waypoint x="599.0" y="933.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_42" bpmnElement="flow_42"><di:waypoint x="768.5" y="1928.1"/><di:waypoint x="837.5" y="1982.6"/><di:waypoint x="837.5" y="1982.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_43" bpmnElement="flow_43"><di:waypoint x="756.0" y="1940.6"/><di:waypoint x="756.0" y="2017.0"/><di:waypoint x="756.0" y="2216.7"/><di:waypoint x="798.1" y="2293.2"/><di:waypoint x="798.1" y="2293.2"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_44" bpmnElement="flow_44"><di:waypoint x="881.3" y="2046.2"/><di:waypoint x="881.6" y="2084.1"/><di:waypoint x="881.6" y="2084.1"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_45" bpmnElement="flow_45"><di:waypoint x="873.0" y="2230.2"/><di:waypoint x="834.4" y="2287.6"/><di:waypoint x="834.4" y="2287.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_46" bpmnElement="flow_46"><di:waypoint x="799.7" y="2499.6"/><di:waypoint x="269.6" y="2585.3"/><di:waypoint x="269.6" y="2585.3"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_47" bpmnElement="flow_47"><di:waypoint x="819.0" y="2518.8"/><di:waypoint x="819.0" y="2590.3"/><di:waypoint x="819.0" y="3377.0"/><di:waypoint x="654.9" y="3473.9"/><di:waypoint x="654.9" y="3473.9"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_48" bpmnElement="flow_48"><di:waypoint x="832.1" y="2505.8"/><di:waypoint x="887.0" y="2590.3"/><di:waypoint x="887.0" y="4633.0"/><di:waypoint x="736.8" y="4724.5"/><di:waypoint x="736.8" y="4724.5"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_49" bpmnElement="flow_49"><di:waypoint x="250.8" y="2786.8"/><di:waypoint x="310.3" y="2840.2"/><di:waypoint x="310.3" y="2840.2"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_50" bpmnElement="flow_50"><di:waypoint x="258.5" y="2779.3"/><di:waypoint x="753.0" y="3120.6"/><di:waypoint x="753.0" y="3377.0"/><di:waypoint x="650.5" y="3468.1"/><di:waypoint x="650.5" y="3468.1"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_51" bpmnElement="flow_51"><di:waypoint x="232.2" y="2792.0"/><di:waypoint x="213.0" y="2875.0"/><di:waypoint x="213.0" y="3679.3"/><di:waypoint x="262.4" y="3757.3"/><di:waypoint x="262.4" y="3757.3"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_52" bpmnElement="flow_52"><di:waypoint x="222.7" y="2782.4"/><di:waypoint x="132.0" y="2875.0"/><di:waypoint x="132.0" y="3967.8"/><di:waypoint x="308.1" y="4061.2"/><di:waypoint x="308.1" y="4061.2"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_53" bpmnElement="flow_53"><di:waypoint x="427.9" y="2978.5"/><di:waypoint x="503.2" y="3033.6"/><di:waypoint x="503.2" y="3033.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_54" bpmnElement="flow_54"><di:waypoint x="438.2" y="2968.3"/><di:waypoint x="641.0" y="3040.8"/><di:waypoint x="635.1" y="3144.2"/><di:waypoint x="635.1" y="3144.2"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_55" bpmnElement="flow_55"><di:waypoint x="418.4" y="2988.2"/><di:waypoint x="426.0" y="3067.8"/><di:waypoint x="426.0" y="3377.0"/><di:waypoint x="589.3" y="3473.9"/><di:waypoint x="589.3" y="3473.9"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_56" bpmnElement="flow_56"><di:waypoint x="397.7" y="2974.1"/><di:waypoint x="294.0" y="3067.8"/><di:waypoint x="294.0" y="3679.3"/><di:waypoint x="289.5" y="3741.9"/><di:waypoint x="289.5" y="3741.9"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_57" bpmnElement="flow_57"><di:waypoint x="403.9" y="2980.0"/><di:waypoint x="360.0" y="3067.8"/><di:waypoint x="360.0" y="3324.1"/><di:waypoint x="343.4" y="4028.5"/><di:waypoint x="343.4" y="4028.5"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_58" bpmnElement="flow_58"><di:waypoint x="569.9" y="3097.0"/><di:waypoint x="605.8" y="3146.3"/><di:waypoint x="605.8" y="3146.3"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_59" bpmnElement="flow_59"><di:waypoint x="622.0" y="3298.5"/><di:waypoint x="622.0" y="3336.4"/><di:waypoint x="622.0" y="3336.4"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_60" bpmnElement="flow_60"><di:waypoint x="622.0" y="3404.2"/><di:waypoint x="622.0" y="3442.0"/><di:waypoint x="622.0" y="3442.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_61" bpmnElement="flow_61"><di:waypoint x="482.3" y="3686.1"/><di:waypoint x="311.0" y="3761.6"/><di:waypoint x="311.0" y="3761.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_62" bpmnElement="flow_62"><di:waypoint x="266.5" y="3979.2"/><di:waypoint x="323.8" y="4041.6"/><di:waypoint x="323.8" y="4041.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_63" bpmnElement="flow_63"><di:waypoint x="252.2" y="3986.4"/><di:waypoint x="244.0" y="4061.5"/><di:waypoint x="244.0" y="4353.2"/><di:waypoint x="244.0" y="4413.3"/><di:waypoint x="244.0" y="4413.3"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_64" bpmnElement="flow_64"><di:waypoint x="368.0" y="4182.8"/><di:waypoint x="368.0" y="4220.6"/><di:waypoint x="368.0" y="4220.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_65" bpmnElement="flow_65"><di:waypoint x="387.9" y="4348.6"/><di:waypoint x="622.0" y="4261.2"/><di:waypoint x="622.0" y="3576.5"/><di:waypoint x="622.0" y="3511.5"/><di:waypoint x="622.0" y="3511.5"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_66" bpmnElement="flow_66"><di:waypoint x="355.2" y="4362.9"/><di:waypoint x="266.0" y="4430.4"/><di:waypoint x="266.0" y="4430.4"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_67" bpmnElement="flow_67"><di:waypoint x="222.5" y="4629.9"/><di:waypoint x="66.0" y="4541.0"/><di:waypoint x="66.0" y="2682.2"/><di:waypoint x="206.6" y="2594.7"/><di:waypoint x="206.6" y="2594.7"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_68" bpmnElement="flow_68"><di:waypoint x="501.5" y="3698.2"/><di:waypoint x="509.0" y="3773.0"/><di:waypoint x="509.0" y="4633.0"/><di:waypoint x="670.6" y="4725.4"/><di:waypoint x="670.6" y="4725.4"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_69" bpmnElement="flow_69"><di:waypoint x="261.3" y="4638.1"/><di:waypoint x="441.3" y="4684.7"/><di:waypoint x="672.9" y="4722.8"/><di:waypoint x="672.9" y="4722.8"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_70" bpmnElement="flow_70"><di:waypoint x="897.0" y="2224.3"/><di:waypoint x="968.0" y="2310.5"/><di:waypoint x="968.0" y="4633.0"/><di:waypoint x="735.0" y="4722.4"/><di:waypoint x="735.0" y="4722.4"/></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

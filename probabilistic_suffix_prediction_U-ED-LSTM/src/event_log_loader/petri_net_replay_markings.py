@@ -43,14 +43,10 @@ class InductiveMiner:
     
         if visulaize:
             gviz = pn_visualizer.apply(net, initial_marking, final_marking)
+            pn_visualizer.view(gviz)
             if store_loc_file_path:
                 pn_visualizer.save(gviz, store_loc_file_path)
-            try:
-                pn_visualizer.view(gviz)
-            except Exception:
-                # Headless / notebook execution should still keep the discovered net.
-                pass
-
+            
         return net, initial_marking, final_marking
     
 class PNReplayMarkings:
@@ -85,15 +81,19 @@ class PNReplayMarkings:
     # uses token replay - works
     def get_markings_token_replay(self):
         prefix_event_labels = self.prefix_df[self.event_label].tolist()
-        traces = [
-            Trace([Event({"concept:name": act}) for act in prefix])
-            for prefix in prefix_event_labels
-        ]
-        replayed_traces = token_replay.apply(
-            log=traces,
-            net=self.net,
-            initial_marking=self.im,
-            final_marking=Marking(),
-        )
-        return [result["reached_marking"] for result in replayed_traces]
+        markings = []
+
+        for prefix in prefix_event_labels:
+            trace_pref = Trace([Event({"concept:name": act}) for act in prefix])
+            replayed_traces = token_replay.apply(
+                log=[trace_pref],
+                net=self.net,
+                initial_marking=self.im,
+                final_marking=Marking(),
+            )
+            result = replayed_traces[0]
+            reached_marking = result["reached_marking"]
+            markings.append(reached_marking)
+
+        return markings
         

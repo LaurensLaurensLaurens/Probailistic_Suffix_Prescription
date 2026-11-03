@@ -588,7 +588,7 @@ class SCOPEFunctions():
         """
         Get the Q predictions for all possible actions in SCOPE.
         """
-
+        
         q_values_all_actions = model_functions.forward(x_case=data["X_case"],
                                     x_event=data["X_event"],
                                     t=data["T"],

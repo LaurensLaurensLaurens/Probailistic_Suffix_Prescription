@@ -1,7 +1,7 @@
 import numpy as np
 import random
 from datetime import timedelta
-from SimRepair.workshop_policy import WorkshopPolicy, completed_time
+from SimRepair.workshop_policy import WorkshopPolicy, completed_time, required_quality, produced_quality
 
 
 STATE_FIELDS = [
@@ -23,6 +23,9 @@ class ActivityExecutioner():
         self.reward_per_bike_value = 2
         self.reward_per_repair_severity = 1
         self.risk_weight = 0.3
+        self.quality_weight = 0.5 # revenue change per unit of produced minus required quality
+        self.max_quality_gap = 0.4
+        self.priority_cost = 5 # fixed surcharge of the priority procedure (days, as the time cost)
         self.times_dic = {
             "initiate_case": 1,
             "start_priority": 1,
@@ -59,12 +62,17 @@ class ActivityExecutioner():
 
     def calc_outcome(self, current_event, prev_event):
         cum_cost = completed_time(prev_event) # days spent on the case, counterpart of cum_cost in SimBank
+        if current_event["process_type"] == "priority":
+            cum_cost += self.priority_cost
         if current_event["activity"] == "customer_acceptance":
             V = current_event["bike_value"]
             S = current_event["repair_severity"]
             revenue = self.reward_base + self.reward_per_bike_value * V + self.reward_per_repair_severity * S
             risk_factor = self.risk_weight * current_event["quality_uncertainty"] # remaining uncertainty discounts the revenue
-            discounted_revenue = revenue * (1 - risk_factor)
+            # A repair better (worse) than required raises (lowers) the revenue
+            quality_gap = produced_quality(current_event) - required_quality(current_event)
+            quality_factor = 1 + self.quality_weight * max(-self.max_quality_gap, min(self.max_quality_gap, quality_gap))
+            discounted_revenue = revenue * (1 - risk_factor) * quality_factor
             exp_profit = discounted_revenue - cum_cost
             return exp_profit
         else:

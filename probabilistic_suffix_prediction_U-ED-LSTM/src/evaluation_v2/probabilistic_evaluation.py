@@ -91,7 +91,6 @@ class ProbabilisticEvaluation(Evaluation):
         )
 
     # @torch.jit.script
-    # Kategoriale Attribute werden probabilistisch gesampelt
     def sample_cat_predictions_optim(
         all_cat_attributes: list[str],
         use_variance_cat: bool,

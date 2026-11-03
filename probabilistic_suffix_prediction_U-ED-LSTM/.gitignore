@@ -1,22 +1,6 @@
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,python,jupyternotebooks
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode,python,jupyternotebooks
 
-# Local files and datasets
-.DS_Store
-*.zip
-data/**
-!data/README.md
-encoded_data*/
-*.csv
-*.xes
-*.parquet
-*.pkl
-*.pickle
-*.npy
-*.npz
-*.h5
-*.hdf5
-
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
 # website: http://jupyter.org/

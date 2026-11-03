@@ -29,35 +29,6 @@ Make sure you have Python and Pipenv installed.
 
 3. **Run the Project**: Inside the virtual environment, you have the Python packages installed for running the code.
 
-### Resource-safe Helpdesk smoke run
-
-The following command uses only `data/helpdesk.csv`, limits preprocessing to
-200 cases, and performs one small U-ED-LSTM forward pass:
-
-```bash
-pipenv run python scripts/run_helpdesk.py
-```
-
-Test one training epoch with GradNorm and two MC suffix samples:
-
-```bash
-pipenv run python scripts/run_helpdesk.py \
-  --train-epochs 1 --train-samples 32 --evaluation-samples 2
-```
-
-Use the complete Helpdesk dataset only when needed:
-
-```bash
-pipenv run python scripts/run_helpdesk.py --max-cases 0
-```
-
-To persist the encoded train, validation, and test datasets:
-
-```bash
-pipenv run python scripts/run_helpdesk.py --max-cases 0 \
-  --output-dir encoded_data/Helpdesk
-```
-
 
 ## Run the Probabilistic Suffix Prediction Framework: Train and Evaluate.
 

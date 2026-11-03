@@ -154,7 +154,13 @@ class PresProcessGenerator():
                     # Is there a choice for intervention?
                     choice_for_int_unavailable = (len(all_enabled_trans) <= 1 and self.intervention_info["data_impact"][self.current_int_index] == "direct")
                     if (int_enabled_list[self.current_int_index] - 1) != int_timing_list[self.current_int_index] and not choice_for_int_unavailable:
-                        all_enabled_trans = [act for act in all_enabled_trans if act.label not in self.intervention_info["flat_activities"]]
+                        non_int_trans = [act for act in all_enabled_trans if act.label not in self.intervention_info["flat_activities"]]
+                        if len(non_int_trans) == 0:
+                            # Alle Alternativen sind Interventionsaktivitaeten (z.B. shipping / conduct_qc):
+                            # ausserhalb des Timings wird die Kontrollaktion (erste Aktion) genommen.
+                            control_action = self.intervention_info["actions"][self.current_int_index][0]
+                            non_int_trans = [act for act in all_enabled_trans if act.label == control_action]
+                        all_enabled_trans = non_int_trans
                     elif (int_enabled_list[self.current_int_index] -1) == int_timing_list[self.current_int_index] and not choice_for_int_unavailable:
                         all_enabled_trans = [act for act in all_enabled_trans if act.label in self.intervention_info["flat_activities"]]
            

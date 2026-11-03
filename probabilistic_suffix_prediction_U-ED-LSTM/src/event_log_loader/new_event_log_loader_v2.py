@@ -80,25 +80,11 @@ def _groupby_apply_preserve_key(
 
 
 def _marking_signature(marking: object, *, sort_tokens: bool = True) -> tuple[str, ...]:
-    """Turn a Petri-net marking into a hashable token tuple.
+    """Return a hashable, comparable signature for a Petri net marking.
 
-    Called by
-        ``PrefixesDataFrameLoader.remove_prefixes_with_unique_markings`` —
-        so train/val/test markings can be compared as sets (order of tokens
-        must not matter, tensors/arrays must be reduced to strings).
-
-    Example
-    -------
-    Input
-        marking = ["p3", "p1"]   (or a tensor / ndarray of the same tokens)
-
-    Processing
-        1. Unwrap tensor/ndarray → Python list.
-        2. ``str`` every token; optionally sort.
-
-    Output
-        ``("p1", "p3")``  — usable as a dict/set key.
-        ``None`` / NaN → ``("<NA>",)``.
+    notebook compares markings by their token sets (sorted string
+    representation). This mirrors that logic so markings can be compared across
+    train/val/test splits.
     """
     if marking is None or (isinstance(marking, float) and np.isnan(marking)):
         return ("<NA>",)
@@ -172,7 +158,6 @@ class RawDataFrameLoader:
         )
 
 
-    # Extrahieren der Case Values. Das heißt jener Values, die sich nicht ändern für einen case
     @staticmethod
     def __extract_static_value(series: pd.Series) -> object:
         """
@@ -188,35 +173,8 @@ class RawDataFrameLoader:
         return cleaned.iloc[0]
 
     def create_case_level_dataframe(self, event_level_df: pd.DataFrame) -> pd.DataFrame:
-        """Collapse one-row-per-event into one-row-per-case.
-
-        Dynamic columns become lists (the trace). Static columns stay a single
-        scalar (first non-NaN / non-``"EOS"`` value).
-
-        Called by
-            ``CSV2EventLog.__init__`` — builds ``self.raw_df`` right after the
-            CSV is loaded (before EOS rows are appended). Notebooks then call
-            ``PrefixesDataFrameLoader.get_raw_dataframe()`` to inspect that
-            case-level view.
-
-        Example
-        -------
-        Input (event-level, one case)::
-
-            case_id  activity  amount  resource
-            C1       A         10.0    Alice
-            C1       B         20.0    Alice
-            C1       C         30.0    Alice
-
-        Processing
-            group by case_id
-            activity / amount → ``.tolist()``
-            resource (static) → first value ``"Alice"``
-
-        Output (one row)::
-
-            case_id  activity       amount              resource
-            C1       [A, B, C]      [10.0, 20.0, 30.0]  Alice
+        """
+        Create a case-level dataframe from the event-level dataframe.
         """
         event_level_df = _ensure_group_key_column(event_level_df, self.case_name)
         grouped = event_level_df.groupby(self.case_name, sort=False)
@@ -470,8 +428,7 @@ class EventLogSplitter:
 
 class PositiveStandardizer_normed(BaseEstimator, TransformerMixin):
     """
-    Standard scaler for log normal attributes. Das ist meines verstädnisses nach für strikt positive werte, da
-    wir sonst für zeitwerte einen starken skew hätten => Schlecht für 
+    Standard scaler for log normal attributes.
     """
 
     def __init__(self):
@@ -534,53 +491,13 @@ class TensorEncoderDecoder:
         static_continuous_columns: Optional[list[str]] = None,
         **kwargs,
     ):
-        """Pick encoders from five feature lists (not one generic 'numeric' list).
-
-        Called by
-            ``EventLogLoader.__init__`` — unpacks the same keys from
-            ``event_log_properties`` (set in the loader notebooks). The
-            encoder/decoder LSTM then treats dynamic vs static and
-            categorical vs numeric differently.
-
-        Why five lists
-            Two axes, plus a special numeric transform:
-
-            **When does the value change?**
-            - *dynamic* (``categorical_columns``, ``continuous_*``):
-              one value **per event** → sequence of length ``window_size``, # also für werte, die pro case sich verändern innerhalb eines cases
-              embeddings/LSTM timesteps, predicted in the suffix.
-            - *static* (``static_*``): one value **per case** (resource type, # Wert der sich nicht ändern für einen case
-              variant, …) → a single vector, merged into the encoder state,
-              **not** a time series and not predicted as suffix tokens.
-
-            **What is the value?**
-            - *categorical*: discrete labels → ``OrdinalEncoder`` (+1 so
-              ``0`` is padding) → embedding table.
-            - *continuous*: real numbers → mean-impute + ``StandardScaler``.
-            - *continuous_positive*: same, but ``log1p`` first
-              (``PositiveStandardizer_normed``). Use this for durations /
-              elapsed times: always ≥ 0, heavy right tail. Raw seconds
-              would let a few long waits dominate the scaler.
-
-        Example (Helpdesk-style)::
-
-            categorical_columns          = [Activity, Resource]
-                C1: [Register, Resolve]          ← changes along the trace
-            continuous_columns           = [case_elapsed_time, day_in_week]
-                C1: [0.0, 3600.0] / [0, 0]       ← per event, roughly symmetric
-            continuous_positive_columns  = [event_elapsed_time]   # if log-scaled
-                C1: [0.0, 3600.0]                ← ≥ 0, skewed → log1p
-            static_categorical_columns   = [VariantIndex]
-                C1: 3  on every event            ← one embedding for the case
-            static_continuous_columns    = []    # e.g. case amount if you had one
-
-        Empty lists are fine; they just skip that encoder path.
+        """
+        Initialize the encoder/decoder with the event log and parameters.
         """
         self.event_log = event_log
         self.case_name = case_name
         self.concept_name = concept_name
         self.min_suffix_size = min_suffix_size
-        # Maximal betrachtete Länge der Sequenz
         if window_size == "auto":
             # get max. length of (100-1.5)% of the longest cases as prefix
             # and add the min. suffix_size
@@ -597,32 +514,12 @@ class TensorEncoderDecoder:
         self.static_categorical_columns = list(static_categorical_columns or [])
         self.static_continuous_columns = list(static_continuous_columns or [])
 
-        # --- unfitted sklearn transformers, one per column name ----------------
-        # This loop only *constructs* objects. Fitting happens later in
-        # ``train_imputers_encoders`` (called by ``EventLogLoader.__init__``).
-        # encode_df then looks them up by column name — hence dicts, not lists.
-        #
-        # Dynamic + static of the same type share the same transformer class:
-        # the difference is *when* the value is used (sequence vs case vector),
-        # not how it is scaled.
-        #
-        # Example after this block (still unfitted):
-        #   categorical_encoders["Activity"]  → OrdinalEncoder(unknown=-1)
-        #   continuous_imputers["amount"]     → SimpleImputer(mean)
-        #   continuous_encoders["amount"]     → StandardScaler
-        #   continuous_encoders["elapsed"]    → PositiveStandardizer (log1p)
-        #
-        # Missing categoricals: no imputer. OrdinalEncoder maps NaN / unknown
-        # to -1, then encode_* adds +1 so padding can stay 0.
-        # ``categorical_imputers`` is unused leftover.
-
         self.categorical_imputers: dict[str, SimpleImputer] = {}
         self.categorical_encoders: dict[str, sklearn.preprocessing.OrdinalEncoder] = {}
         for categorical_column in (
             self.categorical_columns + self.static_categorical_columns
         ):
             if categorical_column not in self.categorical_encoders:
-                # labels → 0..K-1  (later +1). unknown/NaN → -1
                 self.categorical_encoders[categorical_column] = (
                     self.__get_categorical_encoder()
                 )
@@ -630,7 +527,7 @@ class TensorEncoderDecoder:
         self.continuous_imputers = {}
         self.continuous_encoders: dict[str, sklearn.preprocessing.StandardScaler] = {}
 
-        # unbounded / roughly symmetric numerics (e.g. day_in_week)
+        # Normal encoding
         for continuous_column in (
             self.continuous_columns + self.static_continuous_columns
         ):
@@ -642,7 +539,6 @@ class TensorEncoderDecoder:
                     self.__get_continuous_encoder()
                 )
 
-        # durations ≥ 0, heavy tail: same imputer, but log1p then scale
         for continuous_positive_column in self.continuous_positive_columns:
             self.continuous_imputers[continuous_positive_column] = (
                 self.__get_continuous_positive_imputer()
@@ -652,25 +548,8 @@ class TensorEncoderDecoder:
             )
 
     def train_imputers_encoders(self):
-        """Fit the transformers built in ``__init__`` on the train event log.
-
-        Called by
-            ``EventLogLoader.__init__`` — immediately after constructing
-            ``TensorEncoderDecoder(self.train_df, ...)``, so val/test are
-            encoded with train statistics only (no leakage).
-
-        Input
-            unfitted dicts from ``__init__`` + ``self.event_log`` (train split)
-
-        Processing
-            categorical: fit ``OrdinalEncoder`` on the column (static cols
-            drop ``"EOS"`` so EOS is not a static class).
-            continuous: ``imputer.fit_transform`` then ``encoder.fit``
-            (mean/std, or log1p-mean/std for positive cols).
-
-        Output
-            same dicts, now fitted. ``encode_df`` / ``decode_event`` call
-            ``.transform`` / ``.inverse_transform`` on them.
+        """
+        Train all imputers and encoders on the event log data.
         """
         # categorical encoders: fit on 2D numpy arrays with dtype=object
         for col, categorical_encoder in self.categorical_encoders.items():
@@ -691,29 +570,13 @@ class TensorEncoderDecoder:
                 column_data
             )  # StandardScaler or custom transformer expects 2D
 
-    # Aufgerufen von encode_case, um eine einzelne kategorielle Variable zu encoden
-    # PRO CASE
     def _single_encode_categorical_column(
         self, df_case: pd.DataFrame, col: str
     ) -> torch.Tensor:
         case_values = np.array(df_case[[col]], dtype=object)
-        # case_values =
-        # [
-        #     ["Create Application"],
-        #     ["Delete Application"],
-        #     ["Assign Developer"]
-        # ]
-
-        #OrdinalEncoder encoded nach ...
         case_values_enc = (
             self.categorical_encoders[col].transform(case_values) + 1
         )  # shape (n,1)
-        # case_values_enc =
-        # [
-        #     [1],
-        #     [4],
-        #     [7]
-        # ]
         # Pad encodings - clearer prefix loop (prefix_len from min_suffix_size .. len)
         case_values_enc_pad = self.pad_to_window_size(case_values_enc)
         return (
@@ -722,72 +585,18 @@ class TensorEncoderDecoder:
             .unsqueeze(0)
         )
 
-        # Padden und unsqueeze:
-        #  tensor([
-        #     [0, 0, 1, 4, 7]
-        # ])
-
-    # Aufgerufen von encode_case, um eine einzelne kontinuierliche Variable zu encoden
-    # PRO CASE
     def _single_encode_continuous_column(
         self, df_case: pd.DataFrame, col: str
     ) -> torch.Tensor:
-
         case_values = df_case[[col]].values  # shape (n,1)
-        # z. B. col = "elapsed_time"
-        # case_values =
-        # [
-        #     [10.0],
-        #     [25.0],
-        #     [40.0]
-        # ]
-
-        # Fehlende Werte werden mit dem bereits trainierten Imputer ersetzt
         case_values_imputed = self.continuous_imputers[col].transform(case_values)
-        # z. B.
-        # [
-        #     [10.0],
-        #     [25.0],
-        #     [40.0]
-        # ]
-
-        # Numerische Werte werden mit dem bereits trainierten Encoder/Scaler skaliert
-        case_values_enc = self.continuous_encoders[col].transform(
-            case_values_imputed
-        )
-        # z. B.
-        # [
-        #     [0.20],
-        #     [0.55],
-        #     [0.80]
-        # ]
-
-        # Padding auf window_size, z. B. window_size = 5
+        case_values_enc = self.continuous_encoders[col].transform(case_values_imputed)
         case_values_enc_pad = self.pad_to_window_size(case_values_enc)
-        # [
-        #     [0.0],
-        #     [0.0],
-        #     [0.20],
-        #     [0.55],
-        #     [0.80]
-        # ]
-
         return (
-            torch.tensor(
-                np.array(case_values_enc_pad, dtype=float),
-                dtype=torch.float,
-            )
+            torch.tensor(np.array(case_values_enc_pad, dtype=float), dtype=torch.float)
             .squeeze(-1)
             .unsqueeze(0)
         )
-
-        # Nach squeeze(-1) und unsqueeze(0):
-        #
-        # tensor([
-        #     [0.0, 0.0, 0.20, 0.55, 0.80]
-        # ])
-        #
-        # Shape: [1, window_size]
 
     def encode_case(
         self, df_case: pd.DataFrame
@@ -798,8 +607,13 @@ class TensorEncoderDecoder:
         torch.Tensor,
         torch.Tensor,
     ]:
-        df_case = df_case.copy()
+        """
+        Encode a single case dataframe into tensors.
 
+        Ensure all expected columns exist; missing ones default to NaN
+        so imputers/encoders can handle them.
+        """
+        df_case = df_case.copy()
         for col in self.categorical_columns:
             if col not in df_case:
                 df_case[col] = np.nan
@@ -809,48 +623,12 @@ class TensorEncoderDecoder:
 
         categorical_tensors = []
         continuous_tensors = []
-
         for col in self.categorical_columns:
             cat_columns = self._single_encode_categorical_column(df_case, col)
             categorical_tensors.append(cat_columns)
-        # Beispiel:
-        # activity:
-        # ["Create Application",
-        #  "Delete Application",
-        #  "Assign Developer"]
-        # -> tensor([[0, 0, 1, 4, 7]]) Wird appended an die categorical_tensors tensoren
-        # bei window_size = 5
-
-        # Beispiel nach der Schleife:
-        # categorical_tensors =
-        # [
-        #     tensor([[0, 0, 1, 4, 7]]),     # activity
-        #     tensor([[0, 0, 12, 5, 9]]),    # resource
-        #     tensor([[0, 0, 2, 2, 3]])      # department
-        # ]
-        # Jeder Tensor:
-        # Shape [1, window_size]
-        # Jede numerische Spalte desselben Cases
-        # wird ebenfalls separat encodiert.
-        # Beispiel elapsed_time:
-        # [10.0, 25.0, 40.0]
-        # -> tensor([[0.0, 0.0, 0.20, 0.55, 0.80]])
-
         for col in self.continuous_columns + self.continuous_positive_columns:
             cont_columns = self._single_encode_continuous_column(df_case, col)
             continuous_tensors.append(cont_columns)
-        # Jede numerische Spalte desselben Cases
-        # wird ebenfalls separat encodiert.
-        # Beispiel elapsed_time:
-        # [10.0, 25.0, 40.0]
-        # -> tensor([[0.0, 0.0, 0.20, 0.55, 0.80]])
-
-        # Beispiel:
-        # continuous_tensors =
-        # [
-        #     tensor([[0.0, 0.0, 0.20, 0.55, 0.80]]),  # elapsed_time
-        #     tensor([[0.0, 0.0, 0.10, 0.35, 0.25]])   # time_since_last_event
-        # ]
 
         # static attributes
         case_id = df_case[self.case_name].iloc[0] if not df_case.empty else None
@@ -858,23 +636,10 @@ class TensorEncoderDecoder:
             df_case, [case_id] if case_id is not None else []
         )
 
-        # Beispiele:
-        #   customer_type = "Premium"
-        #   country       = "Germany"
-        #   case_amount   = 5000
-
-        # Beispiel:
-        # static_cat_tensor =
-        # tensor([[2, 5]])
-        # static_cont_tensor =
-        # tensor([[0.73]])
-
         seq_len = min(len(df_case), self.window_size)
         zero_mask = torch.zeros((1, self.window_size), dtype=torch.float32)
         if seq_len > 0:
             zero_mask[:, -seq_len:] = 1.0
-        # Beispiel:
-        # zero_mask = tensor([[0, 0, 0, 0, 0]])
 
         return (
             tuple(categorical_tensors),
@@ -883,13 +648,6 @@ class TensorEncoderDecoder:
             static_cont_tensor,
             zero_mask,
         )
-        # Bei seq_len = 3 und window_size = 5:
-        # tensor([[0, 0, 1, 1, 1]])
-        # Bedeutung:
-        # [0, 0, 1, 1, 1]
-        #  |  |  |  |  |
-        #  |  |  +--+--+--> echte Events
-        #  +--+------------> Padding
 
     def encode_df(
         self, df
@@ -898,6 +656,12 @@ class TensorEncoderDecoder:
         tuple[list[tuple[str, int, dict[str, int]]]],
         tuple[list[tuple[str, int, dict[str, int]]]],
     ]:
+        """
+        Encode the entire dataframe into tensors.
+
+        Returns categorical and continuous columns,
+        static attributes and padding metadata.
+        """
         categorical_tensors = []
         all_categories = [[], []]
         static_categories = [[], []]
@@ -975,6 +739,9 @@ class TensorEncoderDecoder:
     def encode_categorical_column(
         self, df, col, return_case_ids_and_eos_paddings=False
     ):
+        """
+        Encode a single categorical column into a tensor.
+        """
         df = _ensure_group_key_column(df, self.case_name)
         grouped = df.groupby(self.case_name)
         windows = []
@@ -986,20 +753,7 @@ class TensorEncoderDecoder:
                 self.categorical_encoders[col].categories_[0]
             )
         }
-        # z.B.
-        #
-        # categories =
-        # {
-        #     "Create Application": 1,
-        #     "Delete Application": 4,
-        #     "Assign Developer": 7,
-        #     "Approve Application": 8,
-        #     "EOS": 9
-        # }
         eos_token_id = categories.get("EOS", 0)
-        # z.B.
-        #
-        # eos_token_id = 9
 
         case_ids = []
         for case_id, group in tqdm(grouped, desc=col, leave=False):
@@ -1007,98 +761,29 @@ class TensorEncoderDecoder:
             case_values_enc = (
                 self.categorical_encoders[col].transform(case_values) + 1
             )  # shape (n,1)
-            # Beispiel:
-            # case_values_enc =
-            # [
-            #     [1],
-            #     [4],
-            #     [7],
-            #     [9]
-            # ]
             padded_encodings = []
 
             for prefix_len in range(self.min_suffix_size + 1, len(case_values_enc) + 1):
-                # bei min_suffix_size = 1
-                # und Case-Länge = 4:
-                # prefix_len = 2
-                # prefix_len = 3
-                # prefix_len = 4
                 padded_slice = self.pad_to_window_size(case_values_enc[:prefix_len])
-                # prefix_len = 2
-                # case_values_enc[:2]
-                # [
-                #     [1],
-                #     [4]
-                # ]
-                # nach Padding auf window_size = 5:
-                # [
-                #     [0],
-                #     [0],
-                #     [0],
-                #     [1],
-                #     [4]
-                # ]
-                #
-                # => [0, 0, 0, 1, 4]
 
                 padded_encodings.append(padded_slice)
                 if return_case_ids_and_eos_paddings:
                     case_ids.append(case_id)
-                    # Beispiel:
-                    # case_ids =
-                    # [
-                    #     "Case_1",
-                    #     "Case_1",
-                    #     "Case_1"
-                    # ]
                     flattened = np.array(padded_slice, dtype=int).squeeze(-1)
-                    # z.B. flattened = [0, 1, 4, 7, 9]
                     eos_mask = np.ones_like(flattened, dtype=float)
-                    # zunächst: [1, 1, 1, 1, 1]
                     if eos_token_id and eos_token_id > 0:
                         eos_positions = np.flatnonzero(flattened == eos_token_id)
-                         # bei:
-                         # [0, 1, 4, 7, 9]
-                         # EOS liegt bei Index 4
                         if eos_positions.size > 0:
                             first_eos_idx = int(eos_positions[0])
                             eos_mask[first_eos_idx + 1 :] = 0.0
-                    # Beispiel ohne Werte nach EOS:
-                    # [0, 1, 4, 7, 9]
-                    # eos_mask = [1, 1, 1, 1, 1]
-                    # Falls z.B.
-                    # [1, 4, 9, 9, 9]
-                    # dann:
-                    # eos_mask =
-                    # [1, 1, 1, 0, 0]
                     zero_mask = np.zeros_like(flattened, dtype=float)
                     non_zero_positions = np.flatnonzero(flattened != 0)
                     if non_zero_positions.size > 0:
                         first_valid_idx = int(non_zero_positions[0])
                         zero_mask[first_valid_idx:] = 1.0
-                         # Beispiel:
-                    # Prefix
-                    # [0, 0, 1, 4, 7]
-                    # zero_mask:
-                    # [0, 0, 1, 1, 1]
-                    # 0 = Padding
-                    # 1 = echtes Event
                     eos_masks.append(eos_mask.tolist())
                     zero_masks.append(zero_mask.tolist())
             windows.extend(padded_encodings)
-
-        # Beispiel:
-        # Case_1 erzeugt:
-        # [0, 0, 0, 1, 4]
-        # [0, 0, 1, 4, 7]
-        # [0, 1, 4, 7, 9]
-        #
-        # Case_2 mit [1,8,9] erzeugt:
-        # [0, 0, 0, 1, 8]
-        # [0, 0, 1, 8, 9]
-        #
-        # ....
-   
 
         if len(windows) == 0:
             # avoid creating empty numpy array with ambiguous dtype
@@ -1106,18 +791,6 @@ class TensorEncoderDecoder:
         else:
             padded_array = np.array(windows, dtype=int)
         t = torch.tensor(padded_array, dtype=torch.long)
-
-        # t ungefähr:
-        # tensor([
-        #     [[0],[0],[0],[1],[4]],
-        #     [[0],[0],[1],[4],[7]],
-        #     [[0],[1],[4],[7],[9]],
-        #     [[0],[0],[0],[1],[8]],
-        #     [[0],[0],[1],[8],[9]]
-        # ])
-
-        # shape ungefähr:
-        # [5, 5, 1]
 
         max_classes = len(self.categorical_encoders[col].categories_[0]) + 1
         if return_case_ids_and_eos_paddings:
@@ -1127,7 +800,6 @@ class TensorEncoderDecoder:
             else:
                 eos_padded_array = np.array(eos_masks, dtype=float)
                 zero_padded_array = np.array(zero_masks, dtype=float)
-
             eos_padded_tensor = torch.tensor(eos_padded_array, dtype=torch.float32)
             zero_padded_tensor = torch.tensor(zero_padded_array, dtype=torch.float32)
             return (
@@ -1140,50 +812,10 @@ class TensorEncoderDecoder:
             )
         else:
             return t.squeeze(-1), categories, max_classes
-        
-        # Prefix 1    [0, 0, 0, 1, 4]   ← Case_1
-        # Prefix 2    [0, 0, 1, 4, 7]   ← Case_1
-        # Prefix 3    [0, 1, 4, 7, 9]   ← Case_1
-
-        # Prefix 4    [0, 0, 0, 1, 8]   ← Case_2
-        # Prefix 5    [0, 0, 1, 8, 9]   ← Case_2
-
-        #              ↑
-        #              num_prefixes
-
 
     def encode_continuous_column(self, df, col):
-        """Impute, scale, and prefix-window one continuous column.
-
-        Same prefix loop as ``encode_categorical_column``:
-        ``prefix_len = min_suffix_size + 1 … n``, then left-pad with ``0.0``.
-        EOS / missing values are filled by the fitted imputer **before**
-        scaling (so the last prefix usually has a real number, not NaN).
-
-        Called by
-            ``TensorEncoderDecoder.encode_df`` — once per column in
-            ``continuous_columns + continuous_positive_columns``.
-            ``EventLogLoader.get_dataset`` is the public caller of
-            ``encode_df``. No EOS/zero masks here; those come from the
-            concept column.
-
-        Example
-        -------
-        Settings: ``window_size = 4``, ``min_suffix_size = 1``.
-        Fitted scaler: mean=15, std=5. Imputer fills NaN with 15.
-
-        Input (one case)::
-
-            amount = [10.0, 20.0, NaN]   n = 3
-            after impute + scale ≈ [-1.0, 1.0, 0.0]
-            prefix_len ∈ {2, 3}
-
-        Processing
-            prefix 2: [-1.0, 1.0]      pad → [0.0, 0.0, -1.0, 1.0]
-            prefix 3: [-1.0, 1.0, 0.0] pad → [0.0, -1.0, 1.0, 0.0]
-
-        Output
-            ``torch.float32`` tensor of shape ``(2, 4)`` (one row per prefix).
+        """
+        Encode a single continuous column into a tensor.
         """
         df = _ensure_group_key_column(df, self.case_name)
         grouped = df.groupby(self.case_name)
@@ -1210,11 +842,6 @@ class TensorEncoderDecoder:
             padded_array = np.array(windows, dtype=float)
         t = torch.tensor(padded_array, dtype=torch.float32)
         return t.squeeze(-1)
-        #     tensor([
-        # [0.0, 0.0, 0.0, 0.20, 0.55],   # Prefix Länge 2
-        # [0.0, 0.0, 0.20, 0.55, 0.80],   # Prefix Länge 3
-        # [0.0, 0.20, 0.55, 0.80, 1.10],  # Prefix Länge 4
-        # ])
 
     def pad_to_window_size(self, previous_values):
         """
@@ -1293,19 +920,6 @@ class TensorEncoderDecoder:
             static_cont_tensor = torch.zeros((num_samples, 0), dtype=torch.float32)
 
         return static_cat_tensor, static_cont_tensor
-        # return (
-        #     tensor([
-        #         [2, 5],   # Case_1: customer_type=2, country=5
-        #         [1, 3],   # Case_2
-        #         [4, 2],   # Case_3
-        #     ]),
-
-        #     tensor([
-        #         [0.73],   # Case_1: case_amount
-        #         [0.41],   # Case_2
-        #         [0.88],   # Case_3
-        #     ])
-        # )
 
     def _collect_static_case_values(
         self, df: pd.DataFrame
@@ -1335,43 +949,10 @@ class TensorEncoderDecoder:
             return np.nan
         return cleaned.iloc[0]
 
-    # einfach wieder von dem tensor zurück in die original werte
-    # z.B.
-    #
-    # return pd.DataFrame({
-    #     "activity": [
-    #         np.nan,                 # Padding 0
-    #         np.nan,                 # Padding 0
-    #         "Create Application",
-    #         "Delete Application",
-    #         "Assign Developer",
-    #     ],
-
-    #     "resource": [
-    #         np.nan,
-    #         np.nan,
-    #         "Alice",
-    #         "Bob",
-    #         "Charlie",
-    #     ],
-
-    #     "elapsed_time": [
-    #         0.0,    # nach inverse_transform ggf. ursprünglicher Wert
-    #         0.0,
-    #         10.0,
-    #         25.0,
-    #         40.0,
-    #     ],
-
-    #     "case_id": [
-    #         "Case_42",
-    #         "Case_42",
-    #         "Case_42",
-    #         "Case_42",
-    #         "Case_42",
-    #     ],
-    # })
     def decode_event(self, event_tuple: tuple):
+        """
+        Convert a single event in a case to a human-readable dictionary.
+        """
         cat, cont, *_, case_id = event_tuple
         decoded_event = {}
         for i, col in enumerate(self.categorical_columns):
@@ -1514,47 +1095,6 @@ class PrefixesDataFrameLoader:
         return self.csv2event_log.raw_df.copy()
 
     def _resolve_window_size(self) -> int:
-        """Pick the maximum prefix length kept per case.
-
-        ``"auto"`` uses the 98.5th percentile of case lengths (incl. EOS rows)
-        and then adds ``min_suffix_size``. The longest 1.5% of cases are treated
-        as outliers so a few very long traces do not blow up the window.
-
-        Called by
-            ``PrefixesDataFrameLoader.__init__`` — once at construction, to set
-            ``self.window_size``. That value is later used by ``transform`` →
-            ``_limit_sequence`` so every prefix list has a hard length cap
-            before the data are turned into tensors by ``EventLogLoader`` /
-            ``TensorEncoderDecoder``.
-
-        Example
-        -------
-        Input
-            window_size_setting = "auto"
-            min_suffix_size     = 1
-            case lengths (rows per case_id, already including 1 EOS row)::
-
-                case_id  length
-                C1       5
-                C2       6
-                C3       6
-                C4       7
-                C5       8
-                C6       10
-                C7       40     ← outlier
-
-        Processing
-            1. ``case_sizes = [5, 6, 6, 7, 8, 10, 40]``
-            2. ``quantile(0.985)`` sits near the upper end of the bulk
-               (around 10), not at 40.
-            3. ``auto_window = round(quantile) + min_suffix_size``
-               e.g. ``round(10) + 1 = 11``
-            4. Clamp: ``max(min_suffix_size, auto_window)``
-
-        Output
-            ``11``  — later ``_limit_sequence`` keeps at most the last 11
-            events of every prefix. A fixed integer setting is returned as-is.
-        """
         setting = (
             self.window_size_setting if self.window_size_setting is not None else "auto"
         )
@@ -1586,55 +1126,8 @@ class PrefixesDataFrameLoader:
     def transform(
         self, df: Optional[pd.DataFrame] = None, with_eos: Optional[bool] = False
     ) -> pd.DataFrame:
-        """Turn event-level rows into one prefix row per growing prefix.
-
-        Each original case with ``n`` events (including ``min_suffix_size`` EOS
-        rows) yields ``n - min_suffix_size`` prefix rows. Dynamic columns become
-        lists of the first ``prefix_len`` events (then trimmed to
-        ``window_size``). Static columns stay a single scalar (first non-NaN,
-        non-``"EOS"`` value of the case).
-
-        Called by
-            ``PrefixesDataFrameLoader.get_dataset("train"|"val"|"test")`` —
-            the public entry that notebooks call (e.g. Repair / Helpdesk /
-            Sepsis / BPIC loaders) to get prefix dataframes for Petri-net
-            marking determination (proactive conformance checking).
-
-            ``EventLogLoader`` does **not** call ``transform``. It only
-            reuses this loader's already-split ``train_df`` / ``val_df`` /
-            ``test_df`` so tensor encoding and prefix markings stay aligned
-            on the same cases.
-
-        Example
-        -------
-        Settings: ``min_suffix_size = 1``, ``window_size = 10``.
-
-        Input (one case after EOS was appended by ``CSV2EventLog``)::
-
-            case_id  activity  amount  resource
-            C1       A         10.0    Alice
-            C1       B         20.0    Alice
-            C1       C         30.0    Alice
-            C1       EOS       NaN     NaN      ← suffix reserved for prediction
-
-        Processing (this case)
-            total_len      = 4
-            max_prefix_len = 4 - 1 = 3   → prefixes of length 1, 2, 3
-            EOS is never copied into a prefix.
-
-            prefix_len=1 → activity=[A],     amount=[10]
-            prefix_len=2 → activity=[A, B],  amount=[10, 20]
-            prefix_len=3 → activity=[A, B, C], amount=[10, 20, 30]
-            resource is static → "Alice" on every prefix row
-            (``_limit_sequence`` would keep only the last ``window_size``
-            events if a prefix were longer than the window.)
-
-        Output (this case contributes 3 rows)::
-
-            case_id  prefix_length  activity       amount          resource
-            C1       1              [A]            [10.0]          Alice
-            C1       2              [A, B]         [10.0, 20.0]    Alice
-            C1       3              [A, B, C]      [10.0, 20.0, 30.0] Alice
+        """
+        Transform the event log into a dataframe of prefixes.
         """
         working_df = self.event_log if df is None else df
         working_df = _ensure_group_key_column(working_df, self.case_name)
@@ -1643,13 +1136,14 @@ class PrefixesDataFrameLoader:
         for case_id, group in grouped:
             group = group.reset_index(drop=True)
 
-            # Keep min_suffix_size events (the EOS rows) out of every prefix.
+            # length: get all rows case length + eos rows: min suffix size
             total_len = len(group)
             max_prefix_len = total_len - self.min_suffix_size
 
+            # Iterate through the
             for prefix_len in range(1, max_prefix_len + 1):
                 row = {self.case_name: case_id, "prefix_length": prefix_len}
-                # categorical: growing list of activity tokens, then window-trim
+                # categorical
                 for col in self.categorical_columns:
                     values = (
                         group[col].iloc[:prefix_len].tolist()
@@ -1658,7 +1152,7 @@ class PrefixesDataFrameLoader:
                     )
                     row[col] = self._limit_sequence(values)
 
-                # continuous: growing list of numeric values, then window-trim
+                # continuous
                 for col in self.continuous_columns + self.continuous_positive_columns:
                     values = (
                         group[col].iloc[:prefix_len].tolist()
@@ -1667,7 +1161,7 @@ class PrefixesDataFrameLoader:
                     )
                     row[col] = self._limit_sequence(values)
 
-                # static: one scalar per case, copied onto every prefix row
+                # static
                 for col in self.static_categorical_columns:
                     row[col] = (
                         self._extract_static_value(group[col])
@@ -1704,37 +1198,8 @@ class PrefixesDataFrameLoader:
         return self.train_df, self.val_df, self.test_df
 
     def extract_feature_info(self):
-        """Collect vocabularies and numeric ranges from the processed event log.
-
-        Uses ``self.event_log`` (event-level, including EOS rows). Categorical
-        values are unique sorted strings; continuous columns get min/max/mean/std.
-
-        Called by
-            Loader notebooks (Helpdesk / Repair / Sepsis / BPIC) — usually
-            commented in as ``categories = pref_adopt_dataframe.extract_feature_info()``
-            to inspect which activity labels and value ranges exist before
-            training. ``EventLogLoader`` / ``TensorEncoderDecoder`` do **not**
-            call this; they fit encoders on the train split themselves.
-
-        Example
-        -------
-        Input (``self.event_log``)::
-
-            case_id  activity  amount
-            C1       A         10.0
-            C1       B         30.0
-            C1       EOS       NaN
-
-        Processing
-            activity → unique non-null strings, sorted
-            amount   → min/max/mean/std of non-null values
-
-        Output::
-
-            {
-              "categorical": {"activity": ["A", "B", "EOS"]},
-              "continuous":  {"amount": {"min": 10.0, "max": 30.0, "mean": 20.0, "std": …}},
-            }
+        """
+        Extract information about categorical and continuous features in the event log.
         """
         categories_info = {}
         ranges_info = {}
@@ -1784,36 +1249,14 @@ class PrefixesDataFrameLoader:
         *,
         sort_tokens: bool = True,
     ):
-        """Drop prefixes whose Petri-net marking appears in only one split.
+        """Remove prefixes whose marking is unique to one split.
 
-        A marking is unique to a split if ``_marking_signature`` of it occurs
-        there but in neither of the other two. Those rows are removed so
-        train/val/test share the same marking vocabulary for evaluation.
+        A marking is considered "unique" for a split if its signature appears
+        in that split but in neither of the other two. All prefixes with such
+        markings are removed from that split.
 
-        Called by
-            Loader notebooks (``proactive_conf_check_v2`` / ``version_2``)
-            after they have: (1) ``get_dataset`` prefix DFs, (2) replayed
-            each prefix on the Petri net. They then keep only prefixes whose
-            marking also exists in at least one other split.
-
-        Example
-        -------
-        Input (3 prefix rows per split, markings already computed)::
-
-            train prefixes / markings : P0→{p1}, P1→{p1}, P2→{p2}
-            val   prefixes / markings : P0→{p1}, P1→{p3}
-            test  prefixes / markings : P0→{p1}
-
-        Processing
-            signatures → sets
-            unique_train = {p2}   (only in train) → drop train row P2
-            unique_val   = {p3}   (only in val)   → drop val row P1
-            unique_test  = {}     (p1 is shared)
-
-        Output
-            filtered prefix DFs + markings, plus kept positional indices
-            ``(keep_train_ix, keep_val_ix, keep_test_ix)``
-            e.g. train keeps [0, 1], val keeps [0], test keeps [0].
+        Returns filtered (train/val/test) prefix DFs, filtered markings lists,
+        and the kept row indices (positional indices) per split.
         """
 
         def _validate_lengths(df: pd.DataFrame, markings: list, name: str) -> None:
@@ -1947,39 +1390,7 @@ class EventLogDataset(Dataset):
         )
 
     def subset(self, indices: Iterable[int]) -> "EventLogDataset":
-        """Keep only selected prefix rows; return a **new** dataset.
-
-        Slices every tensor in ``tensor_bundle`` along dim 0 and copies the
-        matching Petri-net markings. Vocab / encoders
-        (``all_categories``, ``encoder_decoder``) stay shared — you are not
-        refitting, only dropping rows.
-
-        Called by
-            Loader notebooks after
-            ``remove_prefixes_with_unique_markings``: that method returns
-            ``keep_train_ix`` / ``keep_val_ix`` / ``keep_test_ix``. Then
-            ``train_set.subset(keep_train_ix)`` so the tensor dataset has
-            the same rows as the filtered prefix DataFrame before
-            ``set_prefix_markings``.
-
-        Example
-        -------
-        Input
-            dataset length 4, ``indices = [0, 2]``
-            ``case_ids = (C1, C1, C2, C2)``
-            ``categorical[activity]`` shape ``(4, window_size)``
-
-        Processing
-            ``index_select(0, [0, 2])`` on every feature / mask / static
-            tensor; ``case_ids`` and markings indexed the same way.
-            ``indices = []`` → empty tensors, same number of feature
-            columns (so DataLoader structure stays valid).
-
-        Output
-            new ``EventLogDataset`` of length 2:
-            ``case_ids = (C1, C2)``, tensors shape ``(2, window_size)``.
-            Original dataset is unchanged.
-        """
+        """Return a new dataset containing only the specified prefix rows."""
         idx = list(indices)
         if len(idx) == 0:
             # Keep structure but return empty tensors

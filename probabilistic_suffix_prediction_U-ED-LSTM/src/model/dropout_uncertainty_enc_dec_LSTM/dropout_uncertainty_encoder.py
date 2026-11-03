@@ -64,60 +64,13 @@ class DropoutUncertaintyLSTMEncoder(nn.Module):
 
         # Embeddings for dynamic
         self.embeddings = embeddings
-        # 4 kommt aus der gwählten embedding dimension D=min(600, round(1.6⋅N0.56))
-        # embeddings = ModuleList(
-        #     [
-        #         Embedding(5, 4)
-        #     ]
-        # )
-        #   ------>
-        #         Activity ID       gelernter Vektor
-        # ──────────────────────────────────────────
-        # 0              → [0.2, -0.1, 0.7,  0.3]
-        # 1              → [0.8,  0.4,-0.2,  0.1]
-        # 2              → [0.3, -0.6, 0.5,  0.9]
-        # 3              → [...]
-        # 4              → [...]
-
         # for static
         if static_embeddings is not None:
             self.static_embeddings = static_embeddings
 
         # List of two lists (categorical, numerical)
-        # each containing the indices of tensors required for encoder.
-        # Das ist zum Pointen, welche Features aus dem Input verwendet werden.
-        #data_indices_enc = [
-        #     [0],   # categorical
-        #     [0]    # numerical
-        #]
-        #   ------>
-        #data_indices_enc = [[0], [0]]
-        #   ------>
-        # prefixes[0][0]
-        # │  │
-        # │  └── welches Feature innerhalb dieser Gruppe?
-        # │
-        # └──── erste Gruppe: categorical
-        # -------->
-        #prefixes[0][0] → Activity
-        #         [
-        #     [1, 2, 3, 2],   # Case 1
-        #     [1, 1, 4, 2],   # Case 2
-        #     [2, 3, 4, 4],   # Case 3
-        # ]
-        #prefixes[1][0] → amount
-        #         [
-        #     [[0.2], [0.3], [0.7], [0.8]],
-        #     [[0.1], [0.2], [0.5], [0.9]],
-        #     [[0.4], [0.5], [0.6], [0.7]]
-        # ]
+        # each containing the indices of tensors required for encoder
         self.data_indices_enc = data_indices_enc
-        # Activity embedding [3,4,4]
-        # +
-        # amount             [3,4,1]
-        # ──────────────────────────
-        # dynamic input      [3,4,5]
-
         # for static
         if static_data_indices is not None:
             self.static_data_indices = static_data_indices
@@ -125,20 +78,7 @@ class DropoutUncertaintyLSTMEncoder(nn.Module):
         # to the dynamic per-timestep features and fed into the LSTM.
         self.static_input_size = static_input_size or 0
 
-        # Linear projection before inserted into LSTM layers z.B.
-        #         DYNAMISCH                         STATISCH
-        # ─────────────────────            ─────────────────
-        # Activity embedding    amount     CustomerType emb.   Age
-        #      4                   1              3             1
-        #      │                   │              │             │
-        #      └─────────┬─────────┘              └──────┬──────┘
-        #                │                               │
-        #           5 Dimensionen                  4 Dimensionen
-        #                │                               │
-        #                └──────────────┬────────────────┘
-        #                               ↓
-
-        #                     9 Dimensionen
+        # Linear projection before inserted into LSTM layers
         total_input_size = input_size + (
             self.static_input_size if self.static_input_size > 0 else 0
         )
@@ -204,31 +144,6 @@ class DropoutUncertaintyLSTMEncoder(nn.Module):
         - h,c: Last hidden and cell states of the last layer.
         """
         # Transform the input into a single tensor: [T, B, dyn_features]
-        # input = [
-        #     # categorical
-        #     [
-        #         # Activity = input[0][0]
-        #         tensor([
-        #             [1, 2, 3], #case 1 activity X, activity Y, activity Z
-        #             [1, 3, 4]
-        #         ]),
-
-        #         # Resource = input[0][1]
-        #         tensor([
-        #             [5, 6, 6],
-        #             [2, 2, 7]
-        #         ])
-        #     ],
-
-        #     # numerical
-        #     [
-        #         # amount = input[1][0]
-        #         tensor([
-        #             [0.1, 0.4, 0.7],
-        #             [0.2, 0.5, 0.8]
-        #         ])
-        #     ]
-        # ]
         prefixes = self.__data_enc_model(
             data=input
         )  # dim: seq_len x batch_size x input_features
@@ -246,18 +161,11 @@ class DropoutUncertaintyLSTMEncoder(nn.Module):
                 prefixes = torch.cat((prefixes, static_seq), dim=-1)
 
         # Project input features to hidden size
-        #vorher: Sagen wir wir hatten 9 Feature-Werte
-        #[B, T, 9]
-        #nachher: weil wir 32 Hidden-Units haben.
-        #[B, T, 32]
         prefixes = self.input_proj(prefixes)
-        #normalisiert bei jedem Event die 32 Feature-Werte.
         prefixes = self.layernorm(prefixes)
-        # RELU
         prefixes = self.act(prefixes)
 
         # zero masking
-        # WARUM: WEIL PADDING WEITER VON SCHRITT ZU SCHRITT AUS NULLEN BESTEHEN MUSS
         mask_seq = None
         if mask is not None:
             seq_len = prefixes.shape[0]
@@ -271,57 +179,7 @@ class DropoutUncertaintyLSTMEncoder(nn.Module):
             )
 
             # Apply mask to prefixes to ensure padded inputs are zero
-            # Case 1: A → B → C → Padding
-            # Case 2: A → B → Padding → Padding
-            # ---->
-            # [
-            # [[1], [1]],
-            # [[1], [1]],
-            # [[1], [0]],
-            # [[0], [0]]
-            # ]
             prefixes = prefixes * mask_seq.unsqueeze(-1)
-
-            #Konkret also
-            # prefixes =
-
-            #     t=0:
-            #     Case 1 [0.4, 0.2, 0.8]
-            #     Case 2 [0.1, 0.5, 0.7]
-
-            #     t=1:
-            #     Case 1 [0.6, 0.4, 0.2]
-            #     Case 2 [0.8, 0.2, 0.1]
-
-            #     t=2:
-            #     Case 1 [0.7, 0.3, 0.9]
-            #     Case 2 [0.5, 0.8, 0.4]  ← eigentlich Padding
-
-            #     t=3:
-            #     Case 1 [0.2, 0.6, 0.3]  ← Padding
-            #     Case 2 [0.9, 0.1, 0.7]  ← Padding
-            # ---> 
-            # mask_seq =
-            # t=0: [1,1] sagt ob case 1 und case 2 jeweils an der stelle T padding haben oder ein echtes Event
-            # t=1: [1,1]
-            # t=2: [1,0]
-            # t=3: [0,0]
-            # --->
-            # t=0:
-            # Case 1 [0.4, 0.2, 0.8]
-            # Case 2 [0.1, 0.5, 0.7]
-
-            # t=1:
-            # Case 1 [0.6, 0.4, 0.2]
-            # Case 2 [0.8, 0.2, 0.1]
-
-            # t=2:
-            # Case 1 [0.7, 0.3, 0.9]
-            # Case 2 [0.0, 0.0, 0.0]  ← mask = 0
-
-            # t=3:
-            # Case 1 [0.0, 0.0, 0.0]  ← mask = 0
-            # Case 2 [0.0, 0.0, 0.0]  ← mask = 0
 
         # Outputs: All hidden states of all cells in the layer, h,c: last hidden state
         # and cell state in the layer
@@ -361,47 +219,7 @@ class DropoutUncertaintyLSTMEncoder(nn.Module):
         prefixes = torch.cat((merged_cats, merged_nums), dim=-1).permute(
             1, 0, 2
         )  # dim: seq_len x batch_size x input_features
-
         return prefixes
-        # von cases
-        # tensor([
-        #     # Case 1
-        #     [
-        #         [0.1, 0.2, 0.50, 0.51, 0.1],  # t0
-        #         [0.3, 0.4, 0.60, 0.61, 0.4],  # t1
-        #         [0.5, 0.6, 0.60, 0.61, 0.7],  # t2
-        #     ],
-
-        #     # Case 2
-        #     [
-        #         [0.1, 0.2, 0.20, 0.21, 0.2],  # t0
-        #         [0.5, 0.6, 0.20, 0.21, 0.5],  # t1
-        #         [0.7, 0.8, 0.70, 0.71, 0.8],  # t2
-        #     ]
-        # ])
-        # zu timestamps
-        #prefixes = tensor([
-        #     # t = 0
-        #     [
-        #         [0.1, 0.2, 0.50, 0.51, 0.1],  # Case 1
-        #         [0.1, 0.2, 0.20, 0.21, 0.2],  # Case 2
-        #     ],
-
-        #     # t = 1
-        #     [
-        #         [0.3, 0.4, 0.60, 0.61, 0.4],  # Case 1
-        #         [0.5, 0.6, 0.20, 0.21, 0.5],  # Case 2
-        #     ],
-
-        #     # t = 2
-        #     [
-        #         [0.5, 0.6, 0.60, 0.61, 0.7],  # Case 1
-        #         [0.7, 0.8, 0.70, 0.71, 0.8],  # Case 2
-        #     ]
-        # ])
-
-        # Von [B,T,F] = [2,3,3]
-        # zu [T,B,F] = [3,2,3]
 
     def __static_data_enc_model(
         self,

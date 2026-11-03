@@ -351,11 +351,20 @@ class Method():
                 model_params["seed"] = 42 + 5*self.iter
                 self.model_params = model_params
 
-                if (target in self.args.already_tuned_list and tuning) or (target in self.args.already_trained_list and not tuning) or (self.args.already_tuned and tuning) or (self.args.already_trained and not tuning):
+                if (target in self.args.already_tuned_list and tuning) or (target in self.args.already_trained_list and not tuning) or (self.args.already_tuned and tuning) or (self.args.already_trained and not tuning) or (stage in self.args.already_tuned_stages and tuning):
                     # load the best model and params
                     self.best_model = load_data(os.path.join(os.getcwd(), self.RESULTS_FOLDER, str(self.method), to_add_folder, self.PATH_BEGIN + self.method + "_" + target + "_" + model_params["model_specific"] + "_" + str(stage) + "_" + to_add_cross_fitting + to_add_path + "_model"), is_state_dict=(self.model_params["model_category"] == "dl" and "S" in self.method and target == "outcome"))
                     best_params = load_data(os.path.join(os.getcwd(), self.RESULTS_FOLDER, str(self.method), to_add_folder, self.PATH_BEGIN + self.method + "_" + target + "_" + model_params["model_specific"] + "_" + str(stage) + "_" + to_add_cross_fitting + to_add_path + "_params"))
                     model_params.update(best_params)
+
+                    # DTR mit --already_tuned_stages: auch bei geladenem Modell die Zielwerte für die Stage davor setzen (Backward Induction).
+                    # In der letzten Stage ist das einfach das echte Y, frühere Stages müssten erst angepasst werden.
+                    if "dtr" in self.method and target == "outcome" and stage > 0 and stage in self.args.already_tuned_stages and tuning:
+                        if stage < len(self.model_params_list_of_dicts) - 1:
+                            raise NotImplementedError("--already_tuned_stages: bei DTR kann nur die letzte Stage geladen werden")
+                        data_train_list, data_infer_list = create_splits(data_train_list=self.prepped_data_dict["train"][model_params["encoding"]], data_infer_list=self.prepped_data_dict["infer"][model_params["encoding"]], model_params=model_params)
+                        prev_outcomes_train = deepcopy(data_train_list[stage]["Y"])
+                        prev_outcomes_infer = deepcopy(data_infer_list[stage]["Y"]) if data_infer_list is not None else None
                 else:
                     data_train_list_ps, data_infer_list_ps = None, None
                     data_train_list_prev_ps, data_infer_list_prev_ps = None, None
@@ -633,6 +642,8 @@ class Method():
 
         return {'loss': loss_infer, 'status': STATUS_OK}
     
+    # DAS IST WICHTIG
+    # Die evulation passiert nicht live durch resimulation, sondern wird einfach auf den fertigen prefixen ausgewertet
     # eval() bewertet die trainierte Entscheidungsstrategie auf den Testfällen.
     # Vergleichswerte laden/berechnen:
     # tatsächliche Bankstrategie
@@ -643,18 +654,28 @@ class Method():
     # meistens das effect-Modell
     # andernfalls das outcome-Modell
     # bei KMeans-Q das Q-Learning-Modell
+
+    # target
     def eval(self, preps_maps, dfs_map):
         bank_profit, random_profit, random_uplift, optimal_profit, optimal_uplift = self.get_bank_optimal_random_results(dfs_map=dfs_map)
         
-        # Getting the final target and model_params, so the model that actually recommends actions
+        # Getting the final target and model_params, so the model actually recommends actions
+        # Der Block sucht heraus, welches Modell am Ende die Aktionen empfiehlt, und merkt sich dessen Namen.
+        # self.model_params_list_of_dicts[0] ist das Dictionary für Stage 0 mit den drei Einträgen ps, outcome, effect, in dieser Reihenfolge. reversed dreht sie um, die Schleife geht also effect → outcome → ps durch.
+        # target ist unterschedlich, je nachdem welches Modell gewählt wurde
+        # Bei AIPW wird ps, outcome, effect und ps gegeben
+        # Bei RA oder DR nur outcome und effect
+        # Be S oder T nur outcome
         for target, model_params in reversed(list(self.model_params_list_of_dicts[0].items())):
             if model_params == "nope": continue
+            # Beim ersten vorhandenen Target werden drei Dinge gemerkt: welches Target es ist, die Modellkategorie und das konkrete Modell.
             final_target, final_model_category, final_model_specific = target, model_params["model_category"], model_params["model_specific"]
             to_add_cross_fitting = "cross_fitted_" if "dtr" in self.method and self.args.cross_fitting else ""
             break # model has been found
 
         to_add_model_specific = final_model_specific + "_" if (final_model_specific != "kmeans_q" and final_model_specific != "xgb" and final_model_specific != "lstm" and final_model_specific != "vanilla_nn") else ""
 
+        # as ist die Prüfung, ob die Auswertung für diese Methode schon einmal gelaufen ist und nur noch geladen werden soll.
         if self.method in self.args.already_evaluated_list or self.args.already_evaluated:
             # jus load the results
             profit = load_data(os.path.join(os.getcwd(), self.RESULTS_FOLDER, str(self.method), "eval", self.PATH_BEGIN + self.method + "_" + final_target + "_" + final_model_category + "_" + to_add_model_specific + str(self.iter) + "_" + to_add_cross_fitting + "profit_eval"))
@@ -701,6 +722,9 @@ class Method():
             #         }
             #     }
             # ]
+                # Sie holt die Einstellungen des Modells, das an dieser Stage die Aktion empfehlen soll, und legt eine Kopie davon an.
+                # index to select ist die Stage
+                # final target ist das Target, das das im Block davor bestimmt worden ist. Bei mir target
                 model_params = self.model_params_list_of_dicts[index_to_select][final_target].copy() 
                 # Diese Zeile stellt die passenden Testdaten für die aktuelle Stage zusammen:
                 # Entscheidend sind dabei die bereits empfohlenen Aktionen in decisions. Beispiel mit drei Stages: Für einen Fall wurden bisher diese Aktionen empfohlen:
@@ -717,7 +741,10 @@ class Method():
                 #     "prefix_len": Tensor(...),
                 #     "case_nr": Tensor(...)
                 # }
+
                 # collated_prep enthält für jeden Fall genau die Daten, die zu den bisher vom Modell empfohlenen Aktionen passen.
+                # Diese Zeile holt die Testdaten, auf denen das Modell für die aktuelle Stage seine Q-Werte berechnen soll.
+                # preps_maps ist dabei der evaluationsdatensatz mit der Action combi
                 collated_prep = self.get_data_given_prev_actions(stage=stage, preps_maps=preps_maps, model_params=model_params, target=final_target, index_to_select=index_to_select, prev_decisions=decisions)
                 # get_actions_recommended_current_stage() bewertet das aktuelle Modell auf den Testdaten.
                 action_df, action_eval_seconds = self.get_actions_recommended_current_stage(stage=stage, target=final_target, index_to_select=index_to_select, model_params=model_params, collated_prep=collated_prep, case_nrs=case_nrs, to_add_cross_fitting=to_add_cross_fitting)
@@ -743,6 +770,7 @@ class Method():
 
             # calculate the extra percentage profit compared to the bank
             # Den Uplift gegenüber der Bankstrategie bestimmen:
+            # Wie viel besser insd iwr gegenpber der Bank policy?
             uplift = (profit - bank_profit) / abs(bank_profit) * 100 if bank_profit != 0 else 0
             print(f"                Random uplift: {random_uplift:.2f}%; Optimal uplift {optimal_uplift:.2f}%; Uplift: {uplift:.2f}%")
 
@@ -820,6 +848,10 @@ class Method():
         # 1         0
         # 2         1
         # {0: 1, 1: 0, 2: 1}
+
+        #--------
+        # WICHTG: HIER WIRD DANN WIRKLCH DAS MODELL FÜR JEDEN CASE GEFRAGT JEWEILS WELCHE AKTION ZU NEHMEN IST
+        #--------
         action_df = model_evaluator.eval()
         action_eval_seconds = time.perf_counter() - action_eval_start
 
@@ -846,11 +878,56 @@ class Method():
         # preps_maps["(1, 0, 0)"][encoding][stage]
         if stage == 0:
             key = str(tuple(0 for _ in range(self.args.n_stages)))
+            # Lädt die vorverarbeiteten Testfälle (Prefix bis zum Entscheidungspunkt) aus dem Lauf "immer Aktion 0".
+            # Beispiel aus SimRepair (train_size=5000, test_size=500, encoding="tensor"), hier die ersten drei Fälle:
+            # collated_prep = {
+            #     "case_nr": tensor([0., 1., 2., ...]),          # [500]
+            #
+            #     "X_case": tensor([                             # [500, 3]
+            #         # bike_value, repair_severity, customer_patience (skaliert)
+            #         [0.00, 0.44, 0.78],   # Fall 0
+            #         [0.44, 0.56, 0.33],   # Fall 1
+            #         [0.44, 0.11, 0.22],   # Fall 2
+            #         ...
+            #     ]),
+            #
+            #     "X_event": tensor([                            # [500, 1, 28] = [Fälle, Event-Spalten, max. Prefix-Länge]
+            #         # Eventposition:  1     2     3    ...   (ab Position 2 Padding, der Prefix ist nur initiate_case)
+            #         [[              0.54, 0.00, 0.00, ...]],   # Fall 0: quality_uncertainty
+            #         [[              0.52, 0.00, 0.00, ...]],   # Fall 1
+            #         [[              0.46, 0.00, 0.00, ...]],   # Fall 2
+            #         ...
+            #     ]),
+            #
+            #     "prefix_len": tensor([1., 1., 1., ...]),       # [500], Anzahl Events im Prefix
+            #
+            #     "T": tensor([[0.], [0.], [0.], ...]),          # [500, 1], Aktion im simulierten Lauf (hier immer 0 = start_standard)
+            #
+            #     "Y": tensor([[0.69], [0.49], [0.45], ...]),    # [500, 1], Outcome des Falls in diesem Lauf (skaliert)
+            #
+            #     "X_suffix": tensor([...]),                     # [500, 25, 29] = [Fälle, Suffix-Spalten, max. Suffix-Länge + EOS]
+            #                                                    # echtes Suffix: Event-Attribute, Aktivität (One-Hot inkl. EOS), outcome am EOS-Event
+            #     "suffix_len": tensor([9., 8., 14., ...]),      # [500], Anzahl Events im echten Suffix
+            # }
+            # Für die Q-Werte nutzt das Modell nur X_case, X_event und prefix_len. T wird je Aktion künstlich gesetzt,
+            # Y, X_suffix und suffix_len sind die echten Werte dieses Laufs und werden für die Aktionswahl nicht gebraucht.
             collated_prep = preps_maps[key][model_params["encoding"]][0]
         else:
+            # undex to select ist die Stage, target ist effect, prop, outcome
+            # encoding hängt vom gewählten Modell ab, was wiederum das Encoding beenflusst
             encoding = self.model_params_list_of_dicts[index_to_select][target]["encoding"]
             selected_data = []
 
+            # Welche Fälle haben bisher dieselben Aktionen bekommen? Er sortiert die Testfälle in Gruppen, mehr nicht.
+            # Wird erst relevant, wenn wr mehrere Decision ponts haben
+            # Angenommen, es gibt zwei Decision Points: erst choose_procedure, später conduct_qc. Das Modell soll jetzt für Stage 1 entscheiden und braucht dafür das Präfix jedes Falls bis zum zweiten Decision Point.
+            # Dieses Präfix hängt davon ab, was an Stage 0 gewählt wurde. 
+            # prev_decisions sind die Entscheidungen des Modells an Stage 0
+            # case_nr  action
+            # 0       1
+            # 1       0
+            # 2       1
+            # 3       0
             dfs = []
             for s in range(stage):
                 df = prev_decisions[s].copy()
@@ -907,12 +984,31 @@ class Method():
                         collated_prep[key] = torch.stack([v for v in values if v is not None])
                     else:
                         collated_prep[key] = None
-        
+
+        # collated_prep: die Testfälle der aktuellen Stage als ein Batch, eine Zeile pro Fall (Prefix bis zum Entscheidungspunkt).
+        # Bei dtr/separate ein Dictionary aus Tensoren, bei kmeans_q ein DataFrame.
+        # Beispiel SimRepair (500 Testfälle, encoding="tensor", Stage 0), ausführlich mit Werten oben im Zweig stage == 0:
+        # collated_prep = {
+        #     "case_nr":    tensor([0., 1., 2., ...]),                    # [500]
+        #     "X_case":     tensor([[0.00, 0.44, 0.78], ...]),            # [500, 3]      bike_value, repair_severity, customer_patience
+        #     "X_event":    tensor([[[0.54, 0.00, 0.00, ...]], ...]),     # [500, 1, 28]  quality_uncertainty je Eventposition
+        #     "prefix_len": tensor([1., 1., 1., ...]),                    # [500]
+        #     "T":          tensor([[0.], [0.], [0.], ...]),              # [500, 1]      Aktion im simulierten Lauf
+        #     "Y":          tensor([[0.69], [0.49], [0.45], ...]),        # [500, 1]      Outcome im simulierten Lauf (skaliert)
+        #     "X_suffix":   tensor([...]),                                # [500, 25, 29] echtes Suffix
+        #     "suffix_len": tensor([9., 8., 14., ...]),                   # [500]
+        # }
+        # Ab Stage 1 dieselben Schlüssel, aber jede Zeile stammt aus dem Lauf, der zu den bisherigen Entscheidungen des Falls passt
+        # (z.B. Fall 0 aus "(1, 0)", Fall 3 aus "(0, 0)"). Fälle ohne Eintrag im passenden Lauf fehlen, dann sind es weniger als 500 Zeilen.
         return collated_prep
 
+    # Wir kennen über die Simulation ALLER Action_cmbinatons für jeden Fall alle möglichen outcomes für eine action combiation
+    # Jetzt gucken wir, wie unser Modell dagegebn performt
     def calculate_proft_of_decisions(self, decisions, dfs_map):
         # Step 1: Merge all decision DataFrames on 'case_nr'
         all_decisions_df = None
+
+        # Jpöen der Decisions, die das Modell unternommen hat
         for decision_point, df in decisions.items():
             df = df[['case_nr', 'action']].rename(columns={'action': f'action_{decision_point}'})
             if all_decisions_df is None:

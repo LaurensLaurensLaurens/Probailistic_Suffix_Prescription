@@ -1,0 +1,511 @@
+"""
+The next-event model of the simulation: for a case it draws the next event and then the time until
+that event, given the event.
+
+It is an LSTM over the events of the case. Every step sees
+- the event (activity and lifecycle as one token) and the time since the event before it,
+- the time since the start of the case and since the last occurrence of every activity,
+- hour, weekday and day of the month of the event,
+- the case attributes, including the month in which the case started,
+- with dynamic attributes (datasets.py dynamic_numeric; BPIC17: OfferedAmount, NumberOfTerms, MonthlyCost and
+  FirstWithdrawalAmount of the last O_Create Offer) their current values (encoder.encode_offer), so that the course and
+  the approval depend on them as in the real log.
+There is no action input: at a decision point the simulation replaces the drawn next event by the option a policy
+chooses (simulation/case_engine.py set_policy); without a policy the case runs as the bank ran it.
+With work items (datasets.py work_item_prefix) the employees are inputs in two ways, never hidden in training:
+- in the prefix: who performed the event (the holder of its work session, see session_holders), as input of the LSTM,
+  so that which event comes next depends on who worked on the case so far;
+- for the time: the model first draws the next event, then the time until it given that event and the employee who
+  performs it (unknown for start/resume, where the time is the wait before the engine assigns somebody).
+The next event thus does not depend on who performs it, only on the history.
+The times and the calendar are inputs because the real process follows the clock: cases are
+cancelled about 30 days after the last offer in an early-morning run, and a monthly run closes work
+items that were left open. An LSTM cannot add up the single gaps reliably by itself.
+
+Two outputs: the next event, and the time until it as a distribution over time bins, given the event.
+
+Training runs in Keras. For generating, the same weights are evaluated step by step in numpy with
+the state carried per case: one small step per new event instead of re-reading the history, which
+is what the simulation needs when it draws every event at the moment it happens.
+"""
+import json
+import os
+from typing import Dict, List, Optional, Tuple
+
+import numpy as np
+
+from .data_prep import (BOS, END, N_TIME_BINS, PAD, Encoder, Trace, calendar_features, offer_states, sample_seconds,
+                        session_holders, time_bin)
+
+CALENDAR_SIZES = (24, 7, 31)  # hour, weekday, day of the month
+RECENCY_SCALE = 16.0  # log1p of 180 days in seconds is about 16.6
+
+
+def _sigmoid(x):
+    return 1.0 / (1.0 + np.exp(-x))
+
+
+def _recency(elapsed: np.ndarray, last: np.ndarray) -> np.ndarray:
+    """Scaled log time since the last occurrence of every activity; -1 where it has not occurred yet."""
+    since = elapsed[..., None] - last
+    return np.where(np.isnan(last), -1.0, np.log1p(np.maximum(since, 0.0)) / RECENCY_SCALE)
+
+
+class EventTimeModel:
+    def __init__(self, encoder: Encoder, max_length: int, width: int = 128, depth: int = 2, dropout: float = 0.0,
+                 allowed: Optional[np.ndarray] = None):
+        """The inputs follow from the dataset (encoder): employees with work items, current values with dynamic attributes."""
+        self.encoder = encoder
+        self.max_length = max_length
+        self.width, self.depth, self.dropout = width, depth, dropout
+        self.use_resources = bool(encoder.work_item_prefix)
+        # Nur für den Fall, dass der Datensatz gar keine dynamischen Attribute hat
+        self.use_offers = bool(encoder.dynamic_attributes)
+        # allowed[a, b]: event b directly followed event a somewhere in the training cases. Other
+        # successions are never drawn. Without this the model produces transitions that do not exist.
+        vocabulary = encoder.vocabulary_size
+        self.allowed = allowed if allowed is not None else np.ones((vocabulary, vocabulary), dtype=bool)
+        self.network = self._build_network()
+        self._weights: Optional[Dict[str, np.ndarray]] = None
+
+    # ------------------------------------------------------------------ training (Keras)
+
+    #  Es ist ein Netz mit zwei Ausgängen, die sich ein LSTM teilen.
+    # Einer sagt das nächste Event voraus, der andere die Zeit bis dahin, und zwar als Wahl einer von 321 Zeitklassen.
+    # Die Zeitklassen sind 321 Intervalle, in die jede Dauer einsortiert wird. Sie sind logarithmisch gestaffelt: kurze Dauern werden fein unterschieden, lange grob. 
+    def _build_network(self):
+        import keras
+        from keras import layers, ops
+
+        vocabulary = self.encoder.vocabulary_size
+        category_sizes = self.encoder.category_sizes
+        tokens = keras.Input(shape=(None,), dtype="int32", name="tokens")
+        times = keras.Input(shape=(None,), dtype="int32", name="times")  # bin of the time before each event, +1 (0 = padding)
+        elapsed = keras.Input(shape=(None,), dtype="int32", name="elapsed")  # bin of the time since the case start, +1
+        calendar = keras.Input(shape=(None, len(CALENDAR_SIZES)), dtype="int32", name="calendar")
+        recency = keras.Input(shape=(None, len(self.encoder.activities)), dtype="float32", name="recency")
+        next_tokens = keras.Input(shape=(None,), dtype="int32", name="next_tokens")
+        categorical = keras.Input(shape=(len(category_sizes),), dtype="int32", name="categorical")
+        numeric = keras.Input(shape=(1,), dtype="float32", name="numeric")
+        resources = keras.Input(shape=(None,), dtype="int32", name="resources")  # who performed the event (0 = nobody or unknown)
+        next_resources = keras.Input(shape=(None,), dtype="int32", name="next_resources")  # who performs the next event (0 = not known yet)
+        offers = keras.Input(shape=(None, self.encoder.n_offer_features), dtype="float32", name="offers")  # current offer (encoder.encode_offer)
+
+        attribute_parts = [layers.Embedding(size, 8, name=f"attribute_{i}")(categorical[:, i]) for i, size in enumerate(category_sizes)]
+        attributes = layers.Dense(self.width, name="attributes")(layers.Concatenate()(attribute_parts + [numeric]))
+        x = (
+            layers.Embedding(vocabulary, self.width, name="token_embedding")(tokens)
+            + layers.Embedding(N_TIME_BINS + 1, self.width, name="time_embedding")(times)
+            + layers.Embedding(N_TIME_BINS + 1, self.width, name="elapsed_embedding")(elapsed)
+            + layers.Dense(self.width, name="recency_dense")(recency)
+            + ops.expand_dims(attributes, 1)
+        )
+        for i, size in enumerate(CALENDAR_SIZES):
+            x = x + layers.Embedding(size, self.width, name=f"calendar_{i}")(calendar[..., i])
+        if self.use_resources:
+            # who worked on the case so far
+            x = x + layers.Embedding(len(self.encoder.resources), self.width, name="resource_embedding")(resources)
+        if self.use_offers:
+            x = x + layers.Dense(self.width, name="offer_dense")(offers)
+        for layer in range(self.depth):
+            x = layers.LSTM(self.width, return_sequences=True, dropout=self.dropout, name=f"lstm_{layer}")(x)
+        event_logits = layers.Dense(vocabulary, name="event_output")(x)
+        # Time until the next event, given which event it is
+        given = [x, layers.Embedding(vocabulary, self.width, name="next_token_embedding")(next_tokens)]
+        if self.use_resources:
+            # ... and who performs it
+            given.append(layers.Embedding(len(self.encoder.resources), self.width, name="next_resource_embedding")(next_resources))
+        given = layers.Concatenate()(given)
+        time_logits = layers.Dense(N_TIME_BINS, name="time_output")(layers.Dense(self.width, activation="relu", name="time_hidden")(given))
+        inputs = [tokens, times, elapsed, calendar, recency, next_tokens, categorical, numeric]
+        inputs += [resources, next_resources] if self.use_resources else []
+        inputs += [offers] if self.use_offers else []
+        return keras.Model(inputs, layers.Concatenate()([event_logits, time_logits]))
+
+    def _case_inputs(self, traces: List[Trace]):
+        categorical, numeric = zip(*(self.encoder.encode_attributes(trace.attributes, trace.start) for trace in traces))
+        return np.array(categorical, dtype=np.int32), np.array(numeric, dtype=np.float32)
+
+    #Das Modell liest an Position 0 <BOS>, an Position p das Event p−1, und sagt dort das nächste Event p voraus, dazu die Zeit bis dorthin:
+    def _arrays(self, traces: List[Trace]) -> List[Dict[str, np.ndarray]]:
+        """
+        Per trace the model inputs of every position (position 0 is BOS at the case start, position j
+        event j-1) and the token ids. Events unknown to the encoder are dropped.
+        """
+        n_activities = len(self.encoder.activities)
+        edges, prefix = self.encoder.time_edges, self.encoder.work_item_prefix
+        arrays = []
+        for trace in traces:
+            ids, at, resources, offers = [], [], [], []
+            # The employee input is the holder of the work session the event happens in (see session_holders)
+            holders = session_holders(trace.events, trace.resources or [None] * len(trace.events), prefix)
+            # Schreibt den aktuellen Stand des angebots in jede Zeile des restlichen traces
+            current_offers = offer_states(trace.events, trace.offers, self.encoder.dynamic_attributes_activity)
+            # Trace in die Eingangsl#nge des Modells übersetzen
+            # ids.append(token)                                   # Event als Nummer, z. B. 39
+            # at.append(since_start)                              # Sekunden seit Fallbeginn
+            # resources.append(self.encoder.resource_id(resource))  # Mitarbeiter als Nummer (0 = unbekannt)
+            # offers.append(self.encoder.encode_offer(offer))     # Angebot als Zahlenvektor
+            for (activity, lifecycle), since_start, resource, offer in zip(trace.events, np.cumsum(trace.gaps), holders, current_offers):
+                token = self.encoder.token_to_id.get(activity + "|" + lifecycle)
+                if token is not None:
+                    ids.append(token)
+                    at.append(since_start)
+                    resources.append(self.encoder.resource_id(resource))
+                    offers.append(self.encoder.encode_offer(offer))
+
+            ids, at = ids[: self.max_length - 1], np.array([0.0] + at[: self.max_length - 1])
+            # Position 0 is BOS: nobody performed it
+            # For the time: position p predicts event p, performed by its session holder unless it opens a work
+            # session (then the time before it is waiting, and the employee is not known yet); END: nobody
+            # Diese Zeilen richten die Listen aus der Schleife davor auf die Positionen des Modells aus.
+            opening = [bool(prefix) and self.encoder.tokens[token].startswith(prefix) and self.encoder.tokens[token].split("|")[1] in ("start", "resume") for token in ids]
+            # der Mitarbeiter für die Zeit-Vorhersage an jeder Position, also wer das vorhergesagte Event ausführt:
+            next_resources = [0 if is_opening else resource for resource, is_opening in zip(resources, opening)][: self.max_length - 1] + [0]
+            resources = [0] + resources[: self.max_length - 1]
+            # Vorbereitung für das Merkmal Recency, also wie lange das letzte Auftreten jeder Aktivität zurückliegt.
+            last = np.full((len(at), n_activities), np.nan)
+            seen = np.full(n_activities, np.nan)
+            for position, token in enumerate(ids, start=1):
+                seen[self.encoder.token_activity[token]] = at[position]
+                last[position] = seen
+            arrays.append({
+                "ids": ids,
+                "times": time_bin(np.diff(at, prepend=0.0), edges) + 1,
+                "elapsed": time_bin(at, edges) + 1,
+                "calendar": calendar_features(trace.start + at),
+                "recency": _recency(at, last).astype(np.float32),
+                "resources": np.array(resources, dtype=np.int32),
+                "next_resources": np.array(next_resources, dtype=np.int32),
+                # Position 0 (BOS): no offer yet; position p: the offer after event p - 1
+                "offers": np.array([np.zeros(self.encoder.n_offer_features)] + offers[: self.max_length - 1], dtype=np.float32),
+            })
+        return arrays
+
+    def _batches(self, traces: List[Trace], batch_size: int, shuffle: bool, seed: int = 0):
+        """
+        Batches of cases of similar length. Targets are the next event (END after the last) and the
+        time bin before it.
+        """
+        import keras
+
+        arrays = self._arrays(traces)
+        categorical, numeric = self._case_inputs(traces)
+        lengths = [len(a["ids"]) for a in arrays]
+        order = np.argsort(lengths, kind="stable")
+        chunks = [order[i:i + batch_size] for i in range(0, len(order), batch_size)]
+        # Keras averages the loss over all positions of a batch. Batches hold cases of similar length,
+        # so without this scale an event of a long case would count far less than one of a short case
+        # and the model would learn to generate cases that are too short.
+        events_per_batch = batch_size * (np.mean(lengths) + 1)
+        n_activities = len(self.encoder.activities)
+        model = self
+
+        class Batches(keras.utils.PyDataset):
+            def __init__(self):
+                super().__init__()
+                self.rng = np.random.default_rng(seed)
+                self.order = np.arange(len(chunks))
+                # Keras legt die Formen der Eingaben an den ersten beiden Batches fest; sind beide gleich lang (BPIC13:
+                # viele kurze Fälle), gilt die Länge für alle. Dann kommt der längste Batch an zweite Stelle. Bei BPIC17
+                # sind die ersten beiden verschieden lang, die Reihenfolge bleibt.
+                if len(chunks) > 2 and max(lengths[i] for i in chunks[0]) == max(lengths[i] for i in chunks[1]):
+                    self.order = np.array([0, len(chunks) - 1] + list(range(1, len(chunks) - 1)))
+
+            def __len__(self):
+                return len(chunks)
+
+            def __getitem__(self, index):
+                chunk = chunks[self.order[index]]
+                length = max(lengths[i] for i in chunk) + 1
+                shape = (len(chunk), length)
+                tokens, next_tokens = np.full(shape, PAD, dtype=np.int32), np.full(shape, PAD, dtype=np.int32)
+                times, elapsed = np.zeros(shape, dtype=np.int32), np.zeros(shape, dtype=np.int32)
+                calendar = np.zeros(shape + (len(CALENDAR_SIZES),), dtype=np.int32)
+                recency = np.full(shape + (n_activities,), -1.0, dtype=np.float32)
+                # targets: next event, time bin before it (-1 = none), scale of the position
+                targets = np.zeros(shape + (3,), dtype=np.float32)
+                targets[..., 1] = -1
+                for row, i in enumerate(chunk):
+                    a, n = arrays[i], lengths[i]
+                    tokens[row, : n + 1] = [BOS] + a["ids"]
+                    next_tokens[row, : n + 1] = a["ids"] + [END]
+                    times[row, : n + 1], elapsed[row, : n + 1] = a["times"], a["elapsed"]
+                    calendar[row, : n + 1], recency[row, : n + 1] = a["calendar"], a["recency"]
+                    targets[row, : n + 1, 0] = a["ids"] + [END]
+                    targets[row, :n, 1] = a["times"][1:] - 1
+                targets[..., 2] = targets[..., 0].size / events_per_batch
+                inputs = (tokens, times, elapsed, calendar, recency, next_tokens, categorical[chunk], numeric[chunk])
+                if model.use_resources:
+                    resources, next_resources = np.zeros(shape, dtype=np.int32), np.zeros(shape, dtype=np.int32)
+                    for row, i in enumerate(chunk):
+                        resources[row, : lengths[i] + 1] = arrays[i]["resources"]
+                        next_resources[row, : lengths[i] + 1] = arrays[i]["next_resources"]
+                    inputs += (resources, next_resources)
+                if model.use_offers:
+                    offers = np.zeros(shape + (model.encoder.n_offer_features,), dtype=np.float32)
+                    for row, i in enumerate(chunk):
+                        offers[row, : lengths[i] + 1] = arrays[i]["offers"]
+                    inputs += (offers,)
+                return inputs, targets
+
+            def on_epoch_end(self):
+                if shuffle:
+                    self.rng.shuffle(self.order)
+
+        return Batches()
+
+    def _position_losses(self, targets, outputs):
+        """Loss of the next event and of the time until it, per position (0 where there is no target)."""
+        import tensorflow as tf
+
+        vocabulary = self.encoder.vocabulary_size
+        events = tf.cast(targets[..., 0], tf.int32)
+        times = tf.cast(targets[..., 1], tf.int32)
+        event_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=events, logits=outputs[..., :vocabulary])
+        time_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.maximum(times, 0), logits=outputs[..., vocabulary:])
+        return event_loss * tf.cast(events != PAD, tf.float32), time_loss * tf.cast(times >= 0, tf.float32)
+
+    def fit(self, train: List[Trace], validation: List[Trace], epochs: int = 80, batch_size: int = 128,
+            learning_rate: float = 1e-3, patience: int = 8, verbose: int = 2):
+        import keras
+
+        # Which events may follow which: everything seen in the cases the model is fitted on
+        self.allowed = np.zeros_like(self.allowed)
+        for a in self._arrays(train + validation):
+            sequence = [BOS] + a["ids"] + [END]
+            self.allowed[sequence[:-1], sequence[1:]] = True
+
+        def loss(targets, outputs):
+            event_loss, time_loss = self._position_losses(targets, outputs)
+            return (event_loss + time_loss) * targets[..., 2]
+
+        self.network.compile(optimizer=keras.optimizers.Adam(learning_rate, clipnorm=1.0), loss=loss)
+        history = self.network.fit(
+            self._batches(train, batch_size, shuffle=True),
+            validation_data=self._batches(validation, batch_size, shuffle=False),
+            epochs=epochs,
+            verbose=verbose,
+            callbacks=[
+                keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=max(2, patience // 2), min_lr=1e-5),
+                keras.callbacks.EarlyStopping(monitor="val_loss", patience=patience, restore_best_weights=True),
+            ],
+        )
+        self._weights = None
+        return history
+
+    def losses(self, traces: List[Trace], batch_size: int = 256) -> Tuple[float, float]:
+        """Mean negative log-likelihood per event of the next event and of the time bin before it."""
+        totals, counts = np.zeros(2), np.zeros(2)
+        batches = self._batches(traces, batch_size, shuffle=False)
+        for index in range(len(batches)):
+            inputs, targets = batches[index]
+            event_loss, time_loss = self._position_losses(targets, self.network(list(inputs), training=False))
+            totals += [float(event_loss.numpy().sum()), float(time_loss.numpy().sum())]
+            counts += [(targets[..., 0] != PAD).sum(), (targets[..., 1] >= 0).sum()]
+        return tuple(totals / counts)
+
+    # ------------------------------------------------------------------ saving and loading
+
+    def save(self, folder: str) -> None:
+        os.makedirs(folder, exist_ok=True)
+        self.network.save_weights(os.path.join(folder, "model.weights.h5"))
+        config = {
+            "max_length": self.max_length, "width": self.width, "depth": self.depth,
+            "tokens": self.encoder.tokens, "categories": self.encoder.categories,
+            "numeric_mean": self.encoder.numeric_mean, "numeric_std": self.encoder.numeric_std,
+            "first_month": self.encoder.first_month, "n_months": self.encoder.n_months,
+            "allowed": [[int(a), int(b)] for a, b in zip(*np.nonzero(self.allowed))],
+            "resources": self.encoder.resources, "offer_mean": self.encoder.offer_mean, "offer_std": self.encoder.offer_std,
+            "numeric_attributes": self.encoder.numeric_attributes,
+            "dataset": self.encoder.dataset, "dynamic_attributes_activity": self.encoder.dynamic_attributes_activity,
+            "dynamic_attributes": self.encoder.dynamic_attributes, "work_item_prefix": self.encoder.work_item_prefix,
+            "max_gap_days": self.encoder.max_gap_days,
+        }
+        with open(os.path.join(folder, "config.json"), "w") as f:
+            json.dump(config, f, indent=1)
+
+    @classmethod
+    def load(cls, folder: str) -> "EventTimeModel":
+        with open(os.path.join(folder, "config.json")) as f:
+            config = json.load(f)
+        encoder = Encoder.__new__(Encoder)
+        encoder.tokens = config["tokens"]
+        encoder.categories = config["categories"]
+        encoder.numeric_mean, encoder.numeric_std = config["numeric_mean"], config["numeric_std"]
+        encoder.first_month, encoder.n_months = config["first_month"], config["n_months"]
+        encoder.dataset = config["dataset"]
+        encoder.categorical_attributes, encoder.numeric_attributes = list(encoder.categories), config["numeric_attributes"]
+        encoder._index_tokens()
+        encoder.resources = config["resources"]
+        encoder._index_resources()
+        encoder.dynamic_attributes_activity, encoder.dynamic_attributes = config["dynamic_attributes_activity"], config["dynamic_attributes"]
+        encoder.work_item_prefix = config["work_item_prefix"]
+        # Die Zeitklassen des Modells (nicht der Wert in datasets.py, der kann sich geändert haben)
+        encoder.max_gap_days = config["max_gap_days"]
+        encoder.offer_mean, encoder.offer_std = config["offer_mean"], config["offer_std"]
+        allowed = np.zeros((len(encoder.tokens), len(encoder.tokens)), dtype=bool)
+        allowed[tuple(np.array(config["allowed"]).T)] = True
+        model = cls(encoder, config["max_length"], width=config["width"], depth=config["depth"], allowed=allowed)
+        model.network.load_weights(os.path.join(folder, "model.weights.h5"))
+        return model
+
+    # ------------------------------------------------------------------ generating (numpy, state per case)
+
+    def _w(self) -> Dict[str, np.ndarray]:
+        if self._weights is None:
+            get = lambda name: [w.astype(np.float64) for w in self.network.get_layer(name).get_weights()]
+            weights = {
+                "token": get("token_embedding")[0], "time": get("time_embedding")[0], "elapsed": get("elapsed_embedding")[0],
+                "next_token": get("next_token_embedding")[0],
+                "attribute_embeddings": [get(f"attribute_{i}")[0] for i in range(len(self.encoder.category_sizes))],
+                "calendar": [get(f"calendar_{i}")[0] for i in range(len(CALENDAR_SIZES))],
+            }
+            for name in ("attributes", "recency_dense", "event_output", "time_hidden", "time_output"):
+                weights[name] = get(name)
+            if self.use_resources:
+                weights["resource"] = get("resource_embedding")[0]
+                weights["next_resource"] = get("next_resource_embedding")[0]
+            if self.use_offers:
+                weights["offer"] = get("offer_dense")
+            weights["lstm"] = [get(f"lstm_{layer}") for layer in range(self.depth)]
+            self._weights = weights
+        return self._weights
+
+    def start(self, categorical: np.ndarray, numeric: np.ndarray, starts: np.ndarray) -> Dict[str, np.ndarray]:
+        """
+        State of new cases before their first event. categorical and numeric come from
+        encoder.encode_attributes(attributes, start); starts are the case starts in seconds since 1970.
+        """
+        w = self._w()
+        parts = [embedding[categorical[:, i]] for i, embedding in enumerate(w["attribute_embeddings"])] + [numeric.astype(np.float64)]
+        kernel, bias = w["attributes"]
+        n = len(categorical)
+        return {
+            "attributes": np.concatenate(parts, axis=1) @ kernel + bias,
+            "start": np.asarray(starts, dtype=np.float64),
+            "elapsed": np.zeros(n),  # seconds since the start of the case
+            "last": np.full((n, len(self.encoder.activities)), np.nan),  # elapsed time at the last occurrence of every activity
+            "h": np.zeros((self.depth, n, self.width)),
+            "c": np.zeros((self.depth, n, self.width)),
+        }
+
+    # Die Funktion schiebt pro Fall ein Event ins Modell, aktualisiert dessen Gedächtnis und gibt die Scores (Logits) für das nächste Event zurück.
+    def step(self, state: Dict[str, np.ndarray], tokens: np.ndarray, seconds: np.ndarray,
+             resources: Optional[np.ndarray] = None, offers: Optional[np.ndarray] = None) -> np.ndarray:
+        """
+        Feed one event per case (token id and the seconds since the event before it) into the state,
+        in place. Returns the logits of the next event; events that never followed this one in the
+        training cases get -inf.
+        resources: per case the employee who performed the event (encoder.resource_id; default unknown).
+        offers: per case the current offer after the event (encoder.encode_offer; default: no offer).
+        """
+        w = self._w()
+        #seconds: pro Fall die Sekunden seit dem Event davor.
+        state["elapsed"] = state["elapsed"] + seconds
+        # encoded activities
+        # tokens: pro Fall das Event, das gerade passiert ist, als Token-ID (Aktivität|Lifecycle).
+        activities = self.encoder.token_activity[tokens]
+        # Beispiel für einen Fall
+        # Event	elapsed	last[O_Sent]	last[A_Complete]
+        # A_Create Application	0 h	NaN	NaN
+        # O_Sent (mail and online)	25 h	25 h	NaN
+        # A_Complete	25 h	25 h	25 h
+        # (nächster Schritt, 300 h)	300 h	25 h	25 h
+        rows = np.nonzero(activities >= 0)[0]
+        # state: der Zustand der Fälle aus start(): Fallattribute, Startzeit, verstrichene Zeit, last und die LSTM-Zustände h und c. Er wird direkt verändert.
+        state["last"][rows, activities[rows]] = state["elapsed"][rows]
+        # Kalender: Aus Startzeit + verstrichener Zeit werden Stunde, Wochentag und Tag im Monat berechnet.
+        calendar = calendar_features(state["start"] + state["elapsed"])
+        recency_kernel, recency_bias = w["recency_dense"]
+        # Eingabevektor x bauen:
+        # Tokens
+        # Embedding der Zeit seit dem vorigen Event
+        # Embedding der Zeit seit Fallbeginn (ebenfalls gerundet),
+        # Recency: Zeit seit dem letzten Auftreten jeder Aktivität. Dieses Merkmal haben wir eingeführt, weil das Modell vorher zu selten stornierte. Im echten Log ist das Storno ein Timer: Etwa 30 Tage nach dem letzten Angebot wird der Antrag automatisch storniert. 
+        # Fallattribute (LoanGoal, ApplicationType, RequestedAmount, Startmonat),
+        # Kalender-Embeddings
+        x = (
+            w["token"][tokens] + w["time"][time_bin(seconds, self.encoder.time_edges) + 1] + w["elapsed"][time_bin(state["elapsed"], self.encoder.time_edges) + 1]
+            + _recency(state["elapsed"], state["last"]) @ recency_kernel + recency_bias + state["attributes"]
+        )
+        for i, embedding in enumerate(w["calendar"]):
+            x = x + embedding[calendar[:, i]]
+        if self.use_resources:
+            x = x + w["resource"][resources if resources is not None else np.zeros(len(tokens), dtype=int)]
+        if self.use_offers:
+            kernel, bias = w["offer"]
+            x = x + (offers if offers is not None else np.zeros((len(tokens), self.encoder.n_offer_features))) @ kernel + bias
+        for layer, (kernel, recurrent, bias) in enumerate(w["lstm"]):
+            z = x @ kernel + state["h"][layer] @ recurrent + bias
+            i, f, g, o = np.split(z, 4, axis=1)
+            state["c"][layer] = _sigmoid(f) * state["c"][layer] + _sigmoid(i) * np.tanh(g)
+            state["h"][layer] = _sigmoid(o) * np.tanh(state["c"][layer])
+            x = state["h"][layer]
+        kernel, bias = w["event_output"]
+        # Remember: Logits sind die "Punktzahlen" vor der exp
+        logits = x @ kernel + bias
+        logits[~self.allowed[tokens]] = -np.inf
+        # Die letzte Schicht liefert über event_output einen Score für jedes mögliche nächste Token.
+        return logits
+
+    def time_logits(self, state: Dict[str, np.ndarray], next_tokens: np.ndarray, next_resources: Optional[np.ndarray] = None) -> np.ndarray:
+        """
+        Logits of the time bin until the next event, given which event it is and, with work items, who performs it
+        (next_resources: employee indices, default unknown).
+        """
+        w = self._w()
+        hidden_kernel, hidden_bias = w["time_hidden"]
+        kernel, bias = w["time_output"]
+        given = [state["h"][-1], w["next_token"][next_tokens]]
+        if self.use_resources:
+            given.append(w["next_resource"][next_resources if next_resources is not None else np.zeros(len(next_tokens), dtype=int)])
+        hidden = np.maximum(np.concatenate(given, axis=1) @ hidden_kernel + hidden_bias, 0.0)
+        return hidden @ kernel + bias
+
+    @staticmethod
+    def draw(logits: np.ndarray, rng: np.random.Generator, min_probability: float = 0.0) -> np.ndarray:
+        """
+        One draw per row. Entries the model gives less than min_probability are never drawn: a softmax
+        gives everything a tiny probability, and over many draws that adds up.
+        """
+        if min_probability > 0:
+            logits = logits.copy()
+            probabilities = np.exp(logits - logits.max(axis=1, keepdims=True))
+            probabilities /= probabilities.sum(axis=1, keepdims=True)
+            logits[probabilities < min_probability] = -np.inf
+        # Gumbel trick: argmax of logits plus Gumbel noise is a draw from the softmax
+        return np.argmax(logits + rng.gumbel(size=logits.shape), axis=1)
+
+    def sample(self, traces: List[Trace], rng: np.random.Generator, min_probability: float = 0.0,
+               min_time_probability: Optional[float] = None):
+        """
+        One generated case per given case (its attributes and its start time are used).
+        Returns per case the event token ids and the seconds before each event.
+        """
+        categorical, numeric = self._case_inputs(traces)
+        n = len(traces)
+        state = self.start(categorical, numeric, np.array([trace.start for trace in traces]))
+        per_case = ("attributes", "start", "elapsed", "last")
+        events: List[List[int]] = [[] for _ in range(n)]
+        seconds: List[List[float]] = [[] for _ in range(n)]
+        active = np.arange(n)
+        tokens, before = np.full(n, BOS), np.zeros(n)
+        if min_time_probability is None:
+            min_time_probability = min_probability
+        for _ in range(self.max_length - 1):
+            if not len(active):
+                break
+            sub = {key: (value[active] if key in per_case else value[:, active]) for key, value in state.items()}
+            next_tokens = self.draw(self.step(sub, tokens[active], before[active]), rng, min_probability)
+            bins = self.draw(self.time_logits(sub, next_tokens), rng, min_time_probability)
+            state["h"][:, active], state["c"][:, active] = sub["h"], sub["c"]
+            state["elapsed"][active], state["last"][active] = sub["elapsed"], sub["last"]
+            durations = sample_seconds(bins, rng, self.encoder.time_edges)
+            ended = next_tokens == END
+            for row, token, duration in zip(active[~ended], next_tokens[~ended], durations[~ended]):
+                events[row].append(int(token))
+                seconds[row].append(float(duration))
+            tokens[active], before[active] = next_tokens, durations
+            active = active[~ended]
+        return events, seconds

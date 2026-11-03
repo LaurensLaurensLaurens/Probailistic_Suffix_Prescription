@@ -78,58 +78,6 @@ class ProbabilisticEvaluation(Evaluation):
                                                                     num_variances,
                                                                     last_values)
 
-    # Alle numerischen Attribute des vorhergesagten Events.
-    # Liste aller numerischen Features, die der Decoder für ein Event vorhersagen bzw. sampeln soll.
-    # all_num_attributes = [
-    #     "case_elapsed_time",
-    #     "event_elapsed_time"
-    # ]
-
-    # growing_num_values = [
-    #     "case_elapsed_time"
-    # ]
-    # num_means = {
-    #     "case_elapsed_time_mean": tensor([130.0]),
-    #     "event_elapsed_time_mean": tensor([25.0])
-    # }
-
-    # num_variances = {
-    #     "case_elapsed_time_var": tensor([0.1]),
-    #     "event_elapsed_time_var": tensor([0.2])
-    # }
-
-    # last_values = {
-    #     "case_elapsed_time_mean": tensor([120.0]),
-    #     "event_elapsed_time_mean": tensor([30.0])
-    # }
-    # Bei Smapling könnte enstehen: sample_case_elapsed = tensor([125.0])
-    #sample_event_elapsed = tensor([22.0])
-    #
-    # result = {
-    #     "case_elapsed_time_mean": tensor([125.0]),  # max(120, 125)
-    #     "event_elapsed_time_mean": tensor([22.0])
-    # }
-    # DAS IST AUF EVENT EBENE: ALSO DIE FÜR JEDES ERZEUGTE EVENT
-    #Sample 17 für Case_1
-    #
-    # Event 1:
-    # activity = "REPAIR"
-    # event_elapsed_time = 312.4
-    # case_elapsed_time = 1280.5
-
-    # Event 2:
-    # activity = "QUALITY_CONTROL"
-    # event_elapsed_time = 93.7
-    # case_elapsed_time = 1374.2
-
-    # Event 3:
-    # activity = "SHIPPING"
-    # event_elapsed_time = 155.1
-    # case_elapsed_time = 1529.3
-
-    # Event 4:
-    # EOS
-    # Die Methode wandelt die vorhergesagten Mittelwerte und Unsicherheiten in konkrete numerische nächste Event-Werte um
     @torch.jit.script
     def sample_num_predictions_optim(
                                all_num_attributes : list[str],
@@ -156,7 +104,6 @@ class ProbabilisticEvaluation(Evaluation):
         
         return result
     
-    # sample_suffix() ist die Methode, die einen einzigen vollständigen möglichen Zukunftsverlauf (Suffix) für einen gegebenen Prefix generiert
     def sample_suffix(self, prefix, prefix_len, include_model_states):
         prediction, (h, c), z = self.model.inference(prefix=prefix)
         suffix = []
@@ -198,7 +145,6 @@ class ProbabilisticEvaluation(Evaluation):
         else:
             return suffix
 
-    # predict_probabilistic_suffix() ist die Methode, die mehrere komplette probabilistische Suffixe für denselben Prefix erzeugt
     def predict_probabilistic_suffix(self, prefix, prefix_len, include_model_states):
         suffixes = []
         for i in range(self.samples_per_case):
@@ -207,25 +153,6 @@ class ProbabilisticEvaluation(Evaluation):
         return suffixes     
     
     
-    # _evaluate_single()
-    # │
-    # ├── case_name
-    # │     "Case_4711"
-    # │
-    # ├── prefix_len
-    # │     3
-    # │
-    # ├── readable_prefix
-    # │     [A, B, C]
-    # │
-    # ├── predicted_suffixes
-    # │     100 probabilistische Zukunfts-Samples
-    # │
-    # ├── readable_suffix
-    # │     echter Target-Suffix
-    # │
-    # └── mean_prediction
-    #     Most-Likely-/Mean-Suffix
     def _evaluate_single(self, case_name, prefix_len, prefix, suffix, include_model_states):
         readable_prefix = self.case_to_readable(prefix, prune_eos=False)
         # print("Prefix: ", readable_prefix)
@@ -240,12 +167,7 @@ class ProbabilisticEvaluation(Evaluation):
 
         return case_name, prefix_len, readable_prefix, predicted_suffixes, readable_suffix, mean_prediction
     
-    # Case_1
-    # │
-    # ├── prefix_len = 1
-    # ├── prefix_len = 2
-    # ├── prefix_len = 3
-    # └── prefix_len = 4
+    
     def count_only(self, random_order=False):
         case_items = list(self.cases.items())
         if random_order:
@@ -254,7 +176,7 @@ class ProbabilisticEvaluation(Evaluation):
             for j, (prefix_len, prefix, suffix) in enumerate(self._iterate_case(full_case)):
                 yield case_name, prefix_len, None, None, None, None
                 
-    #_evaluate_single() nimmt einen bestimmten Prefix eines Cases und erzeugt dafür alles, was du anschließend für die Evaluation brauchst.
+                
     def evaluate(self, random_order=False, include_model_states=False):
         #compiled_evaluate_single = torch.compile(self._evaluate_single)
         case_items = list(self.cases.items())
@@ -264,13 +186,6 @@ class ProbabilisticEvaluation(Evaluation):
             for j, (prefix_len, prefix, suffix) in enumerate(self._iterate_case(full_case)):
                 yield self._evaluate_single(case_name, prefix_len, prefix, suffix, include_model_states)
 
-        # Erstmal nur vorbereitend. Wird später mit _evaluate_single() ersetzt.
-        # ("Case_1", 1, None, None, None, None)
-        # ("Case_1", 2, None, None, None, None)
-        # ("Case_1", 3, None, None, None, None)
-        # ("Case_1", 4, None, None, None, None)
-
-    # mehrere davon parallel
     def evaluate_multi_processing(self, random_order=False, include_model_states=False):
         case_items = list(self.cases.items())
         if random_order:

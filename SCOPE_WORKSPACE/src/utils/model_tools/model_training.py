@@ -1,4 +1,6 @@
+import os
 import random
+import time
 import torch
 from torch.utils import data
 from itertools import chain
@@ -54,7 +56,7 @@ class ModelTrainer():
         #     )
 
         if self.model_params["model_category"] == "dl":
-            self.train_dl()
+            return self.train_dl()
         elif self.model_params["model_category"] == "ml":
             self.train_ml(tuning=tuning)
         elif self.model_params["model_category"] == "rl":
@@ -114,6 +116,8 @@ class ModelTrainer():
         """
         Train either a single NN (S-learner) or multiple NNs (T-learner).
         Works with get_loss() returning a single loss or a list of per-arm losses.
+        Returns train_attenuated_losses, infer_losses, infer_attenuated_losses as in the PSP trainer
+        (infer = validation; the first two are only filled for the PSP).
         """
 
         # Sehr hilfreiche übersicht
@@ -185,12 +189,48 @@ class ModelTrainer():
                 weight_decay=self.model_params["weight_decay"],
             )
 
+        # === Scheduler (nur PSP) ===
+        # Wie im PSP-Trainer: Learning Rate senken, wenn sich der Val-Loss nicht mehr verbessert.
+        # Ein Schritt pro Evaluation, die Patience zählt also in Evaluationen (alle eval_every Epochen).
+        self.scheduler = None
+        if self.model_params["model_specific"] == "psp" and self.model_params.get("psp_use_scheduler", False):
+            self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                self.optim, mode="min",
+                factor=self.model_params.get("psp_scheduler_factor", 0.1),
+                patience=self.model_params.get("psp_scheduler_patience", 15),
+                min_lr=self.model_params.get("psp_scheduler_min_lr", 1e-8),
+            )
+
+        # === Tensorboard writer (nur PSP) ===
+        # Wie im PSP-Trainer. Jedes Training bekommt einen eigenen Ordner, benannt wie der Checkpoint plus Zeitstempel.
+        is_psp = self.model_params["model_specific"] == "psp"
+        self.writer = None
+        if is_psp and self.model_params.get("psp_use_tensorboard", False):
+            from torch.utils.tensorboard import SummaryWriter
+            run_name = os.path.basename(self.savepath_checkpoint)[:-len(".pt")] + "_" + time.strftime("%Y%m%d-%H%M%S")
+            self.tensorboard_path = os.path.join(self.model_params["psp_tensorboard_dir"], run_name)
+            self.writer = SummaryWriter(log_dir=self.tensorboard_path)
+            print(f"    Tensorboard: {self.tensorboard_path}")
+        # Nur PSP: zusätzlich den aktuellen Stand alle n Epochen speichern (0 = aus). Das beste Modell liegt immer im Checkpoint.
+        save_model_n_th_epoch = self.model_params.get("psp_save_model_n_th_epoch", 0) if is_psp else 0
+        self.saving_path = self.savepath_checkpoint[:-len(".pt")] + "_last.pt"
+
         # === Tracking variables ===
         self.losses_train = []
         self.losses_infer = []
+        # Nur PSP: mittlerer Trainings-Loss je Epoche wie im PSP-Trainer
+        self.train_attenuated_losses = []
+        # Verläufe je Evaluation wie im PSP-Trainer (infer = Validierung):
+        # infer_losses = Standard-Loss ohne Unsicherheit (nur PSP), infer_attenuated_losses = der Val-Loss
+        self.infer_losses = []
+        self.infer_attenuated_losses = self.losses_infer
         self.best_loss_infer = float("inf")
         self.best_model = None
-        epoch_train_loss = 0.0
+        # Nur PSP: Losses je Attribut wie im PSP-Trainer, aufsummiert über die Batches
+        epoch_cat_loss = {}
+        epoch_num_loss = {}
+
+        epoch_loss = 0.0
         num_train_batches = 0
         best_epoch = 0
 
@@ -200,10 +240,19 @@ class ModelTrainer():
               f"{len(self.data_loader_train.dataset)} Train / {n_infer} Val, {self.model_params['num_epochs']} Epochen, Evaluation alle {self.model_params['eval_every']}")
 
         for epoch in tqdm(range(self.model_params["num_epochs"]), disable=True):
+            if is_psp and self.model_params.get("psp_use_scheduled_sampling", False):
+                # Reduce Teacher forcing ratio dynamically (scheduled sampling), wie im PSP-Trainer
+                self.model_functions.teacher_forcing_ratio = max(
+                    self.model_params.get("psp_min_teacher_forcing_value", 0.0),
+                    self.model_params.get("psp_max_teacher_forcing_value", 1.0) - epoch / (self.model_params["num_epochs"] * 0.5))
+
             # === TRAINING ===
+            n_batches_before = len(self.losses_train)
             for x_case, x_event, prefix_len, t, y, weights, x_suffix, suffix_len in self.data_loader_train:
                 # Nur das PSP bekommt die Suffixe, die anderen Modelle kennen diese Argumente nicht
                 suffix_kwargs = {"x_suffix": x_suffix, "suffix_len": suffix_len} if self.model_params["model_specific"] == "psp" else {}
+                # Nur das PSP gibt zusätzlich die Losses je Attribut zurück
+                parts_kwargs = {"return_parts": True} if self.model_params["model_specific"] == "psp" else {}
                 if isinstance(self.model_functions.model, list):
                     # T-learner: compute per-arm losses
                     # Welches Netz genau trainiert wird, wird über get_model_functions(model_params) entschieden
@@ -223,7 +272,7 @@ class ModelTrainer():
                         torch.nn.utils.clip_grad_norm_(model_i.parameters(), self.model_params["grad_norm"])
                         optim_i.step()
                         self.losses_train.append(loss_i.item())
-                        epoch_train_loss += loss_i.item()
+                        epoch_loss += loss_i.item()
                         num_train_batches += 1
                 else:
                     # S-learner: standard single-model training
@@ -234,22 +283,55 @@ class ModelTrainer():
                     # Steckt also in model_functions
                     loss = self.model_functions.get_loss(
                         x_case=x_case, x_event=x_event, prefix_len=prefix_len,
-                        t=t, y=y, weights=weights, set_eval=False, **suffix_kwargs
+                        t=t, y=y, weights=weights, set_eval=False, **suffix_kwargs, **parts_kwargs
                     )
+                    if isinstance(loss, tuple):
+                        # PSP: Losses je Attribut aufsummieren
+                        loss, (cat_losses_dict, num_losses_dict) = loss
+                        for feature_name in cat_losses_dict.keys():
+                            epoch_cat_loss[feature_name] = epoch_cat_loss.get(feature_name, 0.0) + cat_losses_dict[feature_name].item()
+                        for feature_name in num_losses_dict.keys():
+                            epoch_num_loss[feature_name] = epoch_num_loss.get(feature_name, 0.0) + num_losses_dict[feature_name].item()
                     loss.backward()
                     torch.nn.utils.clip_grad_norm_(self.model_functions.model.parameters(), self.model_params["grad_norm"])
                     self.optim.step()
                     self.losses_train.append(loss.item())
-                    epoch_train_loss += loss.item()
+                    epoch_loss += loss.item()
                     num_train_batches += 1
+
+            if self.model_params["model_specific"] == "psp":
+                # Prints per Epoch (wie im PSP-Trainer). Ohne psp_use_scheduled_sampling bleibt die Teacher forcing ratio 1.0.
+                teacher_forcing_ratio = self.model_functions.teacher_forcing_ratio
+                batch_losses = self.losses_train[n_batches_before:]
+                epoch_loss_train = sum(batch_losses) / max(1, len(batch_losses))
+                current_lr = self.optim.param_groups[0]['lr']
+                print(f"      Epoch [{epoch+1}/{self.model_params['num_epochs']}], Learning Rate: {current_lr}, Teacher forcing ratio: {teacher_forcing_ratio}")
+                print(f"      Training: Avg Attenuated Training Loss: {epoch_loss_train:.4f}")
+                self.train_attenuated_losses.append(epoch_loss_train)
+
+                if self.writer is not None:
+                    # Tensorboard writer:
+                    # Hyperparameters
+                    self.writer.add_scalars("Hyperparameter", {'Learning Rate': current_lr, 'Teacher Forcing Ratio': teacher_forcing_ratio}, epoch+1)
+                    # Total losses (die Infer-Werte kommen bei jeder Evaluation dazu)
+                    self.writer.add_scalars("Total Losses", {'Training Total': epoch_loss_train}, epoch+1)
 
             # === EVALUATION ===
             if epoch % self.model_params["eval_every"] == 0:
                 with torch.no_grad():
                     loss_infer = self.evaluate_dl(data_type="infer")
                     self.losses_infer.append(loss_infer)
+                    # Nur PSP: Standard-Loss ohne Unsicherheit (Cross-Entropy + MSE), siehe get_loss
+                    loss_infer_std = self.last_eval_feature_losses.get("total", {}).get("std")
+                    if loss_infer_std is not None:
+                        self.infer_losses.append(loss_infer_std)
 
-                    avg_train_loss = epoch_train_loss / max(1, num_train_batches)
+                    avg_train_loss = epoch_loss / max(1, num_train_batches)
+                    # Take the mean losses over all batches
+                    for feature_name in epoch_cat_loss.keys():
+                        epoch_cat_loss[feature_name] = epoch_cat_loss[feature_name] / max(1, num_train_batches)
+                    for feature_name in epoch_num_loss.keys():
+                        epoch_num_loss[feature_name] = epoch_num_loss[feature_name] / max(1, num_train_batches)
 
                     # if self.args.wandb:
                     #     wandb.log({
@@ -266,10 +348,25 @@ class ModelTrainer():
                         best_epoch = epoch
                         torch.save(self.best_model, self.savepath_checkpoint)
 
-                    self.print_progress(epoch=epoch, loss_train=avg_train_loss, loss_infer=loss_infer, is_best=is_best)
+                    self.print_progress(epoch=epoch, loss_train=avg_train_loss, loss_infer=loss_infer, is_best=is_best,
+                                        epoch_cat_loss=epoch_cat_loss, epoch_num_loss=epoch_num_loss)
+                    if self.writer is not None:
+                        self.write_tensorboard(epoch=epoch, loss_infer_std=loss_infer_std, loss_infer=loss_infer,
+                                               epoch_cat_loss=epoch_cat_loss, epoch_num_loss=epoch_num_loss)
+                    if self.scheduler is not None:
+                        # Adjust the learning rate if necessary (wie im PSP-Trainer mit dem Standard-Loss)
+                        print(f"      Validation Loss for Scheduler: {loss_infer_std:.4f}")
+                        self.scheduler.step(loss_infer_std)
                     # Der Trainings-Loss der nächsten Zeile gilt nur für die Epochen seit dieser Evaluation
-                    epoch_train_loss = 0.0
+                    epoch_cat_loss = {}
+                    epoch_num_loss = {}
+
+                    epoch_loss = 0.0
                     num_train_batches = 0
+
+            if save_model_n_th_epoch > 0 and (epoch + 1) % save_model_n_th_epoch == 0:
+                print("      saving model")
+                torch.save(self.model_functions.model, self.saving_path)
 
             # === EARLY STOPPING ===
             if (
@@ -281,6 +378,17 @@ class ModelTrainer():
                 print("Early stopping triggered.")
                 break
 
+        if is_psp:
+            print("    Training complete.")
+            if save_model_n_th_epoch > 0:
+                # Letzter Stand des Trainings
+                torch.save(self.model_functions.model, self.saving_path)
+                print(f"    Model saved to path: {self.saving_path}")
+            # Das beste Modell wurde während des Trainings im Checkpoint gespeichert
+            print(f"    Best model saved to path: {self.savepath_checkpoint}")
+            if self.writer is not None:
+                self.writer.close()
+
         print(f"    Bestes Modell: Epoche {best_epoch}, Val-Loss {self.best_loss_infer:.4f}")
 
         # === LOAD BEST MODEL ===
@@ -291,6 +399,67 @@ class ModelTrainer():
 
         # if self.args.wandb:
         #     wandb.finish()
+
+        # === SUFFIX-AUSWERTUNG (nur PSP) ===
+        # Wie die Auswertung des PSP: Suffixe für jeden Prefix der Validierungsdaten ziehen und mit den echten vergleichen
+        if is_psp and self.model_params.get("psp_evaluate_suffixes", False):
+            from src.utils.model_tools.psp_evaluation import PSPSuffixEvaluation
+            suffix_evaluation = PSPSuffixEvaluation(
+                model=self.best_model if self.best_model is not None else self.model_functions.model,
+                model_params=self.model_params,
+                samples_per_case=self.model_params.get("psp_evaluation_samples_per_case", 100),
+                growing_num_values=self.model_params.get("psp_growing_num_values", ["elapsed_time"]),
+            )
+            self.suffix_evaluation = suffix_evaluation.evaluate(self.data_infer)
+            suffix_evaluation.print_summary(self.suffix_evaluation)
+
+        return self.train_attenuated_losses, self.infer_losses, self.infer_attenuated_losses
+
+    def write_tensorboard(self, epoch, loss_infer_std, loss_infer, epoch_cat_loss, epoch_num_loss):
+        # PSP: Losses einer Evaluation wie im PSP-Trainer in Tensorboard schreiben (infer = Validierung)
+        infer = self.last_eval_feature_losses
+
+        # Total losses
+        self.writer.add_scalars(
+            "Total Losses",
+            {
+                'Standard Infer Total': loss_infer_std,
+                'Uncertainty Infer Total': loss_infer
+            },
+            epoch+1)
+
+        # Categorical losses (die Aktivität hat keinen Loss mit Unsicherheit)
+        for feature_name in epoch_cat_loss.keys():
+            safe_feature_name = feature_name.replace(':', '_').replace('/', '_')
+            self.writer.add_scalars(
+                "Categorical Feature Losses",
+                {
+                    f'Training {safe_feature_name}': epoch_cat_loss[feature_name],
+                    f'Standard Infer {safe_feature_name}': infer["cat_std"][feature_name]
+                },
+                epoch + 1)
+        # Numerical losses
+        for feature_name in epoch_num_loss.keys():
+            safe_feature_name = feature_name.replace(':', '_').replace('/', '_')
+            self.writer.add_scalars(
+                "Numerical Feature Losses",
+                {
+                    f'Training {safe_feature_name}': epoch_num_loss[feature_name],
+                    f'Standard Infer {safe_feature_name}': infer["num_std"][feature_name],
+                    f'Uncertainty Infer {safe_feature_name}': infer["num_unc"][feature_name]
+                },
+                epoch + 1)
+        # GradNorm
+        if getattr(self.model_functions, "use_gradnorm", False):
+            write_weights = self.model_functions.gn_weights.tolist()
+            for i, feature_name in enumerate(self.model_functions.gn_task_names):
+                safe_feature_name = feature_name.replace(':', '_').replace('/', '_')
+                self.writer.add_scalars(
+                    "Gradnorm values",
+                    {
+                        f'Gradnorm Weight {safe_feature_name}': write_weights[i]
+                    },
+                    epoch+1)
 
     def evaluate_dl(self, data_type):
         """
@@ -348,22 +517,44 @@ class ModelTrainer():
         else:
             self.model_functions.model.train()
 
-        self.last_eval_parts = {key: value / total_samples for key, value in total_parts.items()} if total_samples > 0 else {}
+        averaged_parts = {key: value / total_samples for key, value in total_parts.items()} if total_samples > 0 else {}
+        self.last_eval_parts = {key: value for key, value in averaged_parts.items() if "/" not in key}
+        # Nur PSP: Losses je Attribut, {"cat_std": {...}, "num_std": {...}, "num_unc": {...}, "total": {"std": ...}}
+        self.last_eval_feature_losses = {}
+        for key, value in averaged_parts.items():
+            if "/" in key:
+                group, feature_name = key.split("/", 1)
+                self.last_eval_feature_losses.setdefault(group, {})[feature_name] = value
         return total_loss / total_samples if total_samples > 0 else float("inf")
 
-    def print_progress(self, epoch, loss_train, loss_infer, is_best):
+    def print_progress(self, epoch, loss_train, loss_infer, is_best, epoch_cat_loss=None, epoch_num_loss=None):
         # Eine Zeile pro Evaluation. Der Train-Loss enthält ggf. Regularisierer, der Val-Loss nicht.
         line = f"      Epoche {epoch:4d} | Train-Loss {loss_train:9.4f} | Val-Loss {loss_infer:9.4f}"
+        if getattr(self, "scheduler", None) is not None:
+            # PSP mit Scheduler: Learning Rate, mit der bis zu dieser Evaluation trainiert wurde
+            line += f" | LR {self.optim.param_groups[0]['lr']:.1e}"
         parts = getattr(self, "last_eval_parts", {})
         if parts:
             # PSP (Val, Teacher Forcing): Teil-Losses und lesbare Kennzahlen, Outcome in der skalierten Einheit von Y
             line += f" | Aktivität CE {parts['activity_ce']:.4f} Acc {parts['activity_acc']:.3f}"
+            for key in parts:
+                # Weitere kategoriale Event-Attribute (z.B. process_type)
+                if key.endswith("_ce") and key != "activity_ce":
+                    line += f" | {key[:-3]} CE {parts[key]:.4f} Acc {parts[key[:-3] + '_acc']:.3f}"
             if "event_nll" in parts:
                 line += f" | Attribute NLL {parts['event_nll']:.4f}"
             line += f" | Outcome NLL {parts['outcome_nll']:.4f} MAE {parts['outcome_mae']:.4f}"
         if is_best:
             line += " *"
         print(line)
+        if epoch_cat_loss or epoch_num_loss:
+            # PSP (Train, Teacher Forcing): Loss je Attribut, kategorial als CE, numerisch und Outcome als NLL
+            feature_losses = {**(epoch_cat_loss or {}), **(epoch_num_loss or {})}
+            print("                  | Train je Attribut: " + " | ".join(f"{name} {value:.4f}" for name, value in feature_losses.items()))
+        if getattr(self.model_functions, "use_gradnorm", False):
+            # PSP mit GradNorm: aktuelles Loss-Gewicht je Attribut
+            gn_weights = zip(self.model_functions.gn_task_names, self.model_functions.gn_weights.tolist())
+            print("                  | GradNorm-Gewichte: " + " | ".join(f"{name} {value:.4f}" for name, value in gn_weights))
 
     def train_ml(self, tuning=False):
         # Initialize data loaders NOTE: we don't use data_infer here, as it is contained in the data_train (we use cross-validation)

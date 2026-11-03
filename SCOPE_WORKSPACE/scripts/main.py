@@ -116,15 +116,18 @@ else:
     save_data(dataset_params_list, os.path.join(os.getcwd(), DATA_FOLDER, "training_and_tuning", PATH_BEGIN + "dataset_params_list"))
     save_data(data, os.path.join(os.getcwd(), DATA_FOLDER, "training_and_tuning", PATH_BEGIN + "data"))
 
+
 if args.dataset == "bpic17":
     eval_dfs = generate_eval_bpic17(args=args, dataset_params=dataset_params)
 elif args.dataset == "SimRepair":
+    # Das hier ist für jede action combo und für bank, random und optimal die outcomes der policy und die Datensätze
     eval_dfs = generate_eval_simrepair(args=args, dataset_params=dataset_params)
 else:
     eval_dfs = generate_eval(args=args, dataset_params=dataset_params)
 
 # Preprocessing
 # Modelle trainieren und beim Tuning überwachen
+# # Preprocessing für die 5000 Trainingsfälle
 prepped_data_dict = {"train": {}, "infer": {}, "utils": {}}
 if args.already_train_tune_preprocessed:
     for encoding in args.encodings:
@@ -155,11 +158,24 @@ else:
 
 # NOTE: these are also preprocessed per datasize and delta, since the scaling will be different
 # Vorberetung der Evaluationsdaten, die für die Inferenz verwendet werden. Diese Daten werden in eval_preps gespeichert.
+# Preprocessing für die 500 testfälle
 eval_preps = {}
 # Aus generate_eval_simrepair
-# eval_dfs.keys ist immer Aktion 0, also start_standard, mmer Aktion 1, also start_priority
+# Bei mehreren Stages wäre es jedoch
+# (0, 0)   → Standard, dann shipping
+# (0, 1)   → Standard, dann conduct_qc
+# (1, 0)   → Priority, dann shipping
+# (1, 1)   → Priority, dann conduct_qc
+# eval_dfs = {
+#     "(0,)":     {"performance": -1494.86, "outcome_df": <500 Zeilen>, "test_df": <4440 Zeilen>},  # immer start_standard
+#     "(1,)":     {"performance": -1819.04, "outcome_df": <500 Zeilen>, "test_df": <4939 Zeilen>},  # immer start_priority
+#     "bank":     {"performance": -1921.70, "outcome_df": <500 Zeilen>, "test_df": <4702 Zeilen>},  # Werkstatt-Policy
+#     "random_0": {"performance": -1541.98, "outcome_df": <500 Zeilen>, "test_df": <4641 Zeilen>},  # zufällige Wahl
+#     "optimal":  {"performance":   830.78, "outcome_df": <500 Zeilen>, "test_df": <4209 Zeilen>},  # je Fall der bessere Lauf
+# }
 for action_combo in eval_dfs.keys():
     print(eval_dfs.keys())
+    # Wir wollen nur die Wahl von Aktion 0 oder Aktion 1 betrachten, also zum beispiel immer start_standard oder immer start_priority
     if action_combo == 'bank' or action_combo == 'optimal' or ('random') in action_combo: continue
     eval_preps[action_combo] = {}
     if args.already_eval_preprocessed:
@@ -168,9 +184,15 @@ for action_combo in eval_dfs.keys():
             prep_utils_eval_list = load_data(os.path.join(os.getcwd(), DATA_FOLDER, "eval", PATH_BEGIN + encoding + "_" + action_combo + "preprocessed_utils_eval_list"))
             eval_preps[action_combo][encoding] = data_eval_list
     else:
+        # Wir machen das Preprocessing für jede Action combo
         print(f"Preprocessing evaluation data for action combo: {action_combo}")
+        # Action combo wird hier bei initialiserung gesetzt
+        # hier machen wir das preprocessing mit raw_data=eval_dfs[action_combo]["test_df"]. Wir bereiten die presprocesing daten für die eval vor
         preprocessor = ProcessPreprocessor(args=args, raw_data=eval_dfs[action_combo]["test_df"], DATASET_PARAMS_LIST=dataset_params_list)
         for encoding in args.encodings:
+            # z.b.
+            # ({"X_case":[[50000.0,0.35],[25000.0,0.60]], "X_event":[[[3,6,2],[4,1,0]],[[2,5,0],[0,0,0]]], "prefix_len":[2,1], "T":[1,0], "Y":[1200.0,-300.0]}, 
+            # prepped_data_dict gibt es nur für die eval.  prepped_data_dict["utils"] kommt aus dem ersten Preprocessing und enthält, was dort aus den Trainingsdaten gelernt wurde: Skalierer (Minimum und Maximum je Spalte), One-Hot-Encoder (welche Aktivitäten es gibt), die maximale Präfixlänge und die Spaltennamen.
             _, data_eval_list, prep_utils_eval_list = preprocessor.preprocess(encoding=encoding, prep_utils_list=prepped_data_dict["utils"][encoding], eval=True, action_combo=action_combo)
             # Save preprocessed data
             save_data(data_eval_list, os.path.join(os.getcwd(), DATA_FOLDER, "eval", PATH_BEGIN + encoding + "_" + action_combo + "preprocessed_data_eval_list"))
@@ -204,27 +226,29 @@ for method in args.methods:
     best_params_collection[method] = best_params_list_of_dicts
     best_models_collection[method] = best_models_list_of_dicts
 
-# # Training
-# for iter in range(args.num_iterations):
-#     print(f"Training iteration: {iter}")
-#     if iter in args.iterations_to_skip: continue
-#     for method in args.methods:
-#         method_train = Method(args=args, method=method, prepped_data_dict=prepped_data_dict, best_model_params_list_of_dicts=best_params_collection[method], iter=iter)
-#         method_train.run(tuning=False)
+# Training
+for iter in range(args.num_iterations):
+    print(f"Training iteration: {iter}")
+    if iter in args.iterations_to_skip: continue
+    for method in args.methods:
+        method_train = Method(args=args, method=method, prepped_data_dict=prepped_data_dict, best_model_params_list_of_dicts=best_params_collection[method], iter=iter)
+        method_train.run(tuning=False)
 
-#         params_list_of_dicts = method_train.model_params_list_of_dicts
-#         models_list_of_dicts = method_train.models_list_of_dicts
+        params_list_of_dicts = method_train.model_params_list_of_dicts
+        models_list_of_dicts = method_train.models_list_of_dicts
 
-# # Evaluation
-# avg_uplift = 0
-# for iter in range(args.num_iterations):
-#     print(f"Evaluating iteration: {iter}")
-#     if iter in args.iterations_to_skip: continue
-#     for method in args.methods:
-#         print(f"    Evaluating method: {method}")
-#         method_eval = Method(args=args, method=method, prepped_data_dict=prepped_data_dict, best_model_params_list_of_dicts=best_params_collection[method], iter=iter)
-#         uplift, profit, df = method_eval.eval(preps_maps=eval_preps, dfs_map=eval_dfs)
-#         avg_uplift += uplift
+# Evaluation
+avg_uplift = 0
+for iter in range(args.num_iterations):
+    print(f"Evaluating iteration: {iter}")
+    if iter in args.iterations_to_skip: continue
+    for method in args.methods:
+        print(f"    Evaluating method: {method}")
+        method_eval = Method(args=args, method=method, prepped_data_dict=prepped_data_dict, best_model_params_list_of_dicts=best_params_collection[method], iter=iter)
+        # eval_preps ist pro action combination die vorbereiteten Evaluationsdaten als encoding
+        # z.b. prority and qualiyt checking checking 
+        uplift, profit, df = method_eval.eval(preps_maps=eval_preps, dfs_map=eval_dfs)
+        avg_uplift += uplift
 
 # # if args.wandb:
 # #     wandb.log({

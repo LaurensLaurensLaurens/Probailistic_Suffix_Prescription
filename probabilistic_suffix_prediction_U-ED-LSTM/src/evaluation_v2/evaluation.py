@@ -78,7 +78,6 @@ class Evaluation:
         ]
 
         # Get all cases to be iterated
-        # Das Dataset enthält viele Prefix-Samples desselben Case
         self.cases = self._get_cases_from_dataset()
 
     def _get_cases_from_dataset(self):
@@ -95,7 +94,6 @@ class Evaluation:
                 cases[case_id] = padded_case
         return cases
 
-    # Baut verschiedenene Prefixe: verschiedene Prefixe
     def _iterate_case(
         self, case: tuple[list[torch.Tensor], list[torch.Tensor]]
     ) -> Iterator[tuple]:
@@ -110,47 +108,6 @@ class Evaluation:
             *_,
         ) = case
 
-        #     # categorical
-        #     [
-        #         # Activity
-        #         tensor([
-        #             [0, 0, 0, 0, 0]
-        #         ]),
-
-        #         # Lifecycle
-        #         tensor([
-        #             [0, 0, 0, 0, 0]
-        #         ]),
-
-        #         # Resource
-        #         tensor([
-        #             [0, 0, 0, 0, 0]
-        #         ]),
-        #     ],
-
-        #     # numerical
-        #     [
-        #         # case_elapsed_time
-        #         tensor([
-        #             [0., 0., 0., 0., 0.]
-        #         ]),
-
-        #         # event_elapsed_time
-        #         tensor([
-        #             [0., 0., 0., 0., 0.]
-        #         ]),
-
-        #         # day_in_week
-        #         tensor([
-        #             [0., 0., 0., 0., 0.]
-        #         ]),
-
-        #         # seconds_in_day
-        #         tensor([
-        #             [0., 0., 0., 0., 0.]
-        #         ]),
-        #     ],
-        # )
         current_prefix = (
             [
                 torch.zeros_like(cat_attribute).unsqueeze(0)
@@ -179,7 +136,6 @@ class Evaluation:
         # static attributes
         static_atts = self._prepare_static_inputs(static_cats, static_nums)
 
-        # Weil die Evaluation für jeden möglichen Prefix eines vollständigen Cases prüfen will, wie gut das Modell den restlichen Suffix vorhersagt.
         prefix_length = 0
         for i in range(
             categorical_tensors[self.concept_name_id].shape[0]
@@ -189,11 +145,9 @@ class Evaluation:
             # categorical updates
             for j in range(len(current_prefix[0])):
                 # Prefix building: Roll and update last
-                # [3, 7, 12, 5, 27] -> [7, 12, 5, 27, 3]
                 current_prefix[0][j][0] = torch.roll(current_prefix[0][j][0], -1)
                 current_prefix[0][j][0, -1] = categorical_tensors[j][i]
 
-                # [3, 7, 12, 5, 27] -> [7, 12, 5, 27, 3]
                 current_suffix[0][j][0] = torch.roll(current_suffix[0][j][0], -1)
                 current_suffix[0][j][0, -1] = 0
 
@@ -255,7 +209,7 @@ class Evaluation:
 
         return result
 
-    # NEW: Nescessary?
+    # NEW: Ncessary?
     def _get_num_prediction_with_vars(self, pred_vars):
         result = {}
         for c in self.all_num_attributes:

@@ -246,6 +246,8 @@ def get_model_params_list_of_dicts(method, args, prep_utils):
                     if prms["model_specific"] == "psp":
                         # Das PSP braucht die Spaltennamen, um die Aktivität einzubetten
                         prms["event_cols_encoded"] = prep_utils[prms["encoding"]][stage]["event_cols_encoded"]
+                        # und die kategorialen Event-Attribute, um ihre One-Hot-Spalten wieder zusammenzufassen
+                        prms["event_cat_cols"] = prep_utils[prms["encoding"]][stage].get("event_cat_cols", ["activity"])
                         # und die Spalten des Suffixes für die Decoder-Köpfe
                         prms["suffix_cols_encoded"] = prep_utils[prms["encoding"]][stage].get("suffix_cols_encoded")
         
@@ -292,6 +294,7 @@ def parse():
     parser.add_argument('--already_trained', type=lambda x: x.lower() == 'true', default=config_args.get('already_trained', False), help='Already trained (True or False)')
     parser.add_argument('--already_tuned_list', nargs='+', type=str, default=config_args.get('already_tuned_list', []), help='Are there any models already tuned?')
     parser.add_argument('--already_tuned', type=lambda x: x.lower() == 'true', default=config_args.get('already_tuned', False), help='Already tuned (True or False)')
+    parser.add_argument('--already_tuned_stages', nargs='+', type=int, default=config_args.get('already_tuned_stages', []), help='Stages whose models are already tuned, the other stages get tuned (e.g. 1)')
     parser.add_argument('--already_train_tune_generated', type=lambda x: x.lower() == 'true', default=config_args.get('already_train_tune_generated', False), help='Already generated train and tune dfs (True or False)')
     parser.add_argument('--already_train_tune_preprocessed', type=lambda x: x.lower() == 'true', default=config_args.get('already_train_tune_preprocessed', False), help='Already preprocessed train and tune dfs (True or False)')
 

@@ -160,10 +160,17 @@ class AggPreprocessor():
         self.scale_cols_aggregate = [col for col in self.DATASET_PARAMS["scale_cols"] if col not in self.DATASET_PARAMS["last_state_cols"]]
         unique_activities = data["activity"].unique()
 
+        # Ein Control-Event ist nur dann ein Entscheidungspunkt, wenn direkt danach eine der Aktionen der Intervention folgt.
+        # Sonst würde z.B. in SimRepair ein repair_* vor einer Nachreparatur (prepare_rerepair_*) als "shipping" (T=0) gespeichert.
+        # Gilt nicht, wenn die Kontrollaktion nicht im Log steht (do_nothing in SimBank).
+        intervention_info = self.DATASET_PARAMS["intervention_info"]
+        check_next_is_action = intervention_info["column"] == "activity" and "do_nothing" not in intervention_info["actions"]
+
         train_prep = pd.DataFrame()
 
         for case_nr, group in grouped_train:
             case_treated = False
+            next_activities = group["activity"].shift(-1).tolist()
 
             # initiate a mean for every scale aggregate column
             sum_dict = {col: 0 for col in self.scale_cols_aggregate}
@@ -213,7 +220,9 @@ class AggPreprocessor():
                             end_control_condition = row["activity"] == end_control
                             if end_control_condition:
                                 break
-                    
+                    if check_next_is_action:
+                        end_control_condition = end_control_condition and next_activities[current_pos - 1] in intervention_info["actions"]
+
                     if end_control_condition:
                         if inference_condition or data_type != "infer_prefix":
                             for col in self.DATASET_PARAMS["last_state_cols"]:

@@ -20,30 +20,7 @@ from typing import List, Optional, Tuple, Union
 import torch
 from torch import Tensor, nn
 
-# Autoregressives Model:
-# prefix
-#   ↓
-# encoder
-#   ↓
-# letztes Prefix-Event als SOS
-#   ↓
-# decoder
-#   ↓
-# preds₀
-#   ↓
-# __transform_pred_into_next_event(preds₀)
-#   ↓
-# last_event₀
-#   ↓
-# inference(last_event=last_event₀, hx=...)
-#   ↓
-# preds₁
-#   ↓
-# __transform_pred_into_next_event(preds₁)
-#   ↓
-# last_event₁
-#   ↓
-# ...
+
 class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
     """
     Full Encoder-Decoder architecture with droput uncertainty LSTM.
@@ -80,20 +57,6 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
         super(DropoutUncertaintyEncoderDecoderLSTM, self).__init__()
 
         # Feature sizes encoder
-            #data_set_categories = [
-            # kategoriale Features
-            #[
-            #    ("Activity", 5),
-            #    ("Resource", 10),
-            #    ("Department", 4),
-            #],
-
-            # numerische Features
-            #[
-            #    ("amount", 1),
-            #    ("duration", 1),
-            #]
-            #]
         self.data_set_categories = data_set_categories
         print("Dynamic data set categories: ", data_set_categories)
         self.static_data_set_categories = static_data_set_categories
@@ -124,66 +87,23 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
 
         print("\n")
 
-        # __get_list_labels_input: "wie groß ist jedes gewählte Feature?"
-        # data_set_categories: alle Dataset-Spalten mit Größe
-        #   z. B. Activity 5 Klassen, Resource 4, amount Breite 1
-        # enc_feat: welche Namen der Encoder nutzt
-        #   z. B. [["Activity"], ["amount"]] → [5], [1]
-        #data_set_categories = [
-        # categorical
-        #[
-        #    ("Activity", 5),
-        #    ("Resource", 10),
-        #    ("Department", 4),
-        #],
-
-        # numerical
-        #[
-        #    ("amount", 1),
-        #    ("duration", 1),
-        #]
-        #]
-
-        #enc_feat = [
-        #    ["Activity"],   # categorical Features für Encoder
-        #   ["amount"]      # numerical Features für Encoder
-        #]
-        #
-        # Es ist die Größe der MODELL-Schichten:
-        #   5  → nn.Embedding(5, d)   Tabelle mit 5 Zeilen (eine pro Id) z.b. Id 1 = Activity 1 id 2 = Activity 2 id 3 = Activity 3 id 4 = Activity 4 id 5 = EOS etc
-
-        # LSTM kann mit reiner zahl wie 2 nichtsanafnegn. Braucht Embedding, also gelernter Vektor.
-        #            Id     Zeile in der Tabelle          Vektor (Länge d, z. B. 4)
-        #    0  →   [ 0.1, -0.3,  0.0,  0.2 ]     Padding
-        #    1  →   [ 0.8,  0.1, -0.4,  0.0 ]     A
-        #    2  →   [ 0.2,  0.9,  0.1, -0.2 ]     B
-        #    3  →   …
-        #    4  →   …                             EOS
-        #   1  → amount bleibt 1 Zahl pro Zeitschritt. Wird twar skaliert, aber bleibt eine Zahl, nicht Vektor 
-        #   danach: d + 1 = input_size_enc  (LSTM-Input pro Event) d ist padding
-        # ENC sind die dynamischen Attribute, die der Encoder nutzt und auf denen er hidden state traininert (Er trainiert den hidden state also nicht auf allen Features in dataset)
-        # Die werden dann nochmal aufgespalten in kategoriale und numerische Features
+        # Encoder (dynamic)
+        print("Encoder dynamic:")
+        # Get list of category label values for cat and num
         enc_label_cats, enc_label_nums = self.__get_list_labels_input(
             data_set_categories=data_set_categories, model_type_feats=enc_feat
         )
         self.data_labels_features_enc = [enc_label_cats, enc_label_nums]
         print(
-            "Encoder feature sizes (cat vocab sizes, num widths):",
+            "Encoder number of labels for each input feature (categorical, numerical):",
             self.data_labels_features_enc,
         )
-
-        # B — list slots (used every forward, not per event / not per case)
-        # prefixes kommen sp#ter von extern 
-        #   data_indices_enc = [[0], [0]]
-        #   means: cats = prefixes[0][0]  (Activity of all prefixes in batch)
-        #          nums = prefixes[1][0]  (amount  of all prefixes in batch)
-        #   Resource at prefixes[0][1] is never read if it is not in enc_feat.
         data_cat_indices_enc, data_num_indices_enc = self.__get_list_tensor_indeces(
             data_set_categories=data_set_categories, model_type_feats=enc_feat
         )
         self.data_indices_enc = [data_cat_indices_enc, data_num_indices_enc]
         print(
-            "Encoder dataset tensor indices (cat, num):",
+            "Encoder indices of tensors in dataset used as input:",
             self.data_indices_enc,
         )
 
@@ -210,19 +130,15 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
 
         # Encoder (static)
         print("Encoder static:")
-        # Wir haben oben die dynamischen Features berechnet. Jetzt berechnen wir die statischen Features.
         if self.static_enc_feat:
             if self.static_data_set_categories is None:
                 raise ValueError(
-                    "Static encoder features provided but static categories are missing."
+                    "Static encoder features provided but static categories aremissing."
                 )
             static_enc_label_cats, static_enc_label_nums = self.__get_list_labels_input(
                 data_set_categories=self.static_data_set_categories,
                 model_type_feats=self.static_enc_feat,
             )
-            # Sieht z.b. so aus: [5], [1]
-
-            # Ist gegeben
             self.data_labels_static_features_enc = [
                 static_enc_label_cats,
                 static_enc_label_nums,
@@ -232,7 +148,6 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
                 " (categorical, numerical):",
                 self.data_labels_static_features_enc,
             )
-            # Wieder wie oben
             static_data_cat_indices_enc, static_data_num_indices_enc = (
                 self.__get_list_tensor_indeces(
                     data_set_categories=self.static_data_set_categories,
@@ -390,93 +305,36 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
         # of decoder: ", self.output_feature_indeces)
 
     def __get_list_labels_input(self, data_set_categories, model_type_feats):
-        # Wir brauchen das, um die Größe der Embeddingstabelle zu berechnen. Anonsten wüsste Pytorch nicht, wie groß die Tabelle sein soll.
+        """
+        Gets number of feature attributes used as input of model.
+
+        Returns two lists (categorical, numerical) containing the number of feature
+        attributes (e.g.: 28 activity labels for concept:name).
+        """
         # Unpack categories
         cat_categories, num_categories = data_set_categories
-        # cat_categories = [
-        #    ("Activity", 5),
-        #    ("Resource", 10),
-        #    ("Department", 4),
-        #]
-        # num_categories = [
-        #    ("amount", 1),
-        #    ("duration", 1),
-        #]
         cat_feat_model, num_feat_model = model_type_feats
-        # cat_feat_model = ["Activity"]
-        # num_feat_model = ["amount"]
 
+        # Use the first value in the tuple as the key and the second value as the value
         cat_dict = {cat[0]: cat[1] for cat in cat_categories}
         num_dict = {num[0]: num[1] for num in num_categories}
-        # Einfach Liste in Dictionary umwandeln
-        # Use the first value in the tuple as the key and the second value as the value.
-        #cat_dict = {
-        #    "Activity": 5,
-        #    "Resource": 10,
-        #    "Department": 4
-        #}
 
-        #num_dict = {
-        #    "amount": 1,
-            #"duration": 1
-        #}
-
-        # No,, jede spalte, die wir für den Encoder nutzen. Steht sie im Dict, hol die Größe und packe sie in eine Liste
+        # Get input feature sizes to determine the model input size
         label_cats = [
             cat_dict[cat_feat] for cat_feat in cat_feat_model if cat_feat in cat_dict
         ]
-        # label_cats = [5]
         label_nums = [
             num_dict[num_feat] for num_feat in num_feat_model if num_feat in num_dict
         ]
-        # label_nums = [1]
 
         return label_cats, label_nums
-        # return [5], [1]  → Embedding(5, d) for Activity, 1 float channel for amount
 
     def __get_list_tensor_indeces(self, data_set_categories, model_type_feats):
-        """Return list positions of ``model_type_feats`` inside the dataset tensors.
+        """
+        Gets indices of tensors in dataset used as input of model.
 
-        Step-by-step demo
-        -----------------
-        Input::
-
-            data_set_categories = [
-                [("Activity", 5), ("Resource", 10), ("Department", 4)],
-                [("amount", 1), ("duration", 1)],
-            ]
-            model_type_feats = [["Activity"], ["amount"]]
-
-        1) Unpack::
-
-            cat_categories = [("Activity", 5), ("Resource", 10), ("Department", 4)]
-            num_categories = [("amount", 1), ("duration", 1)]
-            cat_feat_model = ["Activity"]
-            num_feat_model = ["amount"]
-
-        2) Sets (only for fast "is this name wanted?")::
-
-            cat_feat_set = {"Activity"}
-            num_feat_set = {"amount"}
-
-        3) Walk dataset order, keep index if name is in the set::
-
-            cat  i=0 Activity    in set? yes → keep 0
-                 i=1 Resource    in set? no
-                 i=2 Department  in set? no
-            num  i=0 amount      in set? yes → keep 0
-                 i=1 duration    in set? no
-
-        4) Return::
-
-            cat_indices = [0] Da Activity in cat_feat_set ist und i=0 ist
-            num_indices = [0] Da amount in num_feat_set ist und i=0 ist
-
-        Later encoder.forward::
-
-            prefixes[0][0]  → Activity tensor  (batch, seq) batch ist die Anzahl der Beispiele in der Batch, seq ist die Länge der Sequenz
-            prefixes[1][0]  → amount tensor
-            Resource / Department / duration are never read.
+        Returns two lists (categorical, numerical) containing the indices of the tensors
+        in the datset used as input for the encoder.
         """
         # Unpack categories
         cat_categories, num_categories = data_set_categories
@@ -494,7 +352,6 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
             i for i, num in enumerate(num_categories) if num[0] in num_feat_set
         ]
 
-        # z.B. [0], [0] 
         return cat_indices, num_indices
 
     def __get_list_dict_labels_output(self, data_set_categories, model_type_feats):
@@ -559,36 +416,6 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
         # Return a list of two dicts: one for categorical and one for numerical features
         return [cat_index_dict, num_index_dict]
 
-    # EncoderDecoder.forward()
-    #     │
-    #     ▼
-    # Encoder.forward()
-    #     │
-    #     ▼
-    # LSTMCell.forward()
-    #     │
-    #     ▼
-    #   h_enc,c_enc
-    #     │
-    #     ▼
-    # Decoder.forward()
-    #     │
-    #     ▼
-    # LSTMCell.forward()
-    #     │
-    #     ▼
-    # Prediction t=0
-    #     │
-    #     ▼
-    # Decoder.forward()
-    #     │
-    #     ▼
-    # LSTMCell.forward()
-    #     │
-    #     ▼
-    # Prediction t=1
-    #     │
-    #    ...
     def forward(
         self,
         prefixes: List,
@@ -603,84 +430,6 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
         INPUTS:
             prefixes: Input prefix sequence:
                 list(list(tensor(categorical), list(tensor(numerical)))
-                könnte so aussehen
-                    prefixes = [
-
-                        # ============================================================
-                        # CATEGORICAL FEATURES
-                        # Jede kategoriale Variable hat einen eigenen Tensor [B, W]
-                        # B = Batchgröße / Anzahl Prefix-Samples im Batch
-                        # W = window_size
-                        # ============================================================
-                        [
-                            # categorical feature 1: activity
-                            tensor([
-                                # Prefix-Sample 1
-                                [0, 0, 1, 4, 7],
-                                # 0,0 = Padding
-                                # 1 = Create Application
-                                # 4 = Delete Application
-                                # 7 = Assign Developer
-
-                                # Prefix-Sample 2
-                                [0, 2, 3, 5, 8],
-
-                                # Prefix-Sample 3
-                                [0, 0, 0, 1, 6],
-                            ]),
-
-                            # categorical feature 2: resource
-                            tensor([
-                                # Resource-Werte für GENAU dieselben 3 Prefix-Samples
-                                [0, 0, 12, 5, 9],
-
-                                [0, 7,  3, 2, 4],
-
-                                [0, 0,  0, 8, 6],
-                            ]),
-
-                            # categorical feature 3: department
-                            tensor([
-                                # Department-Werte für dieselben Prefix-Samples
-                                [0, 0, 2, 2, 3],
-
-                                [0, 1, 1, 4, 4],
-
-                                [0, 0, 0, 2, 5],
-                            ]),
-                        ],
-
-
-                        # ============================================================
-                        # NUMERICAL FEATURES
-                        # Auch jedes numerische Feature hat einen eigenen Tensor [B, W]
-                        # ============================================================
-                        [
-                            # numerical feature 1: elapsed_time
-                            tensor([
-                                # Prefix-Sample 1
-                                [0.0, 0.0, 0.10, 0.20, 0.55],
-
-                                # Prefix-Sample 2
-                                [0.0, 0.10, 0.30, 0.40, 0.80],
-
-                                # Prefix-Sample 3
-                                [0.0, 0.0, 0.0, 0.00, 0.35],
-                            ]),
-
-                            # numerical feature 2: time_since_last_event
-                            tensor([
-                                # Prefix-Sample 1
-                                [0.0, 0.0, 0.05, 0.10, 0.35],
-
-                                # Prefix-Sample 2
-                                [0.0, 0.10, 0.20, 0.30, 0.40],
-
-                                # Prefix-Sample 3
-                                [0.0, 0.0, 0.0, 0.00, 0.35],
-                            ]),
-                        ]
-                    ]
             static_inputs: Optional static attribute tensor(s) aligned with
                 the batch dimension.
                 Expected format: (static_cat_tensor, static_num_tensor) or a
@@ -715,117 +464,14 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
         )
 
         # Get SOS event: Last prefx event:
-        #sos_event: das Event, mit dem der Decoder startet, typischerweise das letzte Event des Prefixes
         cat_prefixes, num_prefixes = prefixes
         cat_sos_events = [cat_tens[:, -1:] for cat_tens in cat_prefixes]
         num_sos_events = [num_tens[:, -1:] for num_tens in num_prefixes]
         sos_event = [cat_sos_events, num_sos_events]
-        # Nimm für jeden Prefix im Batch nur die letzte Spalte, behalte aber die Dimension [B,1]
-        #         prefix = [
-        #     # categorical
-        #     [
-        #         # Activity [B,T]
-        #         tensor([
-        #             [0, 0, 3, 7, 12], Prefix 1 Activity None -> None -> Create Application -> Submit Application -> Assign Developer
-        #             [0, 0, 0, 3,  9], Prefix 2 ...
-        #         ]),
-
-        #         # Lifecycle [B,T]
-        #         tensor([
-        #             [0, 0, 1, 1, 3],
-        #             [0, 0, 0, 1, 2],
-        #         ]),
-
-        #         # Resource [B,T]
-        #         tensor([
-        #             [0, 0, 5, 5, 8],
-        #             [0, 0, 0, 2, 7],
-        #         ]),
-        #     ],
-
-        #     # numerical
-        #     [
-        #         # case_elapsed_time
-        #         tensor([
-        #             [0., 0., -1.2, -0.4, 0.3],
-        #             [0., 0.,  0.0, -0.8, 0.1],
-        #         ]),
-
-        #         # event_elapsed_time
-        #         tensor([
-        #             [0., 0., -0.9, 0.2, 0.5],
-        #             [0., 0.,  0.0, 0.1, 0.7],
-        #         ]),
-
-        #         # day_in_week
-        #         tensor([
-        #             [0., 0., -0.5, -0.5, -0.5],
-        #             [0., 0.,  0.0,  0.8,  0.8],
-        #         ]),
-
-        #         # seconds_in_day
-        #         tensor([
-        #             [0., 0., 0.2, 0.3, 0.4],
-        #             [0., 0., 0.0, 0.5, 0.6],
-        #         ]),
-        #     ],
-        # ]
-        # ZU 
-        #sos_event = [
-            #     # categorical
-            #     [
-            #         # Activity
-            #         tensor([
-            #             [12],
-            #             [ 9],
-            #         ]),
-
-            #         # Lifecycle
-            #         tensor([
-            #             [3],
-            #             [2],
-            #         ]),
-
-            #         # Resource
-            #         tensor([
-            #             [8],
-            #             [7],
-            #         ]),
-            #     ],
-
-            #     # numerical
-            #     [
-            #         # case_elapsed_time
-            #         tensor([
-            #             [0.3],
-            #             [0.1],
-            #         ]),
-
-            #         # event_elapsed_time
-            #         tensor([
-            #             [0.5],
-            #             [0.7],
-            #         ]),
-
-            #         # day_in_week
-            #         tensor([
-            #             [-0.5],
-            #             [ 0.8],
-            #         ]),
-
-            #         # seconds_in_day
-            #         tensor([
-            #             [0.4],
-            #             [0.6],
-            #         ]),
-            #     ],
-            # ]
-
 
         # output_sizes is a list of two dicts: [cat_dict, num_dict]
         cat_output_features_labels, num_output_features_labels = self.output_sizes
-        # Prediction dictionary for categorical features.
-        # Wir sagen für jede kategorielle Variable, die wir vorhersagen wollen, ein Dictionary mit den Keys "mean" und "var"
+        # Prediction dictionary for categorical features
         cat_predictions = {
             f"{key}_{suffix}": None
             for key in cat_output_features_labels
@@ -842,69 +488,15 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
         # Training
         if training:
             # Timestep iterations: 0, 1, ..., n-1
-            # Training auf S-1 nächsten Schritten
             for t in range(self.seq_len_pred):
                 # SOS Event
                 if t == 0:
                     # preds: list containing two dicts one for all means (cat, num),
                     # one for all vars (cat, num)
-                    # c_enc ist cell state des encoders nach dem letzten prefix event. Langzeitgedächtnis 
-                    # h_enc ist hidden state des encoders nach dem letzten prefix event
-                    # preds ist ein Tupel preds = (pred_means, pred_vars)
                     preds, (h, c), z = self.decoder(
                         input=sos_event, hx=(h_enc, c_enc), z=None, pred=False
                     )
                     pred_means, pred_vars = preds
-                    
-                    #predictions = [
-                    #     # categorical predictions
-                    #     {
-                    #         "activity_mean": tensor([
-                    #             [
-                    #                 [0.10, 0.70, 0.20],   # prefix 1 , timestep t=0
-                    #                 [0.60, 0.10, 0.30],   # prefix 2 , timestep t=0
-                    #             ]
-                    #         ]),
-
-                    #         "activity_var": tensor([
-                    #             [
-                    #                 [0.01, 0.03, 0.02],
-                    #                 [0.02, 0.01, 0.04],
-                    #             ]
-                    #         ]),
-
-                    #         "resource_mean": tensor([
-                    #             [
-                    #                 [0.20, 0.80],
-                    #                 [0.75, 0.25],
-                    #             ]
-                    #         ]),
-
-                    #         "resource_var": tensor([
-                    #             [
-                    #                 [0.02, 0.04],
-                    #                 [0.01, 0.03],
-                    #             ]
-                    #         ]),
-                    #     },
-
-                    #     # numerical predictions
-                    #     {
-                    #         "elapsed_time_mean": tensor([
-                    #             [
-                    #                 [0.42],   # Case 1, timestep 0
-                    #                 [0.73],   # Case 2, timestep 0
-                    #             ]
-                    #         ]),
-
-                    #         "elapsed_time_var": tensor([
-                    #             [
-                    #                 [0.05],
-                    #                 [0.08],
-                    #             ]
-                    #         ]),
-                    #     }
-                    # ]
 
                 # Next Event
                 # Decide per timestep whether to use teacher forcing
@@ -921,12 +513,6 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
                         ]
                         t_suffix_event = [cat_t_suffix_event, num_t_suffix_event]
 
-                        # echtes vorheriges Event
-                        # t_suffix_event ist ein Tupel t_suffix_event = (cat_t_suffix_event, num_t_suffix_event). Es ist das echte vorherige Event.
-                        # h ist hidden state des decoders nach dem letzten prefix event
-                        # c ist cell state des decoders nach dem letzten prefix event
-                        # z ist das Zustandsvektor des decoders
-                        # pred=False: wir verwenden das echte vorherige Event
                         preds, (h, c), _ = self.decoder(
                             input=t_suffix_event, hx=(h, c), z=z, pred=False
                         )
@@ -958,14 +544,6 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
                         predictions[0][f"{key}_var"] = cat_pred_vars[
                             f"{key}_var"
                         ].unsqueeze(0)
-                        # Dann unsqueeze(0) mit Zeitdimension
-                        # activity vorher:
-                        #     [B, classes]
-                        #     [2, 3]
-
-                        #     nach unsqueeze(0):
-                        #     [1, B, classes]
-                        #     [1, 2, 3]
                     else:
                         predictions[0][f"{key}_mean"] = torch.cat(
                             (
@@ -981,25 +559,6 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
                             ),
                             dim=0,
                         )
-                # predictions[0]["activity_mean"] = tensor([
-                #     # t = 0
-                #     [   z.B. Acttivity X, Activity Y, Activity Z
-                #         [0.10, 0.70, 0.20],   # Prefix 1 -------v
-                #         [0.60, 0.10, 0.30],   # Prefix 2 -------> Anzahl prefix samples im batch
-                #     ],
-
-                #     # t = 1
-                #     [
-                #         [0.20, 0.30, 0.50],  
-                #         [0.10, 0.80, 0.10],  
-                #     ],
-                # ])
-                #   [2, 2, 3]
-                #   ↑  ↑  ↑
-                #   T  B  Klassen
-                # T = Anzahl vorhergesagter Zeitschritte im Suffix
-                # B = Anzahl Prefix-Samples gleichzeitig im Batch
-                # C = Anzahl Klassen des kategorialen Features
 
                 # Add numerical tensors to output
                 for key in num_output_features_labels:
@@ -1025,31 +584,6 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
                             ),
                             dim=0,
                         )
-                # predictions = [
-                #     {
-                #         "activity_mean": ...,   # [4, B, num_activity_classes]
-                #         "activity_var":  ...,   # [4, B, num_activity_classes]
-
-                #         "resource_mean": ...,   # [4, B, num_resource_classes]
-                #         "resource_var":  ...,   # [4, B, num_resource_classes]
-                #     },
-
-                #     {
-                #         "elapsed_time_mean": ...,  # [4, B, 1]
-                #         "elapsed_time_var":  ...,  # [4, B, 1]
-                #     }
-                # ]
-
-                #     predictions
-                # ├── [0] categorical
-                # │   ├── activity_mean   [T, B, C_activity]
-                # │   ├── activity_var    [T, B, C_activity]
-                # │   ├── resource_mean   [T, B, C_resource]
-                # │   └── resource_var    [T, B, C_resource]
-                # │
-                # └── [1] numerical
-                #     ├── elapsed_time_mean   [T, B, 1]
-                #     └── elapsed_time_var    [T, B, 1]
 
         # Validation:
         if validation:
@@ -1124,7 +658,6 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
         # Return training or validation output
         return predictions, (h, c), self.seq_len_pred, self.output_feature_indeces
 
-    # Transform predictions into next event for decoder input
     def __transform_pred_into_next_event(
         self,
         pred_means,
@@ -1143,41 +676,12 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
             pred_index: index of event for next prediction
             suffix: Target data
 
-        pred_means = [
-            {
-                "activity_mean": tensor([
-                    [0.1, 0.7, 0.2], # case 1 activity X, activity Y, activity Z
-                    [0.8, 0.1, 0.1], # case 2
-                ])
-            },
-            {
-                "time_mean": tensor([
-                    [4.2],
-                    [7.5],
-                ])
-            },
-        ]
-
         OUTPUTS:
             next_event: event in decoder input data format
-
-        last_pred_event = [next_event = [
-            [tensor([[1], [0]])],      # kategorial: [B, 1]
-            [tensor([[4.2], [7.5]])],  # numerisch:   [B, 1]
-        ]
-        next_event = [
-            [cat_feature_1, cat_feature_2, ...],
-            [num_feature_1, num_feature_2, ...],
-        ]
-
         """
         cat_pred_means, num_pred_means = pred_means
 
         # Create index tensor based on predicted logits
-        # cat_preds = [
-        #     tensor([[1], [0]]),  # z. B. Aktivität
-        #     tensor([[2], [1]]),  # z. B. Ressource
-        # ]
         cat_preds = [
             torch.argmax(tensor, dim=1).unsqueeze(1)
             for _, tensor in enumerate(cat_pred_means.values())
@@ -1217,13 +721,6 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
             ]
 
         last_event = [cat_preds, num_preds]
-        # last_event
-        # ├── [0] kategoriale Features
-        # │   ├── [0] Aktivität: [B, 1]
-        # │   └── [1] Ressource: [B, 1]
-        # └── [1] numerische Features
-        #     ├── [0] Zeit: [B, 1]
-        #     └── [1] weiteres Feature: [B, 1]
 
         return last_event
 

@@ -164,6 +164,26 @@ model_params = {
     "eval_every": 2,  # Evaluate the model every n epochs
     "early_stop": False,  # Whether to use early stopping
 
+    # PSP parameters (scheduled sampling, Tensorboard, model saving, scheduler and GradNorm as in the PSP trainer)
+    "psp_evaluate_suffixes": True,  # Whether to evaluate sampled suffixes on the validation data after each PSP training
+    "psp_evaluation_samples_per_case": 100,  # Number of sampled suffixes per prefix in this evaluation
+    "psp_missing_value": -100,  # Placeholder of missing numerical values (missing_value in main_prep.py), handled as its own flag in the PSP
+    "psp_mc_samples": 200,  # Number of sampled suffixes per case and action for the Q-values
+    "psp_growing_num_values": ["elapsed_time"],  # Numerical event attributes that never decrease within a case
+    "psp_use_scheduled_sampling": False,  # Whether to reduce the teacher forcing ratio over the epochs
+    "psp_max_teacher_forcing_value": 1.0,  # Teacher forcing ratio in the first epoch
+    "psp_min_teacher_forcing_value": 0.0,  # Lower bound, reached after half of the epochs
+    "psp_use_tensorboard": False,  # Whether to write the losses of each PSP training to Tensorboard
+    "psp_tensorboard_dir": os.path.abspath(os.path.join(current_dir, "..", "res", "tensorboard")),  # One subfolder per training
+    "psp_save_model_n_th_epoch": 0,  # Additionally save the current model every n epochs (0 = off)
+    "psp_use_scheduler": True,  # Whether to reduce the learning rate when the validation loss stops improving
+    "psp_scheduler_factor": 0.3,  # Factor by which the learning rate is reduced
+    "psp_scheduler_patience": 8,  # Number of evaluations without improvement before reducing
+    "psp_scheduler_min_lr": 1e-5,  # Lower bound of the learning rate
+    "psp_use_gradnorm": False,  # Whether to weight the losses per attribute with GradNorm
+    "psp_gn_alpha": 1.5,  # GradNorm hyperparameter (strength of the balancing)
+    "psp_gn_learning_rate": 1e-4,  # Learning rate for the GradNorm loss weights
+
     # Logistic Regression parameters
     "C": 1.0,  # Inverse of regularization strength
     "penalty": "l2",  # Regularization type

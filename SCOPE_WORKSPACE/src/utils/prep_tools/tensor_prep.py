@@ -41,6 +41,8 @@ class TensorPreprocessor():
                                 "max_process_len": self.max_process_len,
                                 "case_cols_encoded": self.case_cols_encoded,
                                 "event_cols_encoded": self.event_cols_encoded,
+                                # Kategoriale Event-Attribute (vor dem One-Hot), das PSP bettet sie wie die Aktivität ein
+                                "event_cat_cols": [col for col in self.DATASET_PARAMS["cat_cols"] if col in self.DATASET_PARAMS["event_cols"]],
                                 # Suffix (nur create_prefix_tensors, nicht BPIC17): alle Event-Spalten + activity_EOS + outcome
                                 "suffix_cols_encoded": self.data_train_prep.get("suffix_cols_encoded"),
                                 "dim_x_suffix": self.data_train_prep["X_suffix"].shape[1] if "X_suffix" in self.data_train_prep else 0,
@@ -464,6 +466,16 @@ class TensorPreprocessor():
         X_cols = ["case_nr", "prefix_len"] + case_cols_encoded + event_cols_encoded
         X = torch.zeros(size=(len(data), len(X_cols) + self.nr_treatment_columns, max_process_len))
 
+        # Ein Control-Event ist nur dann ein Entscheidungspunkt, wenn direkt danach eine der Aktionen der Intervention folgt.
+        # Sonst würde z.B. in SimRepair ein repair_* vor einer Nachreparatur (prepare_rerepair_*) als "shipping" (T=0) gespeichert.
+        # Gilt nicht, wenn die Kontrollaktion nicht im Log steht (do_nothing in SimBank).
+        intervention_info = self.DATASET_PARAMS["intervention_info"]
+        if intervention_info["column"] == "activity" and "do_nothing" not in intervention_info["actions"]:
+            action_cols = ["activity_" + action for action in intervention_info["actions"]]
+            next_is_action = data.reindex(columns=action_cols, fill_value=0).groupby(data["case_nr"], sort=False).shift(-1).fillna(0).sum(axis=1) > 0
+        else:
+            next_is_action = pd.Series(True, index=data.index)
+
         for row_nr, row in data.iterrows():
             current_case = row["case_nr"]
             # Hier sollen die Zeilen vor dem Entscheidungspunkt markiert und gesammelt werden 
@@ -576,7 +588,7 @@ class TensorPreprocessor():
                             if row["activity_" + end_control] == 1: end_control_condition = True
                             if end_control_condition:
                                 break
-                        control_condition = all_zero_condition and start_control_condition and end_control_condition
+                        control_condition = all_zero_condition and start_control_condition and end_control_condition and next_is_action[row_nr]
                 
                 # ACHTUNG: Control hei0t hier "Stand an einem Entscheidungspunkt, blieb aber untreated"
                 # Wenn weder control noch treated, dann wird verworfen

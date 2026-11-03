@@ -19,3 +19,27 @@ __pycache__/
 *.log
 *.sqlite3
 *.db
+
+# Daten, Modelle und Ergebnisse der Läufe: nicht im Repository (groß, lassen sich neu erzeugen)
+eventlog/
+example_cases/
+process_models/*.png
+*.tar.gz
+*.pt
+.vscode/
+SCOPE_WORKSPACE/.tmp/
+probabilistic_suffix_prediction_U-ED-LSTM/encoded_data_conformance_v2/
+prescriptive/models/
+prescriptive/data/cache/
+prescriptive/data/evaluation/
+prescriptive/data/psp_varianten/
+prescriptive/data/rct_*/
+prescriptive/scripts/results*/
+# process-simulation-engine ist ein eigenes Repository (Team); sein Code liegt hier als Kopie, ohne diese Teile
+process-simulation-engine/.venv*/
+process-simulation-engine/pm4py-release/
+process-simulation-engine/evaluation/output/
+process-simulation-engine/**/*.png
+process-simulation-engine/**/*.xlsx
+SCOPE_WORKSPACE/src/readable.txt
+*.vor_*

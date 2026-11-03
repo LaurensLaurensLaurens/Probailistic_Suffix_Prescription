@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             id="definitions_bpic17_rodrigues" targetNamespace="http://bpic17">
+  <process id="bpic17_rodrigues" name="BPIC17 nach Rodrigues et al." isExecutable="false">
+    <documentation>BPIC17-Prozessmodell nach Abb. 5 (finales Petri-Netz) aus Rodrigues et al., Stairway to value: mining a loan application process, BPI Challenge 2017. Von Hand erstelltes As-Is-Modell, kein normatives Soll-Modell. Enthält 11 von 26 Aktivitäten (O_Create Offer an zwei Stellen); alle anderen vor dem Vergleich herausfiltern.Aus der Abbildung nachgebaut, die Originaldatei ist nicht veröffentlicht.</documentation>
+    <startEvent id="start">
+      <outgoing>flow_0</outgoing>
+    </startEvent>
+    <endEvent id="end">
+      <incoming>flow_32</incoming>
+    </endEvent>
+    <task id="create" name="A_Create Application">
+      <incoming>flow_0</incoming>
+      <outgoing>flow_1</outgoing>
+    </task>
+    <exclusiveGateway id="p9" gatewayDirection="Diverging">
+      <incoming>flow_1</incoming>
+      <outgoing>flow_2</outgoing>
+      <outgoing>flow_3</outgoing>
+    </exclusiveGateway>
+    <task id="leads" name="W_Handle leads">
+      <incoming>flow_2</incoming>
+      <outgoing>flow_4</outgoing>
+    </task>
+    <exclusiveGateway id="p1" gatewayDirection="Converging">
+      <incoming>flow_3</incoming>
+      <incoming>flow_4</incoming>
+      <outgoing>flow_5</outgoing>
+    </exclusiveGateway>
+    <task id="concept" name="A_Concept">
+      <incoming>flow_5</incoming>
+      <outgoing>flow_6</outgoing>
+    </task>
+    <parallelGateway id="and_split" gatewayDirection="Diverging">
+      <incoming>flow_6</incoming>
+      <outgoing>flow_7</outgoing>
+      <outgoing>flow_12</outgoing>
+    </parallelGateway>
+    <exclusiveGateway id="p2" gatewayDirection="Converging">
+      <incoming>flow_7</incoming>
+      <incoming>flow_10</incoming>
+      <outgoing>flow_8</outgoing>
+    </exclusiveGateway>
+    <task id="offer" name="O_Create Offer">
+      <incoming>flow_8</incoming>
+      <outgoing>flow_9</outgoing>
+    </task>
+    <exclusiveGateway id="p4" gatewayDirection="Diverging">
+      <incoming>flow_9</incoming>
+      <outgoing>flow_10</outgoing>
+      <outgoing>flow_11</outgoing>
+    </exclusiveGateway>
+    <task id="complete_app" name="W_Complete application">
+      <incoming>flow_12</incoming>
+      <outgoing>flow_13</outgoing>
+    </task>
+    <parallelGateway id="and_join" gatewayDirection="Converging">
+      <incoming>flow_11</incoming>
+      <incoming>flow_13</incoming>
+      <outgoing>flow_14</outgoing>
+    </parallelGateway>
+    <task id="a_complete" name="A_Complete">
+      <incoming>flow_14</incoming>
+      <outgoing>flow_15</outgoing>
+    </task>
+    <exclusiveGateway id="p7_in" gatewayDirection="Converging">
+      <incoming>flow_15</incoming>
+      <incoming>flow_28</incoming>
+      <outgoing>flow_16</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="p7" gatewayDirection="Diverging">
+      <incoming>flow_16</incoming>
+      <outgoing>flow_17</outgoing>
+      <outgoing>flow_18</outgoing>
+      <outgoing>flow_20</outgoing>
+      <outgoing>flow_21</outgoing>
+    </exclusiveGateway>
+    <task id="cancelled" name="A_Cancelled">
+      <incoming>flow_17</incoming>
+      <outgoing>flow_29</outgoing>
+    </task>
+    <task id="offer2" name="O_Create Offer">
+      <incoming>flow_18</incoming>
+      <outgoing>flow_19</outgoing>
+    </task>
+    <exclusiveGateway id="p11" gatewayDirection="Converging">
+      <incoming>flow_19</incoming>
+      <incoming>flow_20</incoming>
+      <outgoing>flow_22</outgoing>
+    </exclusiveGateway>
+    <task id="validate" name="W_Validate application">
+      <incoming>flow_22</incoming>
+      <outgoing>flow_23</outgoing>
+    </task>
+    <exclusiveGateway id="p8_in" gatewayDirection="Converging">
+      <incoming>flow_21</incoming>
+      <incoming>flow_23</incoming>
+      <outgoing>flow_24</outgoing>
+    </exclusiveGateway>
+    <exclusiveGateway id="p8" gatewayDirection="Diverging">
+      <incoming>flow_24</incoming>
+      <outgoing>flow_25</outgoing>
+      <outgoing>flow_26</outgoing>
+      <outgoing>flow_27</outgoing>
+    </exclusiveGateway>
+    <task id="denied" name="A_Denied">
+      <incoming>flow_25</incoming>
+      <outgoing>flow_30</outgoing>
+    </task>
+    <task id="pending" name="A_Pending">
+      <incoming>flow_26</incoming>
+      <outgoing>flow_31</outgoing>
+    </task>
+    <task id="incomplete" name="W_Call incomplete files">
+      <incoming>flow_27</incoming>
+      <outgoing>flow_28</outgoing>
+    </task>
+    <exclusiveGateway id="end_join" gatewayDirection="Converging">
+      <incoming>flow_29</incoming>
+      <incoming>flow_30</incoming>
+      <incoming>flow_31</incoming>
+      <outgoing>flow_32</outgoing>
+    </exclusiveGateway>
+    <sequenceFlow id="flow_0" sourceRef="start" targetRef="create"/>
+    <sequenceFlow id="flow_1" sourceRef="create" targetRef="p9"/>
+    <sequenceFlow id="flow_2" sourceRef="p9" targetRef="leads"/>
+    <sequenceFlow id="flow_3" sourceRef="p9" targetRef="p1"/>
+    <sequenceFlow id="flow_4" sourceRef="leads" targetRef="p1"/>
+    <sequenceFlow id="flow_5" sourceRef="p1" targetRef="concept"/>
+    <sequenceFlow id="flow_6" sourceRef="concept" targetRef="and_split"/>
+    <sequenceFlow id="flow_7" sourceRef="and_split" targetRef="p2"/>
+    <sequenceFlow id="flow_8" sourceRef="p2" targetRef="offer"/>
+    <sequenceFlow id="flow_9" sourceRef="offer" targetRef="p4"/>
+    <sequenceFlow id="flow_10" sourceRef="p4" targetRef="p2"/>
+    <sequenceFlow id="flow_11" sourceRef="p4" targetRef="and_join"/>
+    <sequenceFlow id="flow_12" sourceRef="and_split" targetRef="complete_app"/>
+    <sequenceFlow id="flow_13" sourceRef="complete_app" targetRef="and_join"/>
+    <sequenceFlow id="flow_14" sourceRef="and_join" targetRef="a_complete"/>
+    <sequenceFlow id="flow_15" sourceRef="a_complete" targetRef="p7_in"/>
+    <sequenceFlow id="flow_16" sourceRef="p7_in" targetRef="p7"/>
+    <sequenceFlow id="flow_17" sourceRef="p7" targetRef="cancelled"/>
+    <sequenceFlow id="flow_18" sourceRef="p7" targetRef="offer2"/>
+    <sequenceFlow id="flow_19" sourceRef="offer2" targetRef="p11"/>
+    <sequenceFlow id="flow_20" sourceRef="p7" targetRef="p11"/>
+    <sequenceFlow id="flow_21" sourceRef="p7" targetRef="p8_in"/>
+    <sequenceFlow id="flow_22" sourceRef="p11" targetRef="validate"/>
+    <sequenceFlow id="flow_23" sourceRef="validate" targetRef="p8_in"/>
+    <sequenceFlow id="flow_24" sourceRef="p8_in" targetRef="p8"/>
+    <sequenceFlow id="flow_25" sourceRef="p8" targetRef="denied"/>
+    <sequenceFlow id="flow_26" sourceRef="p8" targetRef="pending"/>
+    <sequenceFlow id="flow_27" sourceRef="p8" targetRef="incomplete"/>
+    <sequenceFlow id="flow_28" sourceRef="incomplete" targetRef="p7_in"/>
+    <sequenceFlow id="flow_29" sourceRef="cancelled" targetRef="end_join"/>
+    <sequenceFlow id="flow_30" sourceRef="denied" targetRef="end_join"/>
+    <sequenceFlow id="flow_31" sourceRef="pending" targetRef="end_join"/>
+    <sequenceFlow id="flow_32" sourceRef="end_join" targetRef="end"/>
+  </process>
+  <bpmndi:BPMNDiagram id="diagram_bpic17_rodrigues">
+    <bpmndi:BPMNPlane id="plane_bpic17_rodrigues" bpmnElement="bpic17_rodrigues">
+      <bpmndi:BPMNShape id="shape_start" bpmnElement="start"><dc:Bounds x="0.0" y="247.0" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_end" bpmnElement="end"><dc:Bounds x="2795.0" y="102.0" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_create" bpmnElement="create"><dc:Bounds x="79.0" y="237.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_p9" bpmnElement="p9"><dc:Bounds x="272.0" y="242.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_leads" bpmnElement="leads"><dc:Bounds x="361.0" y="195.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_p1" bpmnElement="p1"><dc:Bounds x="554.0" y="242.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_concept" bpmnElement="concept"><dc:Bounds x="643.0" y="237.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_and_split" bpmnElement="and_split"><dc:Bounds x="836.0" y="242.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_p2" bpmnElement="p2"><dc:Bounds x="925.0" y="201.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_offer" bpmnElement="offer"><dc:Bounds x="1014.0" y="113.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_p4" bpmnElement="p4"><dc:Bounds x="1207.0" y="201.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_complete_app" bpmnElement="complete_app"><dc:Bounds x="1014.0" y="279.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_and_join" bpmnElement="and_join"><dc:Bounds x="1296.0" y="242.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_a_complete" bpmnElement="a_complete"><dc:Bounds x="1385.0" y="237.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_p7_in" bpmnElement="p7_in"><dc:Bounds x="1578.0" y="242.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_p7" bpmnElement="p7"><dc:Bounds x="1667.0" y="168.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_cancelled" bpmnElement="cancelled"><dc:Bounds x="1949.0" y="0.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_offer2" bpmnElement="offer2"><dc:Bounds x="1756.0" y="80.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_p11" bpmnElement="p11"><dc:Bounds x="2001.0" y="159.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_validate" bpmnElement="validate"><dc:Bounds x="2142.0" y="154.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_p8_in" bpmnElement="p8_in"><dc:Bounds x="2335.0" y="189.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_p8" bpmnElement="p8"><dc:Bounds x="2424.0" y="189.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_denied" bpmnElement="denied"><dc:Bounds x="2513.0" y="92.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_pending" bpmnElement="pending"><dc:Bounds x="2513.0" y="184.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_incomplete" bpmnElement="incomplete"><dc:Bounds x="2513.0" y="288.0" width="150" height="56"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_end_join" bpmnElement="end_join"><dc:Bounds x="2706.0" y="97.0" width="46" height="46"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge_flow_0" bpmnElement="flow_0"><di:waypoint x="36.2" y="265.0"/><di:waypoint x="67.3" y="265.0"/><di:waypoint x="67.3" y="265.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_1" bpmnElement="flow_1"><di:waypoint x="229.4" y="265.0"/><di:waypoint x="260.3" y="265.0"/><di:waypoint x="260.3" y="265.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_2" bpmnElement="flow_2"><di:waypoint x="313.3" y="259.8"/><di:waypoint x="349.9" y="248.7"/><di:waypoint x="349.9" y="248.7"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_3" bpmnElement="flow_3"><di:waypoint x="317.1" y="266.6"/><di:waypoint x="361.0" y="269.0"/><di:waypoint x="511.0" y="269.0"/><di:waypoint x="543.8" y="267.4"/><di:waypoint x="543.8" y="267.4"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_4" bpmnElement="flow_4"><di:waypoint x="511.4" y="245.5"/><di:waypoint x="548.1" y="256.6"/><di:waypoint x="548.1" y="256.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_5" bpmnElement="flow_5"><di:waypoint x="600.6" y="265.0"/><di:waypoint x="631.3" y="265.0"/><di:waypoint x="631.3" y="265.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_6" bpmnElement="flow_6"><di:waypoint x="793.4" y="265.0"/><di:waypoint x="824.3" y="265.0"/><di:waypoint x="824.3" y="265.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_7" bpmnElement="flow_7"><di:waypoint x="875.2" y="257.9"/><di:waypoint x="921.5" y="236.0"/><di:waypoint x="921.5" y="236.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_8" bpmnElement="flow_8"><di:waypoint x="963.1" y="215.6"/><di:waypoint x="1030.7" y="175.2"/><di:waypoint x="1030.7" y="175.2"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_9" bpmnElement="flow_9"><di:waypoint x="1137.5" y="169.3"/><di:waypoint x="1205.3" y="209.8"/><di:waypoint x="1205.3" y="209.8"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_10" bpmnElement="flow_10"><di:waypoint x="1206.4" y="224.0"/><di:waypoint x="982.9" y="224.0"/><di:waypoint x="982.9" y="224.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_11" bpmnElement="flow_11"><di:waypoint x="1246.2" y="231.1"/><di:waypoint x="1292.5" y="253.0"/><di:waypoint x="1292.5" y="253.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_12" bpmnElement="flow_12"><di:waypoint x="879.0" y="268.5"/><di:waypoint x="1002.2" y="291.2"/><di:waypoint x="1002.2" y="291.2"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_13" bpmnElement="flow_13"><di:waypoint x="1164.3" y="293.3"/><di:waypoint x="1288.2" y="270.5"/><di:waypoint x="1288.2" y="270.5"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_14" bpmnElement="flow_14"><di:waypoint x="1342.7" y="265.0"/><di:waypoint x="1373.3" y="265.0"/><di:waypoint x="1373.3" y="265.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_15" bpmnElement="flow_15"><di:waypoint x="1535.4" y="265.0"/><di:waypoint x="1566.3" y="265.0"/><di:waypoint x="1566.3" y="265.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_16" bpmnElement="flow_16"><di:waypoint x="1614.1" y="254.7"/><di:waypoint x="1668.4" y="208.5"/><di:waypoint x="1668.4" y="208.5"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_17" bpmnElement="flow_17"><di:waypoint x="1694.6" y="172.4"/><di:waypoint x="1756.0" y="62.0"/><di:waypoint x="1937.2" y="19.3"/><di:waypoint x="1937.2" y="19.3"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_18" bpmnElement="flow_18"><di:waypoint x="1705.1" y="182.6"/><di:waypoint x="1772.6" y="142.3"/><di:waypoint x="1772.6" y="142.3"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_19" bpmnElement="flow_19"><di:waypoint x="1905.3" y="136.4"/><di:waypoint x="1996.4" y="171.7"/><di:waypoint x="1996.4" y="171.7"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_20" bpmnElement="flow_20"><di:waypoint x="1713.0" y="190.4"/><di:waypoint x="1989.9" y="182.9"/><di:waypoint x="1989.9" y="182.9"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_21" bpmnElement="flow_21"><di:waypoint x="1710.4" y="194.1"/><di:waypoint x="1949.0" y="223.0"/><di:waypoint x="2142.0" y="228.0"/><di:waypoint x="2292.0" y="228.0"/><di:waypoint x="2328.8" y="220.5"/><di:waypoint x="2328.8" y="220.5"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_22" bpmnElement="flow_22"><di:waypoint x="2047.7" y="182.0"/><di:waypoint x="2130.8" y="182.0"/><di:waypoint x="2130.8" y="182.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_23" bpmnElement="flow_23"><di:waypoint x="2292.4" y="198.1"/><di:waypoint x="2327.5" y="205.6"/><di:waypoint x="2327.5" y="205.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_24" bpmnElement="flow_24"><di:waypoint x="2381.4" y="212.0"/><di:waypoint x="2412.1" y="212.0"/><di:waypoint x="2412.1" y="212.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_25" bpmnElement="flow_25"><di:waypoint x="2460.8" y="202.6"/><di:waypoint x="2513.0" y="166.0"/><di:waypoint x="2531.0" y="154.3"/><di:waypoint x="2531.0" y="154.3"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_26" bpmnElement="flow_26"><di:waypoint x="2470.6" y="212.0"/><di:waypoint x="2501.3" y="212.0"/><di:waypoint x="2501.3" y="212.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_27" bpmnElement="flow_27"><di:waypoint x="2460.8" y="221.6"/><di:waypoint x="2540.3" y="281.1"/><di:waypoint x="2540.3" y="281.1"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_28" bpmnElement="flow_28"><di:waypoint x="2512.7" y="327.3"/><di:waypoint x="2359.0" y="339.0"/><di:waypoint x="1830.0" y="339.0"/><di:waypoint x="1626.5" y="278.6"/><di:waypoint x="1626.5" y="278.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_29" bpmnElement="flow_29"><di:waypoint x="2099.5" y="29.1"/><di:waypoint x="2357.0" y="31.0"/><di:waypoint x="2448.0" y="31.0"/><di:waypoint x="2663.0" y="74.0"/><di:waypoint x="2707.6" y="102.2"/><di:waypoint x="2707.6" y="102.2"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_30" bpmnElement="flow_30"><di:waypoint x="2663.4" y="120.0"/><di:waypoint x="2694.2" y="120.0"/><di:waypoint x="2694.2" y="120.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_31" bpmnElement="flow_31"><di:waypoint x="2635.5" y="183.7"/><di:waypoint x="2663.0" y="166.0"/><di:waypoint x="2706.0" y="136.0"/><di:waypoint x="2706.0" y="136.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_flow_32" bpmnElement="flow_32"><di:waypoint x="2752.4" y="120.0"/><di:waypoint x="2783.3" y="120.0"/><di:waypoint x="2783.3" y="120.0"/></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

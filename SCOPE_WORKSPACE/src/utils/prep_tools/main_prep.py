@@ -159,6 +159,49 @@ class ProcessPreprocessor():
 
             # Je nach Encoding eigentliche Transformation durchführen
             # Für PSP Ist Tensor processing besser
+
+            # Preprocessing passiert einmal für evaldatenpreprocessing und einmal für trainingsdatenpresprocessing
+            # prep_utils_list: eine Liste mit einem Dictionary pro Stage. Beim Trainings-Preprocessing ist sie None
+            # (die Utils werden dann aus den Trainingsdaten gelernt), beim Eval-Preprocessing kommt sie aus dem Trainings-Preprocessing.
+            # Beispiel aus SimRepair (train_size=5000, eine Stage, encoding="tensor"):
+            # prep_utils_list = [
+            #     {   # Stage 0
+            #         # Gelernt aus den Trainingsdaten: ein MinMaxScaler pro numerischer Spalte (Wert -> [0, 1])
+            #         "scaler_dict_train": {
+            #             "elapsed_time":        MinMaxScaler,   # min 0.0,    max 48.6
+            #             "bike_value":          MinMaxScaler,   # min 1,      max 10
+            #             "repair_severity":     MinMaxScaler,   # min 1,      max 10
+            #             "customer_patience":   MinMaxScaler,   # min 1,      max 10
+            #             "quality_uncertainty": MinMaxScaler,   # min 0.0005, max 0.9996
+            #             "employee_competence": MinMaxScaler,   # min 1,      max 10
+            #             "material_quality":    MinMaxScaler,   # min 1,      max 10
+            #             "outcome":             MinMaxScaler,   # min -53.6,  max 21.95
+            #         },
+            #         # Gelernt aus den Trainingsdaten: ein OneHotEncoder pro kategorialer Spalte (legt Werte und Spaltenreihenfolge fest)
+            #         "oh_encoder_dict_train": {
+            #             "activity":     OneHotEncoder,   # choose_employee, choose_material, conduct_qc, customer_acceptance, customer_refusal,
+            #                                              # improve_rework, initiate_case, prepare_rerepair_priority, prepare_rerepair_standard,
+            #                                              # repair_priority, repair_standard, shipping, start_priority, start_standard,
+            #                                              # use_spare_parts, wait_for_employee
+            #             "process_type": OneHotEncoder,   # priority, standard, nan
+            #         },
+            #         "max_process_len": 28,                # längster Fall, bestimmt die Breite der Tensoren
+            #         "case_cols_encoded": ["bike_value", "repair_severity", "customer_patience"],   # Spalten von X_case
+            #         "event_cols_encoded": ["quality_uncertainty"],                                 # Spalten von X_event (nach dem Filtern konstanter Spalten)
+            #         "event_cat_cols": ["activity", "process_type"],                                # kategoriale Event-Attribute (vor dem One-Hot)
+            #         "suffix_cols_encoded": [                                                       # Spalten von X_suffix
+            #             "elapsed_time", "quality_uncertainty", "employee_competence", "material_quality",
+            #             "activity_choose_employee", "activity_choose_material", ..., "activity_wait_for_employee",
+            #             "process_type_priority", "process_type_standard", "process_type_nan",
+            #             "activity_EOS", "outcome",
+            #         ],
+            #         "dim_x_suffix": 25,
+            #         "dim_x_case": 3,
+            #         "dim_x_event": 1,
+            #         "dim_t": 1,        # eine Treatment-Spalte (binär: start_standard / start_priority)
+            #         "dim_output": 1,
+            #     }
+            # ]
             if encoding == "tensor":
                 self.preprocessor = TensorPreprocessor(self.data_train, self.data_infer, self.PREP_PARAMS, DATASET_PARAMS, self.add_properties, prep_utils=prep_utils_list[stage] if prep_utils_list is not None else None)
             elif encoding == "agg":
@@ -167,6 +210,7 @@ class ProcessPreprocessor():
                 # NOTE: returns data_infer as None, because it is not used in the KMeansPreprocessor
                 self.preprocessor = KMeansPreprocessor(self.data_train, self.data_infer, self.PREP_PARAMS, DATASET_PARAMS, prep_utils=prep_utils_list[stage] if prep_utils_list is not None else None, args=self.args)
 
+            # Das ist das jeweilige Preprocessing für das gepnschte Modell
             data_train_prep, data_infer_prep, prep_utils = self.preprocessor.preprocess()
             self.data_train_prep_list.append(data_train_prep)
             self.data_infer_prep_list.append(data_infer_prep)

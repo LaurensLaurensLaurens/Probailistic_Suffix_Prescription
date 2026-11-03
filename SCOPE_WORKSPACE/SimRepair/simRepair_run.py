@@ -12,6 +12,7 @@ from SimRepair.workshop_policy import WorkshopPolicy
 from src.utils.mini_tools import save_data, load_data
 import pandas as pd
 
+
 # Pro Intervention die Einstellungen, die in SimBPIC17 fuer alle Stages gleich sind.
 # In SimRepair ist jede Stage eine andere Intervention, deshalb stehen sie hier einzeln.
 INTERVENTIONS = {
@@ -25,33 +26,37 @@ INTERVENTIONS = {
         "start_control_activity": ["initiate_case"],
         "end_control_activity": ["initiate_case"],
     },
+    # Testlauf: erstmal ist nur choose_procedure als Intervention moeglich, die anderen sind deaktiviert.
     "conduct_qc": {
         "data_impact": "direct",
         "actions": ["shipping", "conduct_qc"], #If binary, last action is the 'treatment' action
         "action_width": 2,
-        "action_depth": 4, # max_qc + 1 decision points
+        "action_depth": 1, # Treatment = QC genau einmal: nur der erste QC-Entscheidungspunkt wird entschieden, danach shipping
         "activities": ["shipping", "conduct_qc"],
         "column": "activity",
         "start_control_activity": ["repair_priority", "repair_standard", "improve_rework"],
         "end_control_activity": ["repair_priority", "repair_standard", "improve_rework"],
     },
-    "choose_employee": {
-        "data_impact": "indirect",
-        "actions": list(range(1, 11)),
-        "action_width": 10,
-        "action_depth": 1,
-        "activities": ["choose_employee"],
-        "column": "employee_competence",
-        "start_control_activity": [],
-        "end_control_activity": [],
-    },
+    # "choose_employee": {
+    #     "data_impact": "indirect",
+    #     "actions": list(range(1, 11)),
+    #     "action_width": 10,
+    #     "action_depth": 1,
+    #     "activities": ["choose_employee"],
+    #     "column": "employee_competence",
+    #     "start_control_activity": [],
+    #     "end_control_activity": [],
+    # },
 }
 # Schluessel, die in dataset_params pro Stage als Liste vorliegen
 STAGE_KEYS = ["name", "data_impact", "actions", "action_width", "action_depth", "activities", "column", "start_control_activity", "end_control_activity", "len"]
 
 
 # Diese Funktion simuliert SimRepair-Trainings- und Tuningdaten.
-def generate_training_and_tuning_simrepair(train_size, delta, n_stages=1, confounding_type='case', max_attempts=20, test_size=10000, intervention_names=("choose_procedure",)):
+def generate_training_and_tuning_simrepair(train_size, delta, n_stages=1, confounding_type='case', max_attempts=20, test_size=10000, intervention_names=None):
+    # Ohne Vorgabe werden die ersten n_stages Eintraege aus INTERVENTIONS genommen.
+    if intervention_names is None:
+        intervention_names = list(INTERVENTIONS.keys())[:n_stages]
     # Gucken, ob Stages mit Anzahl der Interventionen übereinstimmt.
     intervention_names = list(intervention_names)
     if len(intervention_names) != n_stages:
@@ -73,8 +78,8 @@ def generate_training_and_tuning_simrepair(train_size, delta, n_stages=1, confou
 
     #process
     dataset_params["log_cols"] = ["case_nr", "activity", "timestamp", "elapsed_time", "duration", "bike_value", "repair_severity", "quality_uncertainty", "process_type", "employee_competence", "material_quality", "customer_patience", "customer_friendliness", "outcome"]
-    dataset_params["scale_cols"] = ["elapsed_time", "bike_value", "repair_severity", "quality_uncertainty", "employee_competence", "material_quality", "outcome"]
-    dataset_params["case_cols"] = ["bike_value", "repair_severity"]
+    dataset_params["scale_cols"] = ["elapsed_time", "bike_value", "repair_severity", "customer_patience", "quality_uncertainty", "employee_competence", "material_quality", "outcome"]
+    dataset_params["case_cols"] = ["bike_value", "repair_severity", "customer_patience"]
     dataset_params["event_cols"] = ["activity", "elapsed_time", "quality_uncertainty", "process_type", "employee_competence", "material_quality"]
     dataset_params["last_state_cols"] = ["elapsed_time"]
     dataset_params["cat_cols"] = ["activity", "process_type"]
@@ -159,23 +164,30 @@ def generate_training_and_tuning_simrepair(train_size, delta, n_stages=1, confou
 
     return dataset_params, dataset_params_list, data
 
+# 
 def generate_eval_simrepair(args, dataset_params):
     eval_dfs = {}
     # Alles nur bzgl Location der Daten
     eval_dir = os.path.join(os.getcwd(), "data", "SimRepair", str(args.train_size), str(int(100 * args.delta)), "eval")
     os.makedirs(eval_dir, exist_ok=True)
 
+    # HIER WIRD DER DATENSATZ UNSERER POLICY AUFGEZEICHNET
     # us "action_width": is for example [2, 3], so you have 6 combinations of actions, and for each of them you need to evaluate the policy
     action_combos = list(product(*[range(width) for width in dataset_params["intervention_info"]["action_width"]]))
     for action_combo in action_combos:
+        # Eval schon generiert
         if (args.already_eval_generated or ('fixed' in args.already_eval_generated_list)) and os.path.exists(os.path.join(eval_dir, "fixed_" + str(action_combo) + "_performance.pkl")):
             # just load the data
             performance = load_data(os.path.join(eval_dir, "fixed_" + str(action_combo) + "_performance"))
             outcome_df = load_data(os.path.join(eval_dir, "fixed_" + str(action_combo) + "_outcome_df"))
             test_df = load_data(os.path.join(eval_dir, "fixed_" + str(action_combo) + "_test_df"))
             print('Fixed performance, combo: ', performance, action_combo)
+        
+        # Eval muss noch generiert werden
+        # Hier wird s
         else:
             print("Evaluating action combo: ", action_combo)
+            # Für alle action combos ...
             performance, outcome_df, test_df = generate_one_eval_simrepair(policy="fixed", args=args, dataset_params=dataset_params, action_combo=action_combo)
             print('Fixed performance, combo: ', performance, action_combo)
 
@@ -271,26 +283,35 @@ def generate_eval_simrepair(args, dataset_params):
 
     return eval_dfs
 
-# Die Funktion bewertet genau eine Policy auf neu simulierten Testfällen.
+# Die Funktion bew
 def generate_one_eval_simrepair(policy, args, dataset_params, action_combo=None, random_object_random_policy=None):
     print("Calculate True Performance for policy ", policy)
 
     # SimBPIC17 simuliert alle Testfaelle in einem Aufruf von run_simulation.
     # Der Petri-Netz-Simulator laeuft dagegen fallweise und haelt an jedem Entscheidungspunkt an.
+    # Hier wird für unsere Actions die wirkliche simulation gestartet
     case_gen = PresProcessGenerator(dataset_params, seed=dataset_params["random_seed_test"])
     cases = []
     for case_nr in range(args.test_size):
         best_action = 0
-        int_index = 0
+        decided_stages = set()
         prefix_list = case_gen.start_simulation_inference(seed_to_add=case_nr)
         while case_gen.int_points_available:
+            # Der Simulator sagt, zu welcher Intervention (Stage) der aktuelle Entscheidungspunkt gehoert.
+            int_index = case_gen.current_int_index
             if policy == "bank":
                 best_action = get_bank_best_action(prefix_list, int_index, dataset_params, case_gen.random_obj)
+            # Jede Stage wird nur am ersten Entscheidungspunkt entschieden (z.B. QC genau einmal),
+            # an jedem weiteren Entscheidungspunkt derselben Stage wird die Kontrollaktion 0 genommen.
+            elif int_index in decided_stages:
+                best_action = 0
             elif policy == "random":
                 best_action = get_random_best_action(dataset_params, int_index, random_object_random_policy)
+
+            # aus der Vorgabe action_combo, immer dieselbe
             elif policy == "fixed":
                 best_action = action_combo[int_index]
-                int_index += 1
+            decided_stages.add(int_index)
             prefix_list = case_gen.continue_simulation_inference(best_action)
 
         full_case = pd.DataFrame(case_gen.end_simulation_inference())
@@ -303,7 +324,8 @@ def generate_one_eval_simrepair(policy, args, dataset_params, action_combo=None,
     performance = test_df.groupby('case_nr')['outcome'].last().sum()
     # outcome_df: ein Outcome pro Fall
     outcome_df = test_df.groupby('case_nr', as_index=False)['outcome'].last()
-
+    
+    # Outcome wird berechnet
     return performance, outcome_df, test_df
 
 def get_bank_best_action(prefix_list, current_int_index, dataset_params, random_obj=None):

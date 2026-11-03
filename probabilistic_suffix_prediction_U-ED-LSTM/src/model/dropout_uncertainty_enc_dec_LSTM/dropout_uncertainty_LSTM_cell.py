@@ -19,6 +19,7 @@ class DropoutUncertaintyLSTMCell(nn.Module):
     """
     LSTM cell with MC Dropout for uncertainty estimation.
     """
+
     def __init__(
         self, input_size: int, hidden_size: int, dropout: Optional[float] = None
     ):
@@ -91,7 +92,6 @@ class DropoutUncertaintyLSTMCell(nn.Module):
         self.Uo.weight.data.uniform_(-k, k)
         self.Uo.bias.data.uniform_(-k, k)
 
-    # 
     def _mc_dropout_sample_mask(
         self, B: int, device: torch.device
     ) -> Tuple[Tensor, Tensor]:
@@ -202,8 +202,6 @@ class DropoutUncertaintyLSTMCell(nn.Module):
 
         return weight_sum, bias_sum
 
-    # Forward pass of LSTM cell with MC Dropout.
-    #
     def forward(
         self,
         input: Tensor,
