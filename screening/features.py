@@ -6,7 +6,7 @@ import re
 
 import pandas as pd
 
-from ..datasets import ACTIVITY, CASE, TIMESTAMP
+from helpers.datasets import ACTIVITY, CASE, TIMESTAMP
 
 MAX_ACTIVITY_COUNTS = 50  # Zählmerkmale für die häufigsten Tokens (Aktivität mit Lifecycle)
 
@@ -14,7 +14,7 @@ MAX_ACTIVITY_COUNTS = 50  # Zählmerkmale für die häufigsten Tokens (Aktivitä
 # Event als Token aus Aktivität und Lifecycle, wie die Spalte event des angereicherten Logs (enriched_log.event_token):
 # "W_Validate application:suspend", complete-Events nur die Aktivität
 def _events(frame):
-    from ..datasets import LIFECYCLE, add_paths
+    from helpers.datasets import LIFECYCLE, add_paths
     add_paths()
     from prescriptive.enriched_log import event_token
     return pd.Series(event_token(frame[ACTIVITY], frame[LIFECYCLE] if LIFECYCLE in frame else None), index=frame.index)

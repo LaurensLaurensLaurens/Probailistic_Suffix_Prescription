@@ -8,7 +8,7 @@ Screening der Kandidaten eines Datensatzes (Control Flow und Variablen), eine Of
     evaluation.py   die drei Kennzahlen, Ergebnis-Regel, Tabelle
     example.py      ein Beispiel: ein zufälliger Fall eines Kandidaten, wie das Screening ihn sieht
 
-    from helpers.screening import screen_control_flow, screen_variables
+    from screening import screen_control_flow, screen_variables
     results = screen_control_flow(DATASET, log)
     variables = screen_variables(DATASET, log)
 

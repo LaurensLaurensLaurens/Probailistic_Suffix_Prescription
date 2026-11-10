@@ -27,7 +27,8 @@ import pandas as pd
 RESOURCES = {
     # 144 Mitarbeiter: OrdinoR mit 10 Gruppen grenzt sinnvoll ab
     "bpic17": {"permissions": {"method": "ordinor", "file": "BPIC2017/resource_permissions/ordinor_fullrecall.pkl"},
-               "learned_allocation": "models/allocation/learned_allocation.pkl", "drl_model": "models/drl_allocation/drl_allocation_model"},
+               # learned: gefittet mit dem Pool der Engine (Erfahrung, Dienstplan, frei); learned_allocation.pkl ist die alte Fassung (±2 h)
+               "learned_allocation": "models/allocation/learned_allocation_dienstplan.pkl", "drl_model": "models/drl_allocation/drl_allocation_model"},
     # 1.440 Mitarbeiter in 649 Support-Teams (org:group). OrdinoR mit 10 Gruppen erlaubte fast jedem alles (1.439 statt
     # 569 für Accepted/In Progress [1st]); mit den Teams 1.011. Nur complete-Events, die Fälle laufen in der Simulation
     # (noch) ohne Mitarbeiter

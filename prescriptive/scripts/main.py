@@ -16,7 +16,8 @@ Tabellen auch auf die Konsole. Daten und Modelle (RCT-Daten, Schätzer, Zwischen
 Schritte (--steps, Standard alle, immer in dieser Reihenfolge):
     screening   Beispielfall eines Kandidaten, Screening der Control-Flow- und der Variablen-Kandidaten
     check       Simulator gegen den echten Log (wie die Bank)
-    kpis        Evaluation des Simulators (KPIs; Tabellen und Diagramme in <out>/<datensatz>_simulator_kpis/)
+    kpis        Evaluation des Simulators (KPIs; Tabellen und Diagramme in <out>/<datensatz>_simulator_kpis/), dazu die
+                Prescriptive-KPIs je Wahlpunkt (helpers/simulator_prescriptive.py; abschalten mit --no-prescriptive-kpis)
     cases       zufälliger echter Fall und zufälliger Fall der Bank-Policy
     rct         RCT-Daten (vorhanden: geladen)
     train       Training der Modelle (helpers/training.py, gespeichert in prescriptive/models/; lädt oder erzeugt dazu die RCT-Daten)
@@ -51,7 +52,7 @@ from helpers.datasets import DATASETS, add_paths, dataset_info
 from helpers.report import calibration_chart, check_chart, portfolio_chart, scatter_chart, screening_chart, uplift_chart
 
 # Ordnernamen je Art des Schätzers bzw. Ansatzes; Vergleichs-Policies, die in jedem Ordner eines Ansatzes mitstehen
-APPROACHES = {"xgb": "XGBoost", "lstm": "LSTM", "psp": "PSP", "psp_lookahead": "PSP_Vorausschau", "psp_erm": "PSP_ERM"}
+APPROACHES = {"xgb": "XGBoost", "lstm": "LSTM", "psp": "PSP", "psp_lookahead": "PSP_Vorausschau", "psp_erm": "PSP_ERM", "regel": "Regel"}
 ONLINE_BASELINES = ("bank", "random")
 
 
@@ -73,6 +74,15 @@ def choice_points(args, dataset, points):
     if unknown:
         raise ValueError(f"lauf.mitarbeiterwahl im Katalog: unbekannte Interventionspunkte {', '.join(unknown)}; möglich: {', '.join(points.index)}")
     return list(chosen) or [(list(points.index[points["Modelle"] > 0]) + list(points.index))[0]]
+
+
+# Unterordner für eine Auswahl von Wahlpunkten (--online-points): ihre Namen, bei mehr als 120 Zeichen gekürzt mit Prüfsumme
+# (Dateisysteme erlauben höchstens 255 Zeichen je Name)
+def points_folder(points):
+    import hashlib
+    from helpers.report import slug
+    name = slug("_".join(points))
+    return name if len(name) <= 120 else f"{name[:100]}_{len(points)}_Punkte_{hashlib.md5(name.encode()).hexdigest()[:8]}"
 
 
 # Ordner eines Ansatzes an einem Interventionspunkt: prescription/<Ansatz>, bei mehreren Punkten je Punkt ein Unterordner
@@ -130,6 +140,8 @@ def parse():
     group.add_argument("--example-seed", type=optional_int, default=None, help="None: jedes Mal ein anderer Fall")
     group.add_argument("--pool", default="kompetent", help='Pool der Mitarbeiter-Kandidaten: "kompetent", "im Dienst", "frei" oder "none"')
     group.add_argument("--min-overlap", type=float, default=0.5)
+    group.add_argument("--screening-details", action=argparse.BooleanOptionalAction, default=True,
+                       help="je Mitarbeiter-Kandidat die Propensity-Tabelle über alle Mitarbeiter (teuer); die Effekte je Mitarbeiter immer")
     group.add_argument("--min-cases-resources", type=int, default=1, help="eigene Schätzung für jeden Mitarbeiter mit so vielen Fällen; übrige zusammen als other")
 
     group = parser.add_argument_group("Simulator")
@@ -147,6 +159,8 @@ def parse():
     group.add_argument("--sim-patience", type=int, default=8)
     group.add_argument("--sim-seed", type=int, default=42)
     group.add_argument("--sim-threads", type=int, default=8)
+    group.add_argument("--prescriptive-kpis", action=argparse.BooleanOptionalAction, default=True,
+                       help="kpis: auch die Prescriptive-KPIs je Wahlpunkt (helpers/simulator_prescriptive.py; Bank und Zufall mit --n-cases)")
 
     group = parser.add_argument_group("Zufällige Fälle")
     group.add_argument("--case-seed", type=optional_int, default=None, help="None: jedes Mal ein anderer Fall")
@@ -183,7 +197,7 @@ def parse():
     group.add_argument("--kpi-real-log", action=argparse.BooleanOptionalAction, default=True, help="auch auf dem echten Log bewerten")
 
     group = parser.add_argument_group("Online-Auswertung")
-    group.add_argument("--online-policies", nargs="+", choices=("bank", "random", "xgb", "lstm", "psp", "psp_lookahead", "psp_erm"), default=["bank", "random", "xgb", "lstm"],
+    group.add_argument("--online-policies", nargs="+", choices=("bank", "random", "xgb", "lstm", "psp", "psp_lookahead", "psp_erm", "regel"), default=["bank", "random", "xgb", "lstm"],
                        help="Policies (evaluation/online_evaluation.py); die Bank immer als Vergleich")
     group.add_argument("--online-points", nargs="*", default=[], metavar="DATENSATZ=WAHLPUNKT",
                        help='nur an diesen Wahlpunkten wählt die Policy, mehrfach möglich, z. B. bpic17=channel; Standard: alle des Simulators')
@@ -195,6 +209,12 @@ def parse():
     group.add_argument("--erm-gamma", type=float, default=None,
                        help="psp_erm: Risikoaversion γ in 1/Tag (Standard policies/psp_erm_policy.py GAMMA)")
     group.add_argument("--xgb-model", default=None, help="xgb: dieses XGBoost-Modell statt models/xgb_model_<datensatz><outcome>.pkl")
+    group.add_argument("--psp-model", default=None, help="psp: dieses PSP-Modell statt models/psp_model_<datensatz><outcome>.pkl")
+    group.add_argument("--psp-samples", type=int, default=None, help="psp: gezogene Suffixe je Option (Standard policies/psp_policy.py SAMPLES = 30)")
+    group.add_argument("--psp-first-only", nargs="+", default=None, metavar="WAHLPUNKT",
+                       help="psp: an diesen Wahlpunkten nur die erste Entscheidung je Fall (danach wie die Bank), z. B. angebot_nachlegen")
+    group.add_argument("--psp-value", choices=("suffix", "head"), default=None,
+                       help="psp: Bewertung über die gezogenen Suffixe (Standard) oder den Restzeit-Kopf (nur Modelle mit remaining_head)")
 
     group = parser.add_argument_group("Lagebild")
     group.add_argument("--overview-model", nargs="*", default=[], metavar="DATENSATZ=ORDNER",
@@ -304,7 +324,7 @@ def main():
     # ---- Screening (Zellen 3 bis 5)
     # GEPRÜFT
     if "screening" in steps:
-        from helpers.screening import candidate_example, screen_control_flow, screen_variables
+        from screening import candidate_example, screen_control_flow, screen_variables
         heading("Screening")
         for dataset in args.datasets:
             # Hier wird ein Beispielkandidat genommen, wenn dieser nicht vorhanden ist, dann ein Standard kandidat
@@ -321,12 +341,13 @@ def main():
             chart(dataset, "screening_control_flow_diagramm", screening_chart(control_flow, "Screening: Control-Flow-Kandidaten"), "Control-Flow-Kandidaten",
                   sub="prescription/screening/control_flow")
             report(args, dataset, "screening_control_flow", control_flow.round(3), "Control-Flow-Kandidaten", sub="prescription/screening/control_flow", hide=SCREENING_HIDDEN, transpose=False)
-            variables = screen_variables(dataset, logs[dataset], pool=args.pool, min_cases=args.min_cases_resources, min_overlap=args.min_overlap)
+            variables = screen_variables(dataset, logs[dataset], pool=args.pool, min_cases=args.min_cases_resources, min_overlap=args.min_overlap,
+                                         propensity_details=args.screening_details)
             chart(dataset, "screening_variablen_diagramm", screening_chart(variables, "Screening: Variablen-Kandidaten"), "Variablen-Kandidaten",
                   sub="prescription/screening/variables")
             report(args, dataset, "screening_variablen", variables.round(3), "Variablen-Kandidaten", sub="prescription/screening/variables", hide=SCREENING_HIDDEN, transpose=False)
             for candidate, details in variables.attrs.get("details", {}).items():
-                report(args, dataset, "screening_" + candidate, details.round(4), f"{candidate}: Mitarbeiter (Fälle und Propensity)", sub="prescription/screening/details")
+                report(args, dataset, "screening_" + candidate, details.round(4), f"{candidate}: Mitarbeiter (Fälle, Propensity, Effekt ggü. Pool)", sub="prescription/screening/details")
 
     # ---- Simulator aufstellen (Zelle 6); der Log mit den Lifecycles, auf denen sein Modell trainiert ist
     simulators, simulator_logs = {}, {}
@@ -362,6 +383,16 @@ def main():
                                        folder=folder, show=False)
             report(args, dataset, "simulator_kpis", table.round(2), f"KPIs (Tabellen und Diagramme in {folder})", sub="simulator")
             REPORT.folder(dataset, folder, "Diagramme der Simulator-KPIs")
+            if args.prescriptive_kpis:
+                # Bildet der Simulator ab, worauf es für die Ansätze ankommt: Outcome, Lage, Träger und Wirkung je Wahlpunkt
+                from helpers.simulator_prescriptive import prescriptive_kpis
+                kpis, details = prescriptive_kpis(simulators[dataset], simulator_logs[dataset], n_cases=args.n_cases, seed=args.seed, costs=args.costs)
+                report(args, dataset, "prescriptive_kpis_uebersicht", details.pop("Übersicht"), "Prescriptive-KPIs: Bewertung je Bereich", sub="simulator")
+                report(args, dataset, "prescriptive_kpis", kpis.round(3), "Prescriptive-KPIs: bildet der Simulator ab, worauf es für die Ansätze ankommt?",
+                       sub="simulator", transpose=False)
+                for name, detail in details.items():
+                    report(args, dataset, f"prescriptive_kpis_{name}", detail, f"Prescriptive-KPIs, Details: {name}", sub="simulator/prescriptive_details",
+                           transpose=False)
     simulator_logs = None
     gc.collect()
 
@@ -433,11 +464,16 @@ def main():
                                           warmup=args.online_warmup, cooldown=args.online_cooldown, seeds=args.online_seeds, seed=args.seed,
                                           workers=args.online_workers, costs=args.costs,
                                           policy_params={**({"psp_erm": {"gamma": args.erm_gamma}} if args.erm_gamma else {}),
-                                                         **({"xgb": {"model": args.xgb_model}} if args.xgb_model else {})})
+                                                         **({"xgb": {"model": args.xgb_model}} if args.xgb_model else {}),
+                                                         **({"psp": {**({"model": args.psp_model} if args.psp_model else {}),
+                                                                     **({"samples": args.psp_samples} if args.psp_samples else {}),
+                                                                     **({"value_from": args.psp_value} if args.psp_value else {}),
+                                                                     **({"first_only": args.psp_first_only} if args.psp_first_only else {})}}
+                                                            if args.psp_model or args.psp_samples or args.psp_value or args.psp_first_only else {})})
             # Je Ansatz ein Ordner: seine Policy mit Bank und Zufall; mit --online-points ein Unterordner je Auswahl
             baselines = [name for name in ONLINE_BASELINES if name in table.index]
             for model in [name for name in table.index if name not in baselines]:
-                folder = "prescription/" + APPROACHES.get(model, model) + ("/" + slug("_".join(points)) if points else "")
+                folder = "prescription/" + APPROACHES.get(model, model) + ("/" + points_folder(points) if points else "")
                 part, part_runs = table.loc[baselines + [model]], runs[runs["Policy"].isin(baselines + [model])]
                 chart(dataset, "online_diagramm", uplift_chart(part, part_runs), f"{APPROACHES.get(model, model)}: online, Uplift gegen die Bank", sub=folder)
                 report(args, dataset, "online", part.round(3), f"{APPROACHES.get(model, model)}: Online-Auswertung, Mittel je Policy", sub=folder)

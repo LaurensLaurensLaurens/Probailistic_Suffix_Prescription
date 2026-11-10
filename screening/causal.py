@@ -2,7 +2,9 @@
 Kausale Schätzer für das Screening, für K >= 2 Optionen (Control Flow: K = 2), alle mit XGBoost und Cross-Fitting
 (jeder Fall wird von Modellen geschätzt, die ihn nicht gesehen haben).
 
-- nuisances: Propensity e[:, a] = P(T = a | x) (propensity) und Outcome-Modelle μ[:, a] (je Option ein Modell)
+- nuisances: Propensity e[:, a] = P(T = a | x) (propensity) und Outcome-Modelle μ[:, a] (je Option ein Modell; ab
+  POOLED_OUTCOME Optionen, z. B. Mitarbeitern, ein gemeinsames Modell mit der Option als Merkmal: S-Learner, teilt die
+  Information zwischen seltenen Optionen und braucht ein Modell je Teil statt eines je Option)
 - aipw: doppelt robuste Beiträge ψ[:, a] je Fall ("immer Option a")
 - option_scores: geschätzter Wert je Fall und Option; die Policy wählt die Option mit dem höchsten. Bei K = 2 der
   DR-Learner: τ(x) aus Γ = ψ[:, 1] − ψ[:, 0], Werte (0, τ(x))
@@ -10,7 +12,9 @@ Kausale Schätzer für das Screening, für K >= 2 Optionen (Control Flow: K = 2)
 - interval, e_value: Mittel mit 95-%-Intervall, E-Wert
 """
 import numpy as np
+import pandas as pd
 
+POOLED_OUTCOME = 6  # ab so vielen Optionen ein gemeinsames Outcome-Modell (S-Learner)
 XGB = {"n_estimators": 300, "max_depth": 5, "learning_rate": 0.05, "subsample": 0.8, "min_child_weight": 20, "tree_method": "hist",
        "enable_categorical": True, "n_jobs": 8}
 
@@ -25,6 +29,8 @@ def nuisances(X, T, Y, n_options, folds=5, seed=0):
     from xgboost import XGBRegressor
     fold = folds_of(len(X), folds, seed)
     e, mu = propensity(X, T, n_options, folds, seed), np.zeros((len(X), n_options))
+    if n_options >= POOLED_OUTCOME:
+        return e, pooled_outcomes(X, T, Y, n_options, fold, folds, seed)
     for k in range(folds):
         train, test = fold != k, fold == k
         overall = None
@@ -37,6 +43,23 @@ def nuisances(X, T, Y, n_options, folds=5, seed=0):
                 overall = XGBRegressor(**XGB, random_state=seed).fit(X[train], Y[train])
             mu[test, option] = overall.predict(X[test])
     return e, mu
+
+
+# S-Learner: je Teil ein Modell auf (X, Option), vorhergesagt für jede Option
+def pooled_outcomes(X, T, Y, n_options, fold, folds, seed=0):
+    from xgboost import XGBRegressor
+    categories = list(range(n_options))
+    mu = np.zeros((len(X), n_options))
+    for k in range(folds):
+        train, test = fold != k, fold == k
+        frame = X[train].copy()
+        frame["_option"] = pd.Categorical(T[train], categories=categories)
+        model = XGBRegressor(**XGB, random_state=seed).fit(frame, Y[train])
+        part = X[test].copy()
+        for option in categories:
+            part["_option"] = pd.Categorical(np.full(int(test.sum()), option), categories=categories)
+            mu[test, option] = model.predict(part)
+    return mu
 
 
 # Propensity P(T = a | x) mit Cross-Fitting; fehlt eine Option in einem Trainingsteil, bekommt sie dort die

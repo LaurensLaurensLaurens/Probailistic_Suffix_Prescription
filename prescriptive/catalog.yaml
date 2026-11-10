@@ -9,8 +9,15 @@
 #   zuteilung        wie die Engine die Mitarbeiter zuteilt, wo keine Policy wählt (alle Arbeitsschritte außerhalb der
 #                    mitarbeiterwahl, und dort, wenn keine Policy gesetzt ist oder sie None zurückgibt): eine Strategie
 #                    aus resources/selection_strategies.py, random, round_robin oder shortest_queue (Standard random;
-#                    ein start bekommt zuerst den letzten Bearbeiter des Falls, wenn er frei ist). Der Vergleich der
-#                    Policies läuft gegen diese Zuteilung (interventions.run_allocation)
+#                    ein start bekommt zuerst den letzten Bearbeiter des Falls, wenn er frei ist), oder learned: unter
+#                    den freien Berechtigten im Dienst, wen die echte Bank wählen würde (bedingtes Logit aus dem echten
+#                    Log: Erfahrung, Spezialisierung, Kontinuität, Vier-Augen; resources/BPIC2017/allocation/
+#                    learned_allocation.py). Ist niemand frei, wartet der Fall. Der Vergleich der Policies läuft gegen
+#                    diese Zuteilung (interventions.run_allocation)
+#   berechtigung     wer einen Arbeitsschritt darf (Engine und Screening-Pool kompetent): ordinor (Standard) das
+#                    Berechtigungsmodell des Datensatzes mit Erfahrungsschwelle, erfahrung wer ihn im echten Log
+#                    mindestens 30-mal begonnen oder fortgesetzt hat (resources/case_allocation.experienced_employees;
+#                    interventions.run_permissions). Vergleich: scripts/zuteilung_check.py
 #
 # Je Eintrag:
 #   art              control_flow (ob bzw. welche Aktivität folgt) oder variable (Wert eines Attributs, Mitarbeiter, Zeitpunkt)
@@ -71,7 +78,8 @@ bpic17:
     # Ankunftslast: 1 wie im Log, 3 dreimal so viele Fälle je Tag (gilt für RCT und Online-Auswertung); Warm- und Auslauf müssen mitwachsen
     ankunft_faktor: 1
     # Zuteilung der Mitarbeiter, wo keine Policy wählt: random, round_robin oder shortest_queue
-    zuteilung: random
+    zuteilung: learned
+    berechtigung: erfahrung
   outcome:
     type: negative_cycle_days
     beschreibung: negative Durchlaufzeit in Tagen (vom ersten bis zum letzten Event des Falls)

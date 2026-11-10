@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from interventions import option_token
 
-from ..datasets import ACTIVITY, CASE, LIFECYCLE, RESOURCE, TIMESTAMP
+from helpers.datasets import ACTIVITY, CASE, LIFECYCLE, RESOURCE, TIMESTAMP
 
 
 def _matches(activities, exact=None, contains=None):

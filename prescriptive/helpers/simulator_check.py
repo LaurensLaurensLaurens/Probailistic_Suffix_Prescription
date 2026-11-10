@@ -24,7 +24,7 @@ from .parameters import N_CASES, SEED
 from preprocessing import chosen_outcome_spec
 from preprocessing.outcome import add_outcome
 from preprocessing.steps import COMMON_STEPS
-from .screening.events import actions
+from screening.events import actions
 
 
 def check_simulator(simulator, log, n_cases=N_CASES, seed=SEED, costs=None, policies=("bank",)):

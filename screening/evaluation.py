@@ -59,25 +59,32 @@ def screen_control_flow(dataset, log, folds=5, seed=0, detailed=False, min_overl
 # pool: Pool der Mitarbeiter-Kandidaten (helpers.screening.candidates.POOLS, Standard kompetent; None: ohne Pool).
 # Eine eigene Option bekommt jeder Mitarbeiter mit mindestens min_cases Fällen (Standard 1); mit min_cases > 1 sind alle
 # übrigen zusammen other. min_overlap: Schwelle des Ergebnisses
-def screen_variables(dataset, log, folds=5, seed=0, detailed=False, pool="kompetent", min_cases=MIN_RESOURCE_CASES, min_overlap=MIN_OVERLAP):
+# propensity_details: je Mitarbeiter-Kandidat die Propensity-Tabelle über alle Mitarbeiter (employee_propensities; teuer: ein
+# Modell mit einer Klasse je Mitarbeiter); die Effekte je Mitarbeiter (employee_effects) stehen immer in den Details
+def screen_variables(dataset, log, folds=5, seed=0, detailed=False, pool="kompetent", min_cases=MIN_RESOURCE_CASES, min_overlap=MIN_OVERLAP,
+                     propensity_details=True):
     return screen(build_candidates(dataset, log, "variable", seed, pool), folds, seed, detailed, show_options=True,
-                  min_cases=min_cases, min_overlap=min_overlap)
+                  min_cases=min_cases, min_overlap=min_overlap, propensity_details=propensity_details)
 
 
 # Eine Zeile je Kandidat; table.attrs["details"]: je Mitarbeiter-Kandidat die Tabelle seiner Mitarbeiter
-def screen(data, folds=5, seed=0, detailed=False, show_options=False, min_cases=MIN_RESOURCE_CASES, min_overlap=MIN_OVERLAP):
+def screen(data, folds=5, seed=0, detailed=False, show_options=False, min_cases=MIN_RESOURCE_CASES, min_overlap=MIN_OVERLAP, propensity_details=True):
     rows, details = [], {}
     for name, candidate in data.items():
         print(f"{name} ...", flush=True)
         # Candidate kommt von build_candidates
-        if candidate.kind == "resource" and not candidate.skip and len(candidate.X):
+        if propensity_details and candidate.kind == "resource" and not candidate.skip and len(candidate.X):
             # Die Mitarbeiter einzeln: Fälle und Propensity je Mitarbeiter
             details[name] = employee_propensities(candidate, folds, seed)
         row = evaluate(candidate, folds, seed, min_cases, min_overlap) if not candidate.skip else {"Ergebnis": f"nicht testbar: {candidate.skip}"}
+        effects = row.pop("_effects", None)
+        if effects is not None:
+            details[name] = details[name].join(effects, how="left") if name in details else effects
         rows.append({"Kandidat": name, **row})
     table = pd.DataFrame(rows).set_index("Kandidat")
     if not detailed:
-        table = table.reindex(columns=SUMMARY + (["Optionen", "Pool", "Poolgröße Median", "Fälle mit Wahl"] if show_options else []))
+        table = table.reindex(columns=SUMMARY + (["Optionen", "Pool", "Poolgröße Median", "Fälle mit Wahl", "Mitarbeitereffekt Streuung",
+                                                  "Mitarbeiter mit Effekt", "Anteil mit KI ohne 0"] if show_options else []))
     table.attrs["details"] = details
     return table
 
@@ -101,7 +108,7 @@ def grouped(candidate, min_cases, own=None):
 
 # Alle Kennzahlen eines Kandidaten
 # own: mit Pool die Mitarbeiter mit eigener Option (Standard: mindestens min_cases Fälle)
-def evaluate(candidate, folds=5, seed=0, min_cases=MIN_RESOURCE_CASES, min_overlap=MIN_OVERLAP, own=None):
+def evaluate(candidate, folds=5, seed=0, min_cases=MIN_RESOURCE_CASES, min_overlap=MIN_OVERLAP, own=None, policy=True):
     binary = pd.api.types.is_numeric_dtype(candidate.T)
     pooled = candidate.pool is not None
     T_all, pools = candidate.T, candidate.pool
@@ -133,12 +140,13 @@ def evaluate(candidate, folds=5, seed=0, min_cases=MIN_RESOURCE_CASES, min_overl
     e, mu = nuisances(X, codes, Y, len(options), folds, seed)
     e = within_pool(e, allowed)
     psi = aipw(codes, Y, e, mu)
-    scores = option_scores(X, psi, folds, seed)
-    policy = np.where(allowed, scores, -np.inf).argmax(axis=1)
     best = int(psi.mean(axis=0).argmax())
-    gain = interval(psi[np.arange(len(X)), policy] - psi[:, best])
+    # policy=False: nur die Effekte (Validierung, screening/validation.py), ohne die Policy und ihren Gewinn
+    scores = option_scores(X, psi, folds, seed) if policy else None
+    chosen = np.where(allowed, scores, -np.inf).argmax(axis=1) if policy else None
+    gain = interval(psi[np.arange(len(X)), chosen] - psi[:, best]) if policy else (np.nan,) * 3
     # gegenüber der Bank: ihr Wert ist das beobachtete Outcome
-    bank = interval(psi[np.arange(len(X)), policy] - Y)
+    bank = interval(psi[np.arange(len(X)), chosen] - Y) if policy else (np.nan,) * 3
     names = ["nie", "immer"] if binary else options
     size = allowed.sum(axis=1)
     # Überlappung über die Fälle mit Wahl (ohne Pool: alle)
@@ -153,17 +161,64 @@ def evaluate(candidate, folds=5, seed=0, min_cases=MIN_RESOURCE_CASES, min_overl
         "Placebo d": placebo(X, codes, len(options), folds, seed, allowed),
         "beste feste Regel": names[best],
         "Wert je Option": ", ".join(f"{n}: {v:.3g}" for n, v in zip(names, psi.mean(axis=0))),
-        "Policy wählt": ", ".join(f"{n}: {s:.2f}" for n, s in zip(names, np.bincount(policy, minlength=len(options)) / len(X))),
+        "Policy wählt": ", ".join(f"{n}: {s:.2f}" for n, s in zip(names, np.bincount(chosen, minlength=len(options)) / len(X))) if policy else "",
     })
     if binary:
-        gamma, tau = psi[:, 1] - psi[:, 0], scores[:, 1]
+        gamma = psi[:, 1] - psi[:, 0]
         effect = interval(gamma)
-        beta, _, beta_p = blp(gamma, tau)
         row.update({"Anteil Aktion": float(codes.mean()), "Effekt (AIPW)": effect[0], "Effekt KI": f"[{effect[1]:.3g}; {effect[2]:.3g}]",
-                    "BLP β": beta, "BLP p": beta_p, "anderes Vorzeichen": float(np.mean(np.sign(tau) != np.sign(effect[0]))),
-                    "E-Wert": e_value(effect[0], float(np.std(Y)))})
+                    "Effekt KI unten": effect[1], "Effekt KI oben": effect[2], "E-Wert": e_value(effect[0], float(np.std(Y)))})
+        if policy:
+            tau = scores[:, 1]
+            beta, _, beta_p = blp(gamma, tau)
+            row.update({"BLP β": beta, "BLP p": beta_p, "anderes Vorzeichen": float(np.mean(np.sign(tau) != np.sign(effect[0])))})
+    if pooled:
+        # Je Mitarbeiter: wie viel besser oder schlechter als das Mittel seines Pools (AIPW)
+        effects = employee_effects(psi, allowed, options)
+        significant = ((effects["KI unten"] > 0) | (effects["KI oben"] < 0)).mean() if len(effects) else np.nan
+        row.update({"Mitarbeitereffekt Streuung": effects.attrs["spread"], "Mitarbeiter mit Effekt": len(effects),
+                    "Anteil mit KI ohne 0": float(significant)})
+        row["_effects"] = effects
     row["Ergebnis"] = verdict(row, min_overlap, against_bank=pooled)
     return row
+
+
+# Je eigener Option eines Mitarbeiter-Kandidaten (ohne other): Effekt gegenüber dem Mittel seines Pools, AIPW. Über die
+# Fälle mit Wahl, in deren Pool er ist, das Mittel von ψ[i, a] − (Mittel von ψ[i, ·] über den Pool des Falls): wie viel
+# besser der Fall mit ihm wäre als mit einem zufällig Gewählten aus dem Pool. Dazu Standardfehler und 95-%-Intervall;
+# attrs["spread"]: die Streuung der Effekte zwischen den Mitarbeitern, um das Rauschen bereinigt (Varianz der Effekte
+# minus mittlere quadrierte Standardfehler)
+def employee_effects(psi, allowed, options):
+    size = allowed.sum(axis=1)
+    pool_mean = np.where(allowed, psi, 0.0).sum(axis=1) / np.maximum(size, 1)
+    rows = []
+    for a, option in enumerate(options):
+        if option == OTHER:
+            continue
+        inside = allowed[:, a] & (size >= 2)
+        if inside.sum() < 2:
+            continue
+        mean, low, high = interval(psi[inside, a] - pool_mean[inside])
+        rows.append({"Mitarbeiter": option, "Fälle mit ihm im Pool": int(inside.sum()), "Effekt ggü. Pool (AIPW)": mean,
+                     "Std.-Fehler": (high - mean) / 1.96, "KI unten": low, "KI oben": high})
+    table = pd.DataFrame(rows, columns=["Mitarbeiter", "Fälle mit ihm im Pool", "Effekt ggü. Pool (AIPW)", "Std.-Fehler", "KI unten", "KI oben"]).set_index("Mitarbeiter")
+    table.attrs["spread"] = between_spread(table["Effekt ggü. Pool (AIPW)"], table["Std.-Fehler"])
+    return table
+
+
+# Streuung der wahren Effekte zwischen den Mitarbeitern (DerSimonian-Laird, wie in der Meta-Analyse): aus geschätzten Effekten
+# mit Standardfehlern, präzise Schätzungen zählen mehr; das Rauschen ist abgezogen
+def between_spread(effects, se):
+    effects, se = np.asarray(effects, dtype=float), np.asarray(se, dtype=float)
+    ok = np.isfinite(effects) & np.isfinite(se) & (se > 0)
+    effects, se = effects[ok], se[ok]
+    if len(effects) < 3:
+        return np.nan
+    w = 1 / se ** 2
+    mean = (w * effects).sum() / w.sum()
+    q = (w * (effects - mean) ** 2).sum()
+    scale = w.sum() - (w ** 2).sum() / w.sum()
+    return float(np.sqrt(max(0.0, (q - (len(effects) - 1)) / scale)))
 
 
 # Je Mitarbeiter, der die Tätigkeit ausgeführt hat: Fälle (Daten für sein Outcome-Modell), wie oft im Pool (wie oft er

@@ -42,7 +42,7 @@ import pandas as pd
 from helpers.datasets import ACTIVITY, CASE, LIFECYCLE, TIMESTAMP, add_paths
 from helpers.parameters import SEED, WORKERS
 
-POLICIES = ("bank", "random", "xgb", "lstm", "psp", "psp_lookahead", "psp_erm")
+POLICIES = ("bank", "random", "xgb", "lstm", "psp", "psp_lookahead", "psp_erm", "regel")
 PSP_POLICIES = ("psp", "psp_lookahead", "psp_erm")  # alle mit dem Modell des PSP
 N_CASES, WARMUP, COOLDOWN, SEEDS = 4000, 700, 1300, 5  # wie scripts/main.py --online-cases, --online-warmup, --online-cooldown, --online-seeds
 TAIL_QUANTILE = 0.9  # τ: dieses Quantil der Durchlaufzeit unter der Bank, je Wiederholung
@@ -125,6 +125,9 @@ def _policy(name, seed):
     if name == "random":
         from prescriptive.policies.rct_policy import RCTPolicy
         return RCTPolicy([seed, 7])
+    if name == "regel":
+        from prescriptive.policies.rule_policy import RulePolicy
+        return RulePolicy(**(_SHARED["policy_params"].get(name) or {}))  # feste Regel je Wahlpunkt (policies/rule_policy.py)
     from helpers.training import model_path
     path = model_path("psp" if name in PSP_POLICIES else name, _SHARED["simulator"].dataset)
     params = _SHARED["policy_params"].get(name) or {}
@@ -139,7 +142,11 @@ def _policy(name, seed):
         return LSTMPolicy(path, seed=seed)
     if name == "psp":
         from prescriptive.policies.psp_policy import PSPPolicy
-        return PSPPolicy(path, seed=seed)
+        # model: ein anderes PSP (z. B. auf dem echten Log trainiert); samples: gezogene Suffixe je Option (Standard psp_policy.SAMPLES);
+        # value_from: "head" bewertet über den Restzeit-Kopf (psp_model remaining_head) statt über die gezogenen Suffixe;
+        # first_only: Wahlpunkte, an denen die Policy nur beim ersten Mal im Fall entscheidet (psp_policy)
+        return PSPPolicy(params.get("model") or path, seed=seed, value_from=params.get("value_from"), first_only=params.get("first_only"),
+                         **({"samples": int(params["samples"])} if params.get("samples") else {}))
     from prescriptive.policies.xgb_policy import XGBPolicy
     return XGBPolicy(params.get("model") or path, seed=seed)  # model: ein anderes XGBoost (z. B. mit Stundensätzen)
 

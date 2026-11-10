@@ -114,6 +114,20 @@ def work_counts(event_log, prefix: str) -> Dict[Tuple[str, str], int]:
     return dict(Counter(zip(rows["org:resource"], rows["concept:name"])))
 
 
+# Berechtigung nach Erfahrung (lauf.berechtigung: erfahrung im Katalog, statt des Berechtigungsmodells des Datensatzes): wer den
+# Arbeitsschritt im echten Log mindestens MIN_EXPERIENCE-mal begonnen oder fortgesetzt hat; erreicht das niemand, wer ihn
+# überhaupt begonnen oder fortgesetzt hat. Dieselbe Regel in der Engine (simulation/case_engine_lifecycle_aware.py
+# eligible_for), in der gelernten Zuteilung (BPIC2017/allocation/learned_allocation.py) und im Screening (Pool kompetent).
+MIN_EXPERIENCE = 30
+
+
+def experienced_employees(counts: Dict[Tuple[str, str], int], activity: str, system_users=(), minimum: int = MIN_EXPERIENCE) -> List[str]:
+    """counts: work_counts; die Mitarbeiter, die activity laut Erfahrung machen (sortiert), ohne Systemnutzer."""
+    performed = sorted(r for (r, a), n in counts.items() if a == activity and n >= 1 and isinstance(r, str) and r not in system_users)
+    experienced = [r for r in performed if counts[(r, activity)] >= minimum]
+    return experienced or performed
+
+
 ALLOCATIONS = ("bank", "learned", "random", "round_robin", "shortest_queue", "batch", "drl", "pmsp")
 
 

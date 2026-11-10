@@ -19,7 +19,7 @@ show_example zeigt beide untereinander: erst das Original, dann das vorverarbeit
 import numpy as np
 import pandas as pd
 
-from ..datasets import ACTIVITY, CASE, LIFECYCLE, RESOURCE, TIMESTAMP, dataset_info
+from helpers.datasets import ACTIVITY, CASE, LIFECYCLE, RESOURCE, TIMESTAMP, dataset_info
 from preprocessing.steps import COMMON_STEPS, DATASET_STEPS, work_item_activities, work_sessions
 from .candidates import build_candidate, prepared_log
 
@@ -114,6 +114,9 @@ def feature_table(X, case_id, spec):
             group = "Verlauf: " + ("Aktivität vor dem Entscheidungs-Event" if column == "previous_activity" else "Events im Prefix")
         elif column == "elapsed_h":
             group = "Zeit: Stunden seit Fallbeginn"
+        elif column in ("prev_worker", "prev_worker_in_pool", "pool_size"):
+            group = "Zuteilung: " + {"prev_worker": "wer zuletzt am Fall gearbeitet hat", "prev_worker_in_pool": "ist er jetzt wählbar (1 = ja)",
+                                     "pool_size": "wählbare Mitarbeiter"}[column]
         else:
             group = "Kalender am Entscheidungspunkt"
         readable = ""

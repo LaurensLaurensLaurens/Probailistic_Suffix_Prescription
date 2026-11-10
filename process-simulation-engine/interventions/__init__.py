@@ -69,8 +69,10 @@ def from_test(name: str, dataset: str, test: dict) -> dict:
             "actions": test.get("names") or [f"no_{name}", name]}
 
 
-# Der Katalog liegt bei der Pipeline (prescriptive/catalog.yaml), neben process-simulation-engine
-CANDIDATES_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "prescriptive", "catalog.yaml")
+# Der Katalog liegt bei der Pipeline (prescriptive/catalog.yaml), neben process-simulation-engine; die Umgebungsvariable
+# PSP_CATALOG setzt einen anderen (z. B. eine Kopie mit anderen lauf-Punkten für einen Lauf neben anderen; gilt auch in den
+# Arbeitsprozessen, die die Umgebung erben)
+CANDIDATES_FILE = os.environ.get("PSP_CATALOG") or os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "prescriptive", "catalog.yaml")
 
 
 def catalog() -> dict:
@@ -184,8 +186,24 @@ def run_allocation(dataset: str) -> str:
     """
     from resources.selection_strategies import STRATEGY_REGISTRY
     name = (catalog()[dataset].get("lauf") or {}).get("zuteilung") or "random"
-    if name not in STRATEGY_REGISTRY:
-        raise ValueError(f"lauf.zuteilung ({dataset}): '{name}' ist keine Strategie, möglich: {', '.join(sorted(STRATEGY_REGISTRY))}")
+    allowed = set(STRATEGY_REGISTRY) | {"learned"}  # learned: wen die echte Bank wählt (resources/BPIC2017/allocation/learned_allocation.py)
+    if name not in allowed:
+        raise ValueError(f"lauf.zuteilung ({dataset}): '{name}' ist keine Zuteilung, möglich: {', '.join(sorted(allowed))}")
+    return name
+
+
+PERMISSIONS = ("ordinor", "erfahrung")
+
+
+def run_permissions(dataset: str) -> str:
+    """
+    Wer einen Arbeitsschritt darf (lauf.berechtigung im Katalog, Standard ordinor): ordinor das Berechtigungsmodell des
+    Datensatzes (resources/datasets.py) mit der Erfahrungsschwelle der Engine, erfahrung nur die Erfahrung im echten Log
+    (resources/case_allocation.experienced_employees). Gilt für Engine und Screening (Pool kompetent).
+    """
+    name = (catalog()[dataset].get("lauf") or {}).get("berechtigung") or "ordinor"
+    if name not in PERMISSIONS:
+        raise ValueError(f"lauf.berechtigung ({dataset}): '{name}', möglich: {', '.join(PERMISSIONS)}")
     return name
 
 

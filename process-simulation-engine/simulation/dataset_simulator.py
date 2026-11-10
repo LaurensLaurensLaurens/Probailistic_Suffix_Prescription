@@ -73,8 +73,9 @@ class Simulator:
             if unknown:
                 raise ValueError(f"Unbekannte Wahlpunkte {', '.join(sorted(unknown))}, möglich: {', '.join(point.name for point in self.points)}")
             chosen = [point for point in self.points if point.name in points]
+        extra = {"permissions": interventions.run_permissions(self.dataset)} if model_spec(self.dataset)["work_item_prefix"] else {}
         engine = build_engine(self.log, n_cases, seed, self.model_folder, allocation=interventions.run_allocation(self.dataset), dataset=self.dataset,
-                              load=interventions.arrival_load(self.dataset))
+                              load=interventions.arrival_load(self.dataset), **extra)
         engine.set_policy(policy, chosen if policy is not None else [], window)
         if observer is not None:
             engine.observer, engine.observe_seconds = observer, observe_hours * 3600

@@ -104,7 +104,7 @@ class CaseEngine:
     # Wird aufgerufen von Simulator.run -> build_engine -> CaseEngine.__init__
     def __init__(self, model: EventTimeModel, allocator, attribute_generator, arrival_timestamps: List[datetime],
                  seed: int = 42, min_probability: float = 0.0, allocation: Optional[Allocation] = None,
-                 experience: Optional[Dict[Tuple[str, str], int]] = None, min_experience: int = 0):
+                 experience: Optional[Dict[Tuple[str, str], int]] = None, min_experience: int = 0, permissions: str = "ordinor"):
         """
         Args:
             model: Trained next-event model.
@@ -134,6 +134,9 @@ class CaseEngine:
         self.observer: Optional[Callable] = None
         self.observe_seconds: Optional[float] = None
         self.experience, self.min_experience = experience or {}, min_experience
+        # Wer einen Arbeitsschritt darf: "ordinor" das Berechtigungsmodell des Datensatzes (mit min_experience), "erfahrung" nur die
+        # Erfahrung im echten Log (resources/case_allocation.py experienced_employees; lauf.berechtigung im Katalog)
+        self.permissions = permissions
         self.seed = seed
         self.rng = np.random.default_rng(seed)
         random.seed(seed)  # the selection strategies draw from Python's random module
@@ -427,7 +430,11 @@ class CaseEngine:
         return activity.startswith(self.work_item_prefix)
 
     def eligible_for(self, activity: str) -> List[str]:
-        """Employees who may do the activity: permitted by the permission model and, with min_experience, experienced."""
+        """Employees who may do the activity: permitted by the permission model and, with min_experience, experienced
+        (permissions "erfahrung": only by experience in the real log, see resources/case_allocation.experienced_employees)."""
+        if activity not in self._eligible and self.permissions == "erfahrung":
+            from resources.case_allocation import experienced_employees
+            self._eligible[activity] = experienced_employees(self.experience, activity, self.system_users, max(self.min_experience, 1))
         if activity not in self._eligible:
             permitted = [r for r in sorted(self.allocator.permissions.get_eligible_resources(activity)) if r not in self.system_users]
             experienced = [r for r in permitted if self.experience.get((r, activity), 0) >= self.min_experience]
@@ -585,7 +592,7 @@ def raise_load(arrivals, factor: float, seed: int):
 
 def build_engine(event_log, num_cases: int, seed: int = 42, model_folder: str = DEFAULT_MODEL_FOLDER,
                  allocation: str = "bank", min_experience: int = MIN_EXPERIENCE,
-                 dataset: str = "bpic17", load: float = 1.0) -> CaseEngine:
+                 dataset: str = "bpic17", load: float = 1.0, permissions: str = "ordinor") -> CaseEngine:
     """
     Engine with everything it needs: the trained next-event model, the arrivals, the case attribute generator, the
     permissions and the duty roster of the dataset (each from the log after the preprocessing). The simulation starts
@@ -613,6 +620,7 @@ def build_engine(event_log, num_cases: int, seed: int = 42, model_folder: str = 
     # Bei weniger Last entsprechend mehr ziehen, damit nach dem Ausdünnen num_cases bleiben
     arrivals, sources = dataset_arrivals(dataset, event_log, num_cases if load >= 1 else int(np.ceil(1.05 * num_cases / load)), seed, start_date=start)
     arrivals, numbers = raise_load(arrivals, load, seed)
+    # Baut erstmal nur den Generator für die Fallattribute
     attributes = dataset_case_attributes(dataset, event_log, seed=seed)
     attributes.arrival_cases(None if sources is None else [sources[k] for k in numbers])
     # Baut die Case Engine Logik mit pausieren, fortsetzen etc.
@@ -629,6 +637,7 @@ def build_engine(event_log, num_cases: int, seed: int = 42, model_folder: str = 
         allocation=create_allocation(allocation, event_log, dataset),
         experience=work_counts(event_log, work_items),
         min_experience=min_experience,
+        permissions=permissions,
     )
 
 

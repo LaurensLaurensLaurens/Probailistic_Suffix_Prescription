@@ -26,7 +26,9 @@ Pool der Mitarbeiter-Kandidaten (pool, POOLS): unter wem je Fall gewählt wird; 
 diese Mitarbeiter (helpers.screening.evaluation). None: alle Mitarbeiter mit genug Fällen, wie die übrigen Variablen.
     kompetent   wer die Tätigkeit laut Berechtigungsmodell des Datensatzes darf (process-simulation-engine/resources/
                 datasets.py, RESOURCES: BPIC17 OrdinoR, BPIC13 Teams, BPIC19 wer sie im Log ausgeführt hat), ohne
-                Systemnutzer; hängt nur von der Tätigkeit ab, ist also für alle Fälle derselbe
+                Systemnutzer; hängt nur von der Tätigkeit ab, ist also für alle Fälle derselbe. Mit lauf.berechtigung
+                erfahrung im Katalog wie die Engine: wer den Arbeitsschritt im echten Log mindestens 30-mal begonnen oder
+                fortgesetzt hat (resources/case_allocation.experienced_employees)
     im Dienst   kompetent und zum Zeitpunkt der Entscheidung im Dienst (Dienstplan der Engine: an dem Tag von der Stunde
                 des ersten bis zu der des letzten Events)
     frei        im Dienst und zu dem Zeitpunkt in keinem anderen Arbeitsabschnitt (start/resume bis suspend/complete/
@@ -38,7 +40,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from ..datasets import ACTIVITY, CASE, LIFECYCLE, RESOURCE, TIMESTAMP, dataset_info, intervention_table
+from helpers.datasets import ACTIVITY, CASE, LIFECYCLE, RESOURCE, TIMESTAMP, dataset_info, intervention_table
 from .events import actions, decision_events, prefix_until
 from .features import features
 
@@ -114,10 +116,23 @@ def _pool(dataset, log, pool):
 
 # Wer eine Tätigkeit darf, laut Berechtigungsmodell des Datensatzes (wie die Engine), ohne Systemnutzer: Tätigkeit -> frozenset
 def competent_resources(dataset, log):
-    from ..datasets import add_paths
+    from helpers.datasets import add_paths
     add_paths()
+    import interventions
+    from next_event_prediction.datasets import model_spec
     from resources.datasets import dataset_permissions, main_system_user, resource_spec, system_users
     users = system_users(dataset, log)
+    prefix = model_spec(dataset).get("work_item_prefix")
+    if interventions.run_permissions(dataset) == "erfahrung" and prefix:
+        # Wie die Engine mit lauf.berechtigung erfahrung: wer den Arbeitsschritt oft genug begonnen oder fortgesetzt hat
+        from resources.case_allocation import experienced_employees, work_counts
+        counts, cache = work_counts(log, prefix), {}
+
+        def experienced(activity):
+            if activity not in cache:
+                cache[activity] = frozenset(experienced_employees(counts, activity, users)) if str(activity).startswith(prefix) else frozenset()
+            return cache[activity]
+        return experienced
     permissions = dataset_permissions(resource_spec(dataset)["permissions"], log, users, main_system_user(log, users))
     cache = {}
 
@@ -136,7 +151,7 @@ class ResourcePool:
     """
 
     def __init__(self, dataset, log, level):
-        from ..datasets import add_paths
+        from helpers.datasets import add_paths
         add_paths()
         from resources.datasets import system_users
         self.level, self.competent = level, competent_resources(dataset, log)
@@ -158,6 +173,8 @@ class ResourcePool:
             seconds = (pd.to_datetime(times) - pd.Timestamp("1970-01-01")).dt.total_seconds().to_numpy()
             for j, member in enumerate(members):
                 starts, latest_end = self.sessions.get(member, (np.zeros(0), np.zeros(0)))
+                if not len(starts):
+                    continue  # nie gearbeitet (z. B. in einem kurzen simulierten Log): nie belegt
                 # belegt: ein Abschnitt hat vorher begonnen und endet erst danach
                 before = np.searchsorted(starts, seconds, side="left") - 1
                 busy = (before >= 0) & (latest_end[np.clip(before, 0, None)] > seconds)
@@ -258,7 +275,29 @@ def candidate(name, log, outcome, test, spec, seed=0, pools=None, pool_name=None
         at = log[log["_pos"] == log[CASE].map(data.decision_pos)].set_index(CASE)[TIMESTAMP].reindex(X.index)
         data.pool, data.pool_outside = pools(test["decision"], at, data.T)
         data.pool_name = pool_name
+    if kind == "resource":
+        data.X = with_allocation(log, data, spec)
     return data
+
+
+# Mitarbeiter-Kandidaten: Merkmale, die die Zuteilung erklären (Confounder der Wahl des Mitarbeiters). Wer zuletzt am Fall
+# gearbeitet hat (ohne Buchungs-Events und Systemnutzer; Engine und Bank lassen den Fall oft bei ihm), mit Pool dazu, ob er
+# jetzt wählbar ist, und wie groß der Pool ist
+ALLOCATION_FEATURES = ("prev_worker", "prev_worker_in_pool", "pool_size")
+
+
+def with_allocation(log, data, spec):
+    work = log[RESOURCE].where(~log[LIFECYCLE].isin(BOOKKEEPING)) if LIFECYCLE in log else log[RESOURCE]
+    system = log[RESOURCE].isna() | log[RESOURCE].astype(str).str.contains(spec["system_users"])
+    work = work.where(~system)
+    before = (log["_pos"] < log[CASE].map(data.decision_pos)).to_numpy()
+    previous = work[before].groupby(log.loc[before, CASE]).last().reindex(data.X.index)
+    X = data.X.copy()
+    X["prev_worker"] = previous.fillna("<keiner>").astype(str).astype("category")
+    if data.pool is not None:
+        X["prev_worker_in_pool"] = np.array([float(person in pool) for person, pool in zip(previous, data.pool)])
+        X["pool_size"] = data.pool.map(len).astype(float).to_numpy()
+    return X
 
 
 # ------------------------------------------------------------------ Arten: (Entscheidungs-Position, Option, Prefix, Verzögerung, Systemnutzer)

@@ -52,11 +52,16 @@ def _totals(counts):
     return totals
 
 
-def _choice_situations(event_log, counts, system_users, prefix):
+def _choice_situations(event_log, counts, system_users, prefix, roster=None):
     """
     Je Beginn oder Fortsetzung eines Arbeitsschritts im echten Log: Gruppe (Aktivität, Öffnung), Merkmale aller Kandidaten
-    und Index des gewählten. Kandidaten: Erfahrung >= MIN_EXPERIENCE, im Dienst und frei, dazu immer der Gewählte.
+    und Index des gewählten. Kandidaten: Erfahrung (resources/case_allocation.experienced_employees, wie die Engine mit
+    lauf.berechtigung erfahrung), im Dienst und frei, dazu immer der Gewählte. Im Dienst: mit roster (DailyRoster, wie die
+    Engine) zur vollen Stunde laut Dienstplan, sonst eigene Events höchstens ON_DUTY_HOURS vor oder nach dem Moment.
     """
+    from datetime import datetime, timezone
+
+    from resources.case_allocation import experienced_employees
     import bisect
     log = event_log[~event_log["org:resource"].isin(system_users)].sort_values(["case:concept:name", "time:timestamp"], kind="stable")
     seconds = (log["time:timestamp"].dt.tz_localize(None) if log["time:timestamp"].dt.tz is not None else log["time:timestamp"]).astype("int64").to_numpy() / 1e9
@@ -80,6 +85,9 @@ def _choice_situations(event_log, counts, system_users, prefix):
         busy_ends[resource] = np.maximum.accumulate([end for _, end in intervals]).tolist()
 
     def on_duty(resource, time):
+        if roster is not None:
+            # wie die Engine (_on_duty_at): der Dienstplan zur vollen Stunde
+            return roster.is_available(resource, datetime.fromtimestamp(int(time // 3600) * 3600, tz=timezone.utc).replace(tzinfo=None))
         values = times.get(resource)
         if values is None:
             return False
@@ -94,10 +102,7 @@ def _choice_situations(event_log, counts, system_users, prefix):
         return index >= 0 and busy_ends[resource][index] > time
 
     totals = _totals(counts)
-    experienced = defaultdict(set)
-    for (resource, activity), count in counts.items():
-        if count >= MIN_EXPERIENCE and resource not in system_users:
-            experienced[activity].add(resource)
+    experienced = {activity: set(experienced_employees(counts, activity, system_users, MIN_EXPERIENCE)) for activity in {a for _, a in counts}}
     situations = defaultdict(list)
     previous_case, last, handled, holders = None, None, set(), {}
     for case, activity, lifecycle, resource, time in rows:
@@ -106,7 +111,7 @@ def _choice_situations(event_log, counts, system_users, prefix):
         if not activity.startswith(prefix):
             continue
         if lifecycle in _OPENING:
-            candidates = sorted({r for r in experienced[activity] if on_duty(r, time) and not busy(r, time)} | {resource})
+            candidates = sorted({r for r in experienced.get(activity, set()) if on_duty(r, time) and not busy(r, time)} | {resource})
             features = np.stack([_features(counts.get((r, activity), 0), totals[r], r == last, r in handled, r == holders.get(activity)) for r in candidates])
             situations[(activity, lifecycle)].append((features, candidates.index(resource)))
         if lifecycle in _OPENING:
@@ -136,13 +141,14 @@ def _fit_logit(choices) -> np.ndarray:
     return minimize(loss, np.zeros(features.shape[1]), jac=True, method="L-BFGS-B").x
 
 
-def fit_learned_allocation(event_log, system_users, prefix) -> Dict:
+def fit_learned_allocation(event_log, system_users, prefix, roster=None) -> Dict:
     """
     Gewichte je (Aktivität, Öffnung); Gruppen mit weniger als MIN_CHOICES Entscheidungen bekommen die ihrer Öffnung.
-    system_users: Systemnutzer (resources/datasets.py); prefix: Arbeitsschritte (next_event_prediction/datasets.py).
+    system_users: Systemnutzer (resources/datasets.py); prefix: Arbeitsschritte (next_event_prediction/datasets.py);
+    roster: Dienstplan für den Pool der Kandidaten (siehe _choice_situations).
     """
     counts = work_counts(event_log, prefix)
-    situations = _choice_situations(event_log, counts, system_users, prefix)
+    situations = _choice_situations(event_log, counts, system_users, prefix, roster)
     weights = {}
     for opening in _OPENING:
         pooled = [choice for (activity, lifecycle), choices in situations.items() if lifecycle == opening for choice in choices]
@@ -152,7 +158,8 @@ def fit_learned_allocation(event_log, system_users, prefix) -> Dict:
     for group, choices in situations.items():
         if len(choices) >= MIN_CHOICES:
             weights[group] = _fit_logit(choices)
-    return {"weights": weights, "counts": counts, "choices": {group: len(choices) for group, choices in situations.items()}}
+    return {"weights": weights, "counts": counts, "choices": {group: len(choices) for group, choices in situations.items()},
+            "pool": "Dienstplan" if roster is not None else f"eigene Events ±{ON_DUTY_HOURS} h"}
 
 
 class LearnedAllocation(Allocation):
@@ -183,7 +190,9 @@ def load_learned_allocation(event_log, path: str, system_users, prefix: str) -> 
         with open(path, "rb") as f:
             model = pickle.load(f)
     else:
-        model = fit_learned_allocation(event_log, system_users, prefix)
+        # Neu gefittet mit dem Pool der Engine: Erfahrung, Dienstplan (DailyRoster), frei
+        from resources.daily_roster import DailyRoster
+        model = fit_learned_allocation(event_log, system_users, prefix, DailyRoster(event_log, system_users))
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "wb") as f:
             pickle.dump(model, f)
