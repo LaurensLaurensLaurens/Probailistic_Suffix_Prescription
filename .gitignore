@@ -34,7 +34,11 @@ prescriptive/data/cache/
 prescriptive/data/evaluation/
 prescriptive/data/psp_varianten/
 prescriptive/data/rct_*/
-prescriptive/scripts/results*/
+# Ergebnisordner: nur Skripte und Notizen (.py, .md) ins Repository, keine Logs, Pickles, CSVs, Bilder (2026-11-24)
+prescriptive/scripts/results*/**
+!prescriptive/scripts/results*/**/
+!prescriptive/scripts/results*/**/*.py
+!prescriptive/scripts/results*/**/*.md
 # process-simulation-engine ist ein eigenes Repository (Team); sein Code liegt hier als Kopie, ohne diese Teile
 process-simulation-engine/.venv*/
 process-simulation-engine/pm4py-release/
@@ -48,3 +52,5 @@ SCOPE_WORKSPACE/src/readable.txt
 **/matplotlib/fontlist-*.json
 **/.matplotlib_cache/
 **/matplotlib_cache/
+# Nebenprojekte ohne Bezug zur Arbeit (OpenAlex, Video-App)
+miscellaneous/

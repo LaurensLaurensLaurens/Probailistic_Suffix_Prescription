@@ -1,0 +1,19 @@
+# Wahre Effekte je Teilgruppe (effekte_v2, 4000 Fälle je Lauf, Saaten [11, 12, 13])
+
+Vorteil Regel-Option = Durchlaufzeit andere − Regel-Option (positiv: Regel-Option besser)
+
+```
+                           Punkt          Gruppe  Fälle  Anteil  Vorteil Regel-Option (d)  SE über Saaten  n W_Call incomplete files andere−Regel  n A_Incomplete andere−Regel  n A_Cancelled andere−Regel  n O_Accepted andere−Regel  n A_Denied andere−Regel  n O_Create Offer andere−Regel
+            annehmen_bei_konzept            alle   6247   1.000                     1.345           0.334                                  -0.125                       -0.124                      -0.255                      0.267                   -0.012                          0.096
+            annehmen_bei_konzept   Teilgruppe ja   3248   0.520                    -1.426           0.278                                  -0.162                       -0.162                      -0.539                      0.557                   -0.017                          0.146
+            annehmen_bei_konzept Teilgruppe nein   2999   0.480                     4.347           0.331                                  -0.084                       -0.084                       0.053                     -0.047                   -0.006                          0.042
+annehmen_nach_vervollstaendigung            alle   6683   1.000                     0.260           0.281                                  -0.035                       -0.035                       0.032                     -0.028                   -0.005                          0.015
+annehmen_nach_vervollstaendigung   Teilgruppe ja   3573   0.535                    -3.592           0.274                                  -0.010                       -0.010                       0.029                     -0.023                   -0.005                          0.022
+annehmen_nach_vervollstaendigung Teilgruppe nein   3110   0.465                     4.686           0.687                                  -0.064                       -0.064                       0.036                     -0.033                   -0.005                          0.007
+               angebot_nachlegen            alle  11252   1.000                    -0.284           0.241                                  -0.153                       -0.153                      -0.111                      0.128                   -0.021                          1.314
+               angebot_nachlegen   Teilgruppe ja   6836   0.608                    -1.370           0.260                                  -0.201                       -0.201                      -0.203                      0.223                   -0.026                          1.341
+               angebot_nachlegen Teilgruppe nein   4416   0.392                     1.398           0.269                                  -0.079                       -0.079                       0.031                     -0.019                   -0.014                          1.271
+                    handle_leads            alle   7657   1.000                    -0.238           0.440                                   0.051                        0.051                       0.073                     -0.085                    0.011                         -0.014
+                    handle_leads   Teilgruppe ja   3675   0.480                    -2.822           0.780                                   0.024                        0.024                       0.039                     -0.044                    0.004                          0.021
+                    handle_leads Teilgruppe nein   3982   0.520                     2.147           0.207                                   0.076                        0.076                       0.104                     -0.123                    0.018                         -0.047
+```
