@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "checked_at": "2026-11-14T15:28:39+01:00",
+  "weights_unchanged": true,
+  "original_model_unchanged": true,
+  "parameters_unchanged": true,
+  "model_weights_sha256": "018717ca898a54f699120ec42aab08a3f990159be79dd136a6600c2f6df1fd4c",
+  "training_cases": 25208,
+  "excluded_test_cases": 6301,
+  "test_cases_excluded_from_transition_rules": true,
+  "allowed_pairs": 414,
+  "allowed_end_tokens": 22,
+  "checked_points": [
+    "angebot_nachlegen",
+    "annehmen_bei_konzept",
+    "annehmen_nach_vervollstaendigung",
+    "handle_leads"
+  ],
+  "samples_per_option": 300,
+  "checked_transitions": 72259,
+  "invalid_transitions": 0,
+  "checked_suffixes": 2400
+}

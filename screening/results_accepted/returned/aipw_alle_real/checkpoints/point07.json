@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Handle leads",
+  "Art": "Mitarbeiter",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 3643,
+  "Optionen": 85,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "User_14 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": -0.00890387587893953,
+  "KI unten": -0.2292052221063678,
+  "KI oben": 0.21139747034848871,
+  "Zielereignis": "O_Returned",
+  "Entscheidungsfälle vor Ausschluss": 3643,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 2267,
+  "Beobachtete Zielquote": 0.6222893219873731,
+  "Beobachtete Optionen": 85,
+  "Minimum Fälle je beobachteter Option": 1,
+  "Überlappung": 0.5153712296983759,
+  "Fälle mit Wahl": 3448,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 18.653183601913042
+}

@@ -1,0 +1,16 @@
+{
+  "policy_window": {
+    "states": 12,
+    "D_raw_ranking_agrees_with_XGB": 9,
+    "D_100_draw_estimate_uncertain": 9,
+    "draw_attempts": 2891,
+    "rejected_incomplete_or_unsupported_paths": 491
+  },
+  "up_to_1000": {
+    "states": 12,
+    "D_raw_ranking_agrees_with_XGB": 10,
+    "D_100_draw_estimate_uncertain": 10,
+    "draw_attempts": 2835,
+    "rejected_incomplete_or_unsupported_paths": 435
+  }
+}

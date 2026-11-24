@@ -1,0 +1,415 @@
+# Complete 20-point screening/RCT study; production catalog is unchanged.
+bpic17:
+  event_log: eventlog/eventlog.xes.gz
+  standard_intervention: channel
+  lauf:
+    mitarbeiterwahl:
+    - 'Mitarbeiter: W_Call incomplete files'
+    - 'Mitarbeiter: W_Complete application'
+    - 'Mitarbeiter: W_Handle leads'
+    - 'Mitarbeiter: W_Validate application'
+    - 'Mitarbeiter: W_Call after offers (resume)'
+    - 'Mitarbeiter: W_Call incomplete files (resume)'
+    - 'Mitarbeiter: W_Complete application (resume)'
+    - 'Mitarbeiter: W_Validate application (resume)'
+    - 'Mitarbeiter: W_Assess potential fraud'
+    - 'Mitarbeiter: W_Handle leads (resume)'
+    control_flow:
+    - handle_leads
+    - annehmen_nach_vervollstaendigung
+    - angebot_nachlegen
+    - neues_angebot_beim_nachfassen
+    - annehmen_bei_konzept
+    nur_mitarbeiter: false
+    ankunft_faktor: 1
+    zuteilung: learned
+  outcome:
+    type: negative_cycle_days
+    beschreibung: negative Durchlaufzeit in Tagen (vom ersten bis zum letzten Event
+      des Falls)
+  outcome_optionen:
+    gewinn:
+      type: profit
+      outcome_activity: A_Pending
+      call_activity: A_Incomplete
+      call_cost: 250.0
+  screening:
+    case_attributes:
+    - case:LoanGoal
+    - case:ApplicationType
+    numeric_attributes:
+    - case:RequestedAmount
+    event_numeric:
+    - OfferedAmount
+    - NumberOfTerms
+    - MonthlyCost
+    - FirstWithdrawalAmount
+    system_users: ^User_1$
+  interventionen:
+  - name: channel
+    art: control_flow
+    test:
+      decision: O_Created
+      action:
+      - O_Sent (mail and online)
+      - O_Sent (online only)
+      names:
+      - mail_and_online
+      - online_only
+      rule: next_event
+    intervention: channel
+  - name: handle_leads
+    art: control_flow
+    test:
+      decision: W_Handle leads
+      lifecycle: schedule
+      action:
+      - W_Handle leads|withdraw
+      - W_Handle leads|start
+      names:
+      - kein_rueckruf
+      - rueckruf
+      rule: next_event
+  - name: annehmen_nach_vervollstaendigung
+    art: control_flow
+    test:
+      decision: W_Complete application
+      lifecycle: suspend
+      action:
+      - W_Complete application|resume
+      - A_Accepted
+      names:
+      - weiter_bearbeiten
+      - annehmen
+      rule: next_event
+  - name: angebot_nachlegen
+    art: control_flow
+    test:
+      decision: O_Created
+      action:
+      - O_Sent (mail and online)
+      - O_Create Offer
+      names:
+      - senden
+      - weiteres_angebot
+      rule: next_event
+  - name: neues_angebot_beim_nachfassen
+    art: control_flow
+    test:
+      decision: W_Call after offers
+      lifecycle: suspend
+      action:
+      - W_Call after offers|resume
+      - O_Create Offer
+      names:
+      - anrufen
+      - neues_angebot
+      rule: next_event
+  - name: 'Mitarbeiter: W_Call incomplete files'
+    art: variable
+    test:
+      kind: resource
+      decision: W_Call incomplete files
+      lifecycle: start
+  - name: 'Mitarbeiter: W_Complete application'
+    art: variable
+    test:
+      kind: resource
+      decision: W_Complete application
+      lifecycle: start
+  - name: 'Mitarbeiter: W_Handle leads'
+    art: variable
+    test:
+      kind: resource
+      decision: W_Handle leads
+      lifecycle: start
+  - name: 'Mitarbeiter: W_Validate application'
+    art: variable
+    test:
+      kind: resource
+      decision: W_Validate application
+      lifecycle: start
+  - name: 'Mitarbeiter: W_Call after offers (resume)'
+    art: variable
+    test:
+      kind: resource
+      decision: W_Call after offers
+      lifecycle: resume
+  - name: 'Mitarbeiter: W_Call incomplete files (resume)'
+    art: variable
+    test:
+      kind: resource
+      decision: W_Call incomplete files
+      lifecycle: resume
+  - name: 'Mitarbeiter: W_Complete application (resume)'
+    art: variable
+    test:
+      kind: resource
+      decision: W_Complete application
+      lifecycle: resume
+  - name: 'Mitarbeiter: W_Validate application (resume)'
+    art: variable
+    test:
+      kind: resource
+      decision: W_Validate application
+      lifecycle: resume
+  - name: annehmen_bei_konzept
+    art: control_flow
+    test:
+      decision: A_Concept
+      action:
+      - W_Complete application|start
+      - A_Accepted
+      names:
+      - bearbeiten
+      - annehmen
+      rule: next_event
+  - name: angebotshoehe
+    art: variable
+    test:
+      kind: attribute_bins
+      decision: O_Create Offer
+      attribute: OfferedAmount
+      ratio_to: case:RequestedAmount
+      bins:
+      - 0.95
+      - 1.05
+      labels:
+      - weniger_als_beantragt
+      - wie_beantragt
+      - mehr_als_beantragt
+      exclude_features:
+      - last:OfferedAmount
+      - last:NumberOfTerms
+      - last:MonthlyCost
+      - last:FirstWithdrawalAmount
+  - name: laufzeit
+    art: variable
+    test:
+      kind: attribute_bins
+      decision: O_Create Offer
+      attribute: NumberOfTerms
+      bins:
+      - 60.5
+      - 120.5
+      labels:
+      - bis_60_monate
+      - 61_bis_120_monate
+      - ueber_120_monate
+      exclude_features:
+      - last:OfferedAmount
+      - last:NumberOfTerms
+      - last:MonthlyCost
+      - last:FirstWithdrawalAmount
+  - name: erste_auszahlung
+    art: variable
+    test:
+      kind: attribute_bins
+      decision: O_Create Offer
+      attribute: FirstWithdrawalAmount
+      ratio_to: OfferedAmount
+      bins:
+      - 0.001
+      - 0.999
+      labels:
+      - keine
+      - teilweise
+      - voll
+      exclude_features:
+      - last:OfferedAmount
+      - last:NumberOfTerms
+      - last:MonthlyCost
+      - last:FirstWithdrawalAmount
+  - name: reaktionszeit_antrag
+    art: variable
+    test:
+      kind: lag_bins
+      decision: A_Create Application
+      action:
+      - W_Complete application
+      action_lifecycle: start
+      rule: follows_later
+      bins: median
+      labels:
+      - schnell
+      - langsam
+  - name: 'Mitarbeiter: W_Assess potential fraud'
+    art: variable
+    test:
+      kind: resource
+      decision: W_Assess potential fraud
+      lifecycle: start
+  - name: 'Mitarbeiter: W_Handle leads (resume)'
+    art: variable
+    test:
+      kind: resource
+      decision: W_Handle leads
+      lifecycle: resume
+bpic19:
+  event_log: eventlog/bpic2019/BPI_Challenge_2019.xes.gz
+  prozess: Einkauf (Bestellpositionen), Konzern in den Niederlanden
+  standard_intervention: remove_payment_block
+  lauf:
+    mitarbeiterwahl:
+    - invoice_worker
+    - block_remover
+    control_flow: []
+    nur_mitarbeiter: true
+    ankunft_faktor: 1
+    zuteilung: random
+  outcome:
+    type: negative_cycle_days
+    beschreibung: negative Durchlaufzeit in Tagen (vom ersten bis zum letzten Event
+      des Falls)
+  screening:
+    case_attributes:
+    - case:Spend area text
+    - case:Sub spend area text
+    - case:Item Type
+    - case:Item Category
+    - case:Document Type
+    - case:Vendor
+    - case:Company
+    numeric_attributes: []
+    event_numeric:
+    - Cumulative net worth (EUR)
+    system_users: NONE|batch
+    max_cases: 50000
+  interventionen:
+  - name: remove_payment_block
+    art: control_flow
+    test:
+      decision: Record Invoice Receipt
+      action:
+      - Clear Invoice
+      - Remove Payment Block
+      names:
+      - direkt_ausgleichen
+      - sperre_loesen
+      rule: next_event
+    intervention: remove_payment_block
+  - name: invoice_worker
+    art: variable
+    test:
+      kind: resource
+      decision: Record Invoice Receipt
+  - name: block_remover
+    art: variable
+    test:
+      kind: resource
+      decision: Remove Payment Block
+  - name: 'Mitarbeiter: Block Purchase Order Item'
+    art: variable
+    test:
+      kind: resource
+      decision: Block Purchase Order Item
+  - name: 'Mitarbeiter: Cancel Goods Receipt'
+    art: variable
+    test:
+      kind: resource
+      decision: Cancel Goods Receipt
+  - name: 'Mitarbeiter: Cancel Invoice Receipt'
+    art: variable
+    test:
+      kind: resource
+      decision: Cancel Invoice Receipt
+  - name: 'Mitarbeiter: Cancel Subsequent Invoice'
+    art: variable
+    test:
+      kind: resource
+      decision: Cancel Subsequent Invoice
+  - name: 'Mitarbeiter: Change Approval for Purchase Order'
+    art: variable
+    test:
+      kind: resource
+      decision: Change Approval for Purchase Order
+  - name: 'Mitarbeiter: Change Delivery Indicator'
+    art: variable
+    test:
+      kind: resource
+      decision: Change Delivery Indicator
+  - name: 'Mitarbeiter: Change Price'
+    art: variable
+    test:
+      kind: resource
+      decision: Change Price
+  - name: 'Mitarbeiter: Change Quantity'
+    art: variable
+    test:
+      kind: resource
+      decision: Change Quantity
+  - name: 'Mitarbeiter: Clear Invoice'
+    art: variable
+    test:
+      kind: resource
+      decision: Clear Invoice
+  - name: 'Mitarbeiter: Receive Order Confirmation'
+    art: variable
+    test:
+      kind: resource
+      decision: Receive Order Confirmation
+  - name: 'Mitarbeiter: Record Goods Receipt'
+    art: variable
+    test:
+      kind: resource
+      decision: Record Goods Receipt
+  - name: 'Mitarbeiter: Record Subsequent Invoice'
+    art: variable
+    test:
+      kind: resource
+      decision: Record Subsequent Invoice
+  - name: 'Mitarbeiter: Set Payment Block'
+    art: variable
+    test:
+      kind: resource
+      decision: Set Payment Block
+repair:
+  event_log: eventlog/repair/repair_workshop.xes.gz
+  prozess: Reparaturwerkstatt, synthetisch mit bekannter Wahrheit (process-simulation-engine/simulation/repair_workshop.py,
+    Log unter der Hausregel)
+  standard_intervention: nacharbeit
+  lauf:
+    mitarbeiterwahl:
+    - 'Mitarbeiter: W_repair'
+    control_flow: []
+    nur_mitarbeiter: true
+    ankunft_faktor: 1
+    zuteilung: random
+  outcome:
+    type: negative_cycle_days
+    beschreibung: negative Durchlaufzeit in Tagen (vom ersten bis zum letzten Event
+      des Falls)
+  outcome_optionen:
+    kosten:
+      type: negative_repair_cost
+      tarif: A
+      cost_per_day: 400.0
+      beschreibung: negative Kosten in € (Lohnkosten nach Tarif A + 400 € je Tag Durchlaufzeit)
+    kosten_b:
+      type: negative_repair_cost
+      tarif: B
+      cost_per_day: 400.0
+      beschreibung: negative Kosten in € (Lohnkosten nach Tarif B + 400 € je Tag Durchlaufzeit)
+  screening:
+    case_attributes:
+    - case:device
+    numeric_attributes: []
+    system_users: ^system$
+  interventionen:
+  - name: nacharbeit
+    art: control_flow
+    test:
+      decision: W_quality_check
+      action:
+      - W_shipping|start
+      - W_repair|start
+      names:
+      - versenden
+      - nacharbeiten
+      rule: next_event
+  - name: 'Mitarbeiter: W_repair'
+    art: variable
+    test:
+      kind: resource
+      decision: W_repair
+      lifecycle: start

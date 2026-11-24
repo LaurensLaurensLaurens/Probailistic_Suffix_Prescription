@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "angebotshoehe",
+  "Art": "Variable",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 28429,
+  "Optionen": 3,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "mehr_als_beantragt vs. weniger_als_beantragt",
+  "Effekt (AIPW)": 0.17593561867945243,
+  "KI unten": 0.13764119400611508,
+  "KI oben": 0.21423004335278978,
+  "Zielereignis": "O_Accepted",
+  "Entscheidungsfälle vor Ausschluss": 28429,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 15220,
+  "Beobachtete Zielquote": 0.5353688135354744,
+  "Beobachtete Optionen": 3,
+  "Minimum Fälle je beobachteter Option": 2002,
+  "Überlappung": 0.6138450174117979,
+  "Fälle mit Wahl": 28429,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 7.833102734992281
+}

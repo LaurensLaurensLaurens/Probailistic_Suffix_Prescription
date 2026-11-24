@@ -1,0 +1,842 @@
+[
+  {
+    "case": "Application_728",
+    "point": "angebot_nachlegen",
+    "prefix_events": 7,
+    "horizon": "policy_window",
+    "options": [
+      "O_Sent (mail and online)",
+      "O_Create Offer"
+    ],
+    "D_mean_remaining_days": [
+      19.053391294791666,
+      21.931714622222227
+    ],
+    "D_mean_remaining_labor_eur": [
+      39.435550792843095,
+      27.93551734845837
+    ],
+    "D_mean_suffix_events": [
+      31.11,
+      29.6
+    ],
+    "D_raw_time_choice": "O_Sent (mail and online)",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": -2.878323327430556,
+    "D_paired_time_mcse_days": 1.5239910084440036,
+    "XGB_time_choice": "O_Sent (mail and online)",
+    "XGB_values": [
+      -16.724870681762695,
+      -16.888504028320312
+    ],
+    "sampling_audit": {
+      "draw_attempts": 238,
+      "rejected_incomplete_paths": 38
+    }
+  },
+  {
+    "case": "Application_728",
+    "point": "angebot_nachlegen",
+    "prefix_events": 7,
+    "horizon": "up_to_1000",
+    "options": [
+      "O_Sent (mail and online)",
+      "O_Create Offer"
+    ],
+    "D_mean_remaining_days": [
+      18.85507026284722,
+      21.194153922569452
+    ],
+    "D_mean_remaining_labor_eur": [
+      30.06252227892478,
+      31.76822925123572
+    ],
+    "D_mean_suffix_events": [
+      34.11,
+      39.67
+    ],
+    "D_raw_time_choice": "O_Sent (mail and online)",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": -2.3390836597222244,
+    "D_paired_time_mcse_days": 1.5180030514610916,
+    "XGB_time_choice": "O_Sent (mail and online)",
+    "XGB_values": [
+      -16.724870681762695,
+      -16.888504028320312
+    ],
+    "sampling_audit": {
+      "draw_attempts": 233,
+      "rejected_incomplete_paths": 33
+    }
+  },
+  {
+    "case": "Application_799",
+    "point": "angebot_nachlegen",
+    "prefix_events": 20,
+    "horizon": "policy_window",
+    "options": [
+      "O_Sent (mail and online)",
+      "O_Create Offer"
+    ],
+    "D_mean_remaining_days": [
+      21.8208086724537,
+      22.217593361921296
+    ],
+    "D_mean_remaining_labor_eur": [
+      35.515413306282625,
+      30.865932321174277
+    ],
+    "D_mean_suffix_events": [
+      31.1,
+      31.82
+    ],
+    "D_raw_time_choice": "O_Sent (mail and online)",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": -0.39678468946759293,
+    "D_paired_time_mcse_days": 1.6701447626065107,
+    "XGB_time_choice": "O_Sent (mail and online)",
+    "XGB_values": [
+      -19.8381404876709,
+      -20.97477149963379
+    ],
+    "sampling_audit": {
+      "draw_attempts": 233,
+      "rejected_incomplete_paths": 33
+    }
+  },
+  {
+    "case": "Application_799",
+    "point": "angebot_nachlegen",
+    "prefix_events": 20,
+    "horizon": "up_to_1000",
+    "options": [
+      "O_Sent (mail and online)",
+      "O_Create Offer"
+    ],
+    "D_mean_remaining_days": [
+      21.83350032650463,
+      22.88536961261574
+    ],
+    "D_mean_remaining_labor_eur": [
+      32.47210263952613,
+      30.408948140617873
+    ],
+    "D_mean_suffix_events": [
+      36.95,
+      36.3
+    ],
+    "D_raw_time_choice": "O_Sent (mail and online)",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": -1.051869286111108,
+    "D_paired_time_mcse_days": 1.7112606067605576,
+    "XGB_time_choice": "O_Sent (mail and online)",
+    "XGB_values": [
+      -19.8381404876709,
+      -20.97477149963379
+    ],
+    "sampling_audit": {
+      "draw_attempts": 230,
+      "rejected_incomplete_paths": 30
+    }
+  },
+  {
+    "case": "Application_788",
+    "point": "angebot_nachlegen",
+    "prefix_events": 20,
+    "horizon": "policy_window",
+    "options": [
+      "O_Sent (mail and online)",
+      "O_Create Offer"
+    ],
+    "D_mean_remaining_days": [
+      23.92745567951389,
+      24.595754997569443
+    ],
+    "D_mean_remaining_labor_eur": [
+      19.864221668147376,
+      27.62021161204576
+    ],
+    "D_mean_suffix_events": [
+      27.09,
+      29.83
+    ],
+    "D_raw_time_choice": "O_Sent (mail and online)",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": -0.6682993180555552,
+    "D_paired_time_mcse_days": 1.9373472033507597,
+    "XGB_time_choice": "O_Sent (mail and online)",
+    "XGB_values": [
+      -22.676422119140625,
+      -23.3156795501709
+    ],
+    "sampling_audit": {
+      "draw_attempts": 239,
+      "rejected_incomplete_paths": 39
+    }
+  },
+  {
+    "case": "Application_788",
+    "point": "angebot_nachlegen",
+    "prefix_events": 20,
+    "horizon": "up_to_1000",
+    "options": [
+      "O_Sent (mail and online)",
+      "O_Create Offer"
+    ],
+    "D_mean_remaining_days": [
+      24.60331395393518,
+      25.26334164456018
+    ],
+    "D_mean_remaining_labor_eur": [
+      16.514442279113663,
+      28.614531515061852
+    ],
+    "D_mean_suffix_events": [
+      26.92,
+      32.07
+    ],
+    "D_raw_time_choice": "O_Sent (mail and online)",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": -0.6600276906250002,
+    "D_paired_time_mcse_days": 1.9943379592463089,
+    "XGB_time_choice": "O_Sent (mail and online)",
+    "XGB_values": [
+      -22.676422119140625,
+      -23.3156795501709
+    ],
+    "sampling_audit": {
+      "draw_attempts": 237,
+      "rejected_incomplete_paths": 37
+    }
+  },
+  {
+    "case": "Application_772",
+    "point": "annehmen_bei_konzept",
+    "prefix_events": 6,
+    "horizon": "policy_window",
+    "options": [
+      "W_Complete application|start",
+      "A_Accepted"
+    ],
+    "D_mean_remaining_days": [
+      26.505854798379634,
+      24.28080495254629
+    ],
+    "D_mean_remaining_labor_eur": [
+      38.4723087787562,
+      24.74684088930487
+    ],
+    "D_mean_suffix_events": [
+      36.42,
+      29.18
+    ],
+    "D_raw_time_choice": "A_Accepted",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": 2.225049845833335,
+    "D_paired_time_mcse_days": 2.0900339937807497,
+    "XGB_time_choice": "A_Accepted",
+    "XGB_values": [
+      -23.797576904296875,
+      -18.680368423461914
+    ],
+    "sampling_audit": {
+      "draw_attempts": 253,
+      "rejected_incomplete_paths": 53
+    }
+  },
+  {
+    "case": "Application_772",
+    "point": "annehmen_bei_konzept",
+    "prefix_events": 6,
+    "horizon": "up_to_1000",
+    "options": [
+      "W_Complete application|start",
+      "A_Accepted"
+    ],
+    "D_mean_remaining_days": [
+      25.00552432962963,
+      24.574959350347225
+    ],
+    "D_mean_remaining_labor_eur": [
+      34.16769287571974,
+      24.11361800026894
+    ],
+    "D_mean_suffix_events": [
+      37.5,
+      58.77
+    ],
+    "D_raw_time_choice": "A_Accepted",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": 0.43056497928240334,
+    "D_paired_time_mcse_days": 2.0828589538060505,
+    "XGB_time_choice": "A_Accepted",
+    "XGB_values": [
+      -23.797576904296875,
+      -18.680368423461914
+    ],
+    "sampling_audit": {
+      "draw_attempts": 250,
+      "rejected_incomplete_paths": 50
+    }
+  },
+  {
+    "case": "Application_868",
+    "point": "annehmen_bei_konzept",
+    "prefix_events": 6,
+    "horizon": "policy_window",
+    "options": [
+      "W_Complete application|start",
+      "A_Accepted"
+    ],
+    "D_mean_remaining_days": [
+      25.4807865662037,
+      23.974154758680555
+    ],
+    "D_mean_remaining_labor_eur": [
+      27.032315514988372,
+      19.76859030608005
+    ],
+    "D_mean_suffix_events": [
+      31.85,
+      30.64
+    ],
+    "D_raw_time_choice": "A_Accepted",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": 1.506631807523147,
+    "D_paired_time_mcse_days": 1.9000601093291398,
+    "XGB_time_choice": "A_Accepted",
+    "XGB_values": [
+      -21.68194580078125,
+      -17.100799560546875
+    ],
+    "sampling_audit": {
+      "draw_attempts": 264,
+      "rejected_incomplete_paths": 64
+    }
+  },
+  {
+    "case": "Application_868",
+    "point": "annehmen_bei_konzept",
+    "prefix_events": 6,
+    "horizon": "up_to_1000",
+    "options": [
+      "W_Complete application|start",
+      "A_Accepted"
+    ],
+    "D_mean_remaining_days": [
+      27.022974820601853,
+      25.974027346527777
+    ],
+    "D_mean_remaining_labor_eur": [
+      26.998616403473747,
+      18.13485822251108
+    ],
+    "D_mean_suffix_events": [
+      36.91,
+      33.81
+    ],
+    "D_raw_time_choice": "A_Accepted",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": 1.0489474740740732,
+    "D_paired_time_mcse_days": 2.022824541356822,
+    "XGB_time_choice": "A_Accepted",
+    "XGB_values": [
+      -21.68194580078125,
+      -17.100799560546875
+    ],
+    "sampling_audit": {
+      "draw_attempts": 255,
+      "rejected_incomplete_paths": 55
+    }
+  },
+  {
+    "case": "Application_831",
+    "point": "annehmen_bei_konzept",
+    "prefix_events": 6,
+    "horizon": "policy_window",
+    "options": [
+      "W_Complete application|start",
+      "A_Accepted"
+    ],
+    "D_mean_remaining_days": [
+      28.292569421527777,
+      22.591839141087966
+    ],
+    "D_mean_remaining_labor_eur": [
+      23.7097448200451,
+      16.761334070391126
+    ],
+    "D_mean_suffix_events": [
+      34.03,
+      30.71
+    ],
+    "D_raw_time_choice": "A_Accepted",
+    "D_100_draw_uncertain": false,
+    "D_paired_time_delta_days": 5.700730280439813,
+    "D_paired_time_mcse_days": 1.936198775601996,
+    "XGB_time_choice": "A_Accepted",
+    "XGB_values": [
+      -21.084014892578125,
+      -18.36398696899414
+    ],
+    "sampling_audit": {
+      "draw_attempts": 253,
+      "rejected_incomplete_paths": 53
+    }
+  },
+  {
+    "case": "Application_831",
+    "point": "annehmen_bei_konzept",
+    "prefix_events": 6,
+    "horizon": "up_to_1000",
+    "options": [
+      "W_Complete application|start",
+      "A_Accepted"
+    ],
+    "D_mean_remaining_days": [
+      27.957747412152777,
+      23.0656354238426
+    ],
+    "D_mean_remaining_labor_eur": [
+      42.870906084034175,
+      18.585761806637052
+    ],
+    "D_mean_suffix_events": [
+      38.34,
+      51.08
+    ],
+    "D_raw_time_choice": "A_Accepted",
+    "D_100_draw_uncertain": false,
+    "D_paired_time_delta_days": 4.892111988310182,
+    "D_paired_time_mcse_days": 2.0095296833753595,
+    "XGB_time_choice": "A_Accepted",
+    "XGB_values": [
+      -21.084014892578125,
+      -18.36398696899414
+    ],
+    "sampling_audit": {
+      "draw_attempts": 245,
+      "rejected_incomplete_paths": 45
+    }
+  },
+  {
+    "case": "Application_734",
+    "point": "annehmen_nach_vervollstaendigung",
+    "prefix_events": 10,
+    "horizon": "policy_window",
+    "options": [
+      "W_Complete application|resume",
+      "A_Accepted"
+    ],
+    "D_mean_remaining_days": [
+      27.056335755324074,
+      23.61476176006945
+    ],
+    "D_mean_remaining_labor_eur": [
+      33.882506125615706,
+      19.9383630287283
+    ],
+    "D_mean_suffix_events": [
+      34.75,
+      30.61
+    ],
+    "D_raw_time_choice": "A_Accepted",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": 3.4415739952546303,
+    "D_paired_time_mcse_days": 2.1508155709769423,
+    "XGB_time_choice": "A_Accepted",
+    "XGB_values": [
+      -24.974559783935547,
+      -23.471811294555664
+    ],
+    "sampling_audit": {
+      "draw_attempts": 235,
+      "rejected_incomplete_paths": 35
+    }
+  },
+  {
+    "case": "Application_734",
+    "point": "annehmen_nach_vervollstaendigung",
+    "prefix_events": 10,
+    "horizon": "up_to_1000",
+    "options": [
+      "W_Complete application|resume",
+      "A_Accepted"
+    ],
+    "D_mean_remaining_days": [
+      26.420681476157405,
+      23.102139847337966
+    ],
+    "D_mean_remaining_labor_eur": [
+      34.792843195080756,
+      19.038486820671295
+    ],
+    "D_mean_suffix_events": [
+      35.92,
+      31.82
+    ],
+    "D_raw_time_choice": "A_Accepted",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": 3.3185416288194447,
+    "D_paired_time_mcse_days": 2.1163559888066654,
+    "XGB_time_choice": "A_Accepted",
+    "XGB_values": [
+      -24.974559783935547,
+      -23.471811294555664
+    ],
+    "sampling_audit": {
+      "draw_attempts": 227,
+      "rejected_incomplete_paths": 27
+    }
+  },
+  {
+    "case": "Application_775",
+    "point": "annehmen_nach_vervollstaendigung",
+    "prefix_events": 4,
+    "horizon": "policy_window",
+    "options": [
+      "W_Complete application|resume",
+      "A_Accepted"
+    ],
+    "D_mean_remaining_days": [
+      29.082044644560188,
+      22.79337209444445
+    ],
+    "D_mean_remaining_labor_eur": [
+      24.762638000667092,
+      28.872342139489124
+    ],
+    "D_mean_suffix_events": [
+      33.08,
+      34.38
+    ],
+    "D_raw_time_choice": "A_Accepted",
+    "D_100_draw_uncertain": false,
+    "D_paired_time_delta_days": 6.288672550115739,
+    "D_paired_time_mcse_days": 1.897213509202158,
+    "XGB_time_choice": "A_Accepted",
+    "XGB_values": [
+      -20.447416305541992,
+      -20.148258209228516
+    ],
+    "sampling_audit": {
+      "draw_attempts": 242,
+      "rejected_incomplete_paths": 42
+    }
+  },
+  {
+    "case": "Application_775",
+    "point": "annehmen_nach_vervollstaendigung",
+    "prefix_events": 4,
+    "horizon": "up_to_1000",
+    "options": [
+      "W_Complete application|resume",
+      "A_Accepted"
+    ],
+    "D_mean_remaining_days": [
+      28.30454568275463,
+      23.483188406828702
+    ],
+    "D_mean_remaining_labor_eur": [
+      23.72492408366998,
+      28.116212292171184
+    ],
+    "D_mean_suffix_events": [
+      38.17,
+      43.27
+    ],
+    "D_raw_time_choice": "A_Accepted",
+    "D_100_draw_uncertain": false,
+    "D_paired_time_delta_days": 4.821357275925926,
+    "D_paired_time_mcse_days": 1.9232295146683598,
+    "XGB_time_choice": "A_Accepted",
+    "XGB_values": [
+      -20.447416305541992,
+      -20.148258209228516
+    ],
+    "sampling_audit": {
+      "draw_attempts": 233,
+      "rejected_incomplete_paths": 33
+    }
+  },
+  {
+    "case": "Application_780",
+    "point": "annehmen_nach_vervollstaendigung",
+    "prefix_events": 8,
+    "horizon": "policy_window",
+    "options": [
+      "W_Complete application|resume",
+      "A_Accepted"
+    ],
+    "D_mean_remaining_days": [
+      24.660602160532402,
+      23.70177595300926
+    ],
+    "D_mean_remaining_labor_eur": [
+      30.238131070272786,
+      24.697443292634354
+    ],
+    "D_mean_suffix_events": [
+      34.28,
+      30.64
+    ],
+    "D_raw_time_choice": "A_Accepted",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": 0.9588262075231485,
+    "D_paired_time_mcse_days": 2.046551227703389,
+    "XGB_time_choice": "A_Accepted",
+    "XGB_values": [
+      -23.837766647338867,
+      -22.68111801147461
+    ],
+    "sampling_audit": {
+      "draw_attempts": 231,
+      "rejected_incomplete_paths": 31
+    }
+  },
+  {
+    "case": "Application_780",
+    "point": "annehmen_nach_vervollstaendigung",
+    "prefix_events": 8,
+    "horizon": "up_to_1000",
+    "options": [
+      "W_Complete application|resume",
+      "A_Accepted"
+    ],
+    "D_mean_remaining_days": [
+      26.015466097569444,
+      23.110277454513888
+    ],
+    "D_mean_remaining_labor_eur": [
+      30.675864140083387,
+      31.477104125817608
+    ],
+    "D_mean_suffix_events": [
+      34.61,
+      30.98
+    ],
+    "D_raw_time_choice": "A_Accepted",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": 2.9051886430555562,
+    "D_paired_time_mcse_days": 2.11967065539116,
+    "XGB_time_choice": "A_Accepted",
+    "XGB_values": [
+      -23.837766647338867,
+      -22.68111801147461
+    ],
+    "sampling_audit": {
+      "draw_attempts": 229,
+      "rejected_incomplete_paths": 29
+    }
+  },
+  {
+    "case": "Application_895",
+    "point": "handle_leads",
+    "prefix_events": 3,
+    "horizon": "policy_window",
+    "options": [
+      "W_Handle leads|withdraw",
+      "W_Handle leads|start"
+    ],
+    "D_mean_remaining_days": [
+      26.439469345601857,
+      26.24521784328704
+    ],
+    "D_mean_remaining_labor_eur": [
+      31.877640139824816,
+      39.840882500830624
+    ],
+    "D_mean_suffix_events": [
+      34.2,
+      40.67
+    ],
+    "D_raw_time_choice": "W_Handle leads|start",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": 0.19425150231481417,
+    "D_paired_time_mcse_days": 2.097344841572101,
+    "XGB_time_choice": "W_Handle leads|withdraw",
+    "XGB_values": [
+      -23.206668853759766,
+      -24.031429290771484
+    ],
+    "sampling_audit": {
+      "draw_attempts": 232,
+      "rejected_incomplete_paths": 32
+    }
+  },
+  {
+    "case": "Application_895",
+    "point": "handle_leads",
+    "prefix_events": 3,
+    "horizon": "up_to_1000",
+    "options": [
+      "W_Handle leads|withdraw",
+      "W_Handle leads|start"
+    ],
+    "D_mean_remaining_days": [
+      27.651127013078714,
+      26.32764125277778
+    ],
+    "D_mean_remaining_labor_eur": [
+      33.00615036188563,
+      32.62049759809839
+    ],
+    "D_mean_suffix_events": [
+      42.1,
+      42.63
+    ],
+    "D_raw_time_choice": "W_Handle leads|start",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": 1.3234857603009267,
+    "D_paired_time_mcse_days": 2.0202482473310037,
+    "XGB_time_choice": "W_Handle leads|withdraw",
+    "XGB_values": [
+      -23.206668853759766,
+      -24.031429290771484
+    ],
+    "sampling_audit": {
+      "draw_attempts": 224,
+      "rejected_incomplete_paths": 24
+    }
+  },
+  {
+    "case": "Application_818",
+    "point": "handle_leads",
+    "prefix_events": 3,
+    "horizon": "policy_window",
+    "options": [
+      "W_Handle leads|withdraw",
+      "W_Handle leads|start"
+    ],
+    "D_mean_remaining_days": [
+      27.93024127326389,
+      27.223952838657407
+    ],
+    "D_mean_remaining_labor_eur": [
+      39.832258570498894,
+      27.058666737046515
+    ],
+    "D_mean_suffix_events": [
+      34.46,
+      41.72
+    ],
+    "D_raw_time_choice": "W_Handle leads|start",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": 0.7062884346064816,
+    "D_paired_time_mcse_days": 1.7764701876537003,
+    "XGB_time_choice": "W_Handle leads|withdraw",
+    "XGB_values": [
+      -23.057113647460938,
+      -23.4559326171875
+    ],
+    "sampling_audit": {
+      "draw_attempts": 232,
+      "rejected_incomplete_paths": 32
+    }
+  },
+  {
+    "case": "Application_818",
+    "point": "handle_leads",
+    "prefix_events": 3,
+    "horizon": "up_to_1000",
+    "options": [
+      "W_Handle leads|withdraw",
+      "W_Handle leads|start"
+    ],
+    "D_mean_remaining_days": [
+      27.634132270601853,
+      27.84208468032407
+    ],
+    "D_mean_remaining_labor_eur": [
+      42.70453919518987,
+      28.909648973173567
+    ],
+    "D_mean_suffix_events": [
+      42.47,
+      41.67
+    ],
+    "D_raw_time_choice": "W_Handle leads|withdraw",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": -0.2079524097222189,
+    "D_paired_time_mcse_days": 1.7999104800063122,
+    "XGB_time_choice": "W_Handle leads|withdraw",
+    "XGB_values": [
+      -23.057113647460938,
+      -23.4559326171875
+    ],
+    "sampling_audit": {
+      "draw_attempts": 230,
+      "rejected_incomplete_paths": 30
+    }
+  },
+  {
+    "case": "Application_703",
+    "point": "handle_leads",
+    "prefix_events": 3,
+    "horizon": "policy_window",
+    "options": [
+      "W_Handle leads|withdraw",
+      "W_Handle leads|start"
+    ],
+    "D_mean_remaining_days": [
+      26.910728780902776,
+      22.930208957060184
+    ],
+    "D_mean_remaining_labor_eur": [
+      29.64950990382168,
+      30.704514737208687
+    ],
+    "D_mean_suffix_events": [
+      34.74,
+      42.05
+    ],
+    "D_raw_time_choice": "W_Handle leads|start",
+    "D_100_draw_uncertain": false,
+    "D_paired_time_delta_days": 3.980519823842592,
+    "D_paired_time_mcse_days": 1.8351418055416886,
+    "XGB_time_choice": "W_Handle leads|withdraw",
+    "XGB_values": [
+      -23.16277503967285,
+      -24.070545196533203
+    ],
+    "sampling_audit": {
+      "draw_attempts": 239,
+      "rejected_incomplete_paths": 39
+    }
+  },
+  {
+    "case": "Application_703",
+    "point": "handle_leads",
+    "prefix_events": 3,
+    "horizon": "up_to_1000",
+    "options": [
+      "W_Handle leads|withdraw",
+      "W_Handle leads|start"
+    ],
+    "D_mean_remaining_days": [
+      26.162223244212964,
+      25.15775090243056
+    ],
+    "D_mean_remaining_labor_eur": [
+      29.96868302892314,
+      28.701964111838084
+    ],
+    "D_mean_suffix_events": [
+      37.14,
+      41.53
+    ],
+    "D_raw_time_choice": "W_Handle leads|start",
+    "D_100_draw_uncertain": true,
+    "D_paired_time_delta_days": 1.0044723417824075,
+    "D_paired_time_mcse_days": 1.8936153978603347,
+    "XGB_time_choice": "W_Handle leads|withdraw",
+    "XGB_values": [
+      -23.16277503967285,
+      -24.070545196533203
+    ],
+    "sampling_audit": {
+      "draw_attempts": 242,
+      "rejected_incomplete_paths": 42
+    }
+  }
+]

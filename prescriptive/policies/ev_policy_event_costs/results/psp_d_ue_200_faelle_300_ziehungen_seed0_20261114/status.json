@@ -1,0 +1,15 @@
+{
+  "pid": 1190657,
+  "started_at": "2026-11-14T15:29:51+01:00",
+  "samples_per_option": 300,
+  "scored_cases": 200,
+  "seed": 0,
+  "transition_rules": true,
+  "status": "complete",
+  "updated_at": "2026-11-14T16:26:31+01:00",
+  "evaluator_pid": null,
+  "decisions_completed": 600,
+  "checked_transitions": 10062323,
+  "invalid_transitions": 0,
+  "report": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/psp_d_ue_200_faelle_300_ziehungen_seed0_20261114/auswertung.md"
+}

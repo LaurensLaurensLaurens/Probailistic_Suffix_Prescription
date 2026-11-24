@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Assess potential fraud",
+  "Art": "Mitarbeiter",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 34,
+  "Optionen": 5,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "User_100 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": -0.38333333333333336,
+  "KI unten": -1.1558162875239901,
+  "KI oben": 0.38914962085732335,
+  "Zielereignis": "O_Returned",
+  "Entscheidungsfälle vor Ausschluss": 200,
+  "Ziel bereits erreicht: ausgeschlossen": 166,
+  "Ziel später erreicht": 11,
+  "Beobachtete Zielquote": 0.3235294117647059,
+  "Beobachtete Optionen": 4,
+  "Minimum Fälle je beobachteter Option": 1,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 7,
+  "Status": "sehr selten: weniger Beobachtungen als Folds",
+  "Laufzeit (s)": 2.7245099720312282
+}

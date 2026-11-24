@@ -1,0 +1,8 @@
+{
+  "bank_fee_share": 0.7665929603593437,
+  "bank_active_minutes": 50.10557577099402,
+  "bank_work_cost_share": 0.23340703964065632,
+  "bank_cases_with_observed_choice": 198,
+  "mean_sunk_cost_before_first_choice": 13.809431701191142,
+  "sunk_share_across_bank_cases_with_choice": 0.07713918780642051
+}

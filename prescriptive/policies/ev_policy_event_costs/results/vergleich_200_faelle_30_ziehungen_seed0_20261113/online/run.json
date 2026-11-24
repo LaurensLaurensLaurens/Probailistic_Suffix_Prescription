@@ -1,0 +1,42 @@
+{
+  "status": "complete",
+  "started_at": "2026-11-13T16:39:47.442867+00:00",
+  "objective": "negative_event_costs",
+  "cost_fingerprint": "2c7134cc6dbc8b064e95aef1161b2db2dae106ad55e77a371ffff3ccb4999396",
+  "dataset": "bpic17",
+  "policies": [
+    "bank",
+    "psp",
+    "s_learner",
+    "x_learner",
+    "causal_forest"
+  ],
+  "policy_params": {
+    "psp": {
+      "model_path": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/models/psp_model_durchlaufzeit_real_alle_s60_klassen_option_encoder.pkl",
+      "samples": 30
+    },
+    "s_learner": {
+      "model_path": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/vergleich_200_faelle_30_ziehungen_seed0_20261113/models/cate_model_s_event_costs.pkl"
+    },
+    "x_learner": {
+      "model_path": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/vergleich_200_faelle_30_ziehungen_seed0_20261113/models/cate_model_x_event_costs.pkl"
+    },
+    "causal_forest": {
+      "model_path": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/vergleich_200_faelle_30_ziehungen_seed0_20261113/models/cate_model_cf_event_costs.pkl"
+    }
+  },
+  "samples": 30,
+  "scored_cases": 200,
+  "warmup": 700,
+  "cooldown": 1300,
+  "seeds": 1,
+  "seed": 0,
+  "points": [
+    "angebot_nachlegen",
+    "annehmen_bei_konzept",
+    "annehmen_nach_vervollstaendigung",
+    "handle_leads"
+  ],
+  "completed_at": "2026-11-13T16:52:41.771007+00:00"
+}

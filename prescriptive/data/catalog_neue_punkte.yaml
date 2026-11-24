@@ -8,8 +8,8 @@
 #                    wählt einen anderen). Unabhängig von der Control-Flow-Intervention (standard_intervention)
 #   zuteilung        wie die Engine die Mitarbeiter zuteilt, wo keine Policy wählt (alle Arbeitsschritte außerhalb der
 #                    mitarbeiterwahl, und dort, wenn keine Policy gesetzt ist oder sie None zurückgibt): eine Strategie
-#                    aus resources/selection_strategies.py, random, round_robin oder shortest_queue (Standard random;
-#                    ein start bekommt zuerst den letzten Bearbeiter des Falls, wenn er frei ist). Der Vergleich der
+#                    BPIC17 standardmäßig learned: gelerntes Bankverhalten, Kontinuität als Merkmal statt harter Regel.
+#                    Explizite Zuteilungsexperimente dürfen random, round_robin oder shortest_queue setzen. Der Vergleich der
 #                    Policies läuft gegen diese Zuteilung (interventions.run_allocation)
 #
 # Je Eintrag:
@@ -70,8 +70,8 @@ bpic17:
     nur_mitarbeiter: false
     # Ankunftslast: 1 wie im Log, 3 dreimal so viele Fälle je Tag (gilt für RCT und Online-Auswertung); Warm- und Auslauf müssen mitwachsen
     ankunft_faktor: 1
-    # Zuteilung der Mitarbeiter, wo keine Policy wählt: random, round_robin oder shortest_queue
-    zuteilung: random
+    # Bankverhalten als Basiswahl; eine preskriptive Policy darf den gezogenen Mitarbeiter überschreiben.
+    zuteilung: learned
   outcome:
     type: negative_cycle_days
     beschreibung: negative Durchlaufzeit in Tagen (vom ersten bis zum letzten Event des Falls)

@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Validate application (resume)",
+  "Art": "Mitarbeiter",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 218,
+  "Optionen": 20,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "User_30 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": 0.0122361283418286,
+  "KI unten": -0.17008395666559462,
+  "KI oben": 0.19455621334925183,
+  "Zielereignis": "O_Returned",
+  "Entscheidungsfälle vor Ausschluss": 11535,
+  "Ziel bereits erreicht: ausgeschlossen": 11317,
+  "Ziel später erreicht": 187,
+  "Beobachtete Zielquote": 0.8577981651376146,
+  "Beobachtete Optionen": 20,
+  "Minimum Fälle je beobachteter Option": 1,
+  "Überlappung": 0.8867924528301887,
+  "Fälle mit Wahl": 212,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 7.114061546977609
+}

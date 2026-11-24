@@ -14,8 +14,13 @@ os.environ["TORCH_NUM_THREADS"] = "1"
 import torch
 
 class Loss:
-    def __init__(self):
-        pass
+    def __init__(self, beta_nll=0.0):
+        # beta_nll (2026-11-18): beta-NLL (Seitzer et al., ICLR 2022, "On the Pitfalls of Heteroscedastic Uncertainty
+        # Estimation with Probabilistic Neural Networks") for loss_attenuation_mse: each element of the attenuated loss is
+        # weighted with stop_grad(sigma^(2*beta)). The variance is still learned by the same attenuated loss, but steps
+        # with a large learned variance no longer drop out of the mean fit (gradient w.r.t. the mean ~ 1/sigma^(2-2*beta)
+        # instead of 1/sigma^2). 0.0 = the original loss (bit-identical).
+        self.beta_nll = float(beta_nll)
     
     def _reduce_loss(self, loss_matrix, eos_paddings):
         # normal loss reduction
@@ -99,8 +104,13 @@ class Loss:
         targets = targets.unsqueeze(2)
         # Stable inverse variance: exp(-log(var)) = 1/sig^2 (1/var)
         inv_variances = torch.exp(-pred_logvars)
-        L = torch.sum(0.5 * (inv_variances * ((targets - pred_means) ** 2) + pred_logvars), dim=2)
-        
+        elementwise = 0.5 * (inv_variances * ((targets - pred_means) ** 2) + pred_logvars)
+        beta = getattr(self, "beta_nll", 0.0)
+        if beta:
+            # beta-NLL: weight stop_grad(sigma^(2*beta)) = exp(beta * log(sigma^2)), detached
+            elementwise = elementwise * torch.exp(beta * pred_logvars).detach()
+        L = torch.sum(elementwise, dim=2)
+
         L = self._reduce_loss(L, eos_paddings)
 
         return L

@@ -1,0 +1,18 @@
+{
+  "Interventionspunkt": "erste_auszahlung",
+  "Art": "Variable",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 31509,
+  "Optionen": 3,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "voll vs. keine",
+  "Effekt (AIPW)": 1.2386085324536646,
+  "KI unten": 0.8144229344416737,
+  "KI oben": 1.6627941304656555,
+  "Beobachtete Optionen": 3,
+  "Minimum Fälle je beobachteter Option": 8759,
+  "Überlappung": 0.852200958456314,
+  "Fälle mit Wahl": 31509,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 8.317310848971829
+}

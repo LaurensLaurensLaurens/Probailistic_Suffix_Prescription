@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "angebotshoehe",
+  "Art": "Variable",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 27447,
+  "Optionen": 3,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "mehr_als_beantragt vs. weniger_als_beantragt",
+  "Effekt (AIPW)": 0.0072063645665213965,
+  "KI unten": -0.006756887006844841,
+  "KI oben": 0.021169616139887635,
+  "Zielereignis": "O_Returned",
+  "Entscheidungsfälle vor Ausschluss": 27447,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 18917,
+  "Beobachtete Zielquote": 0.6892192225015484,
+  "Beobachtete Optionen": 3,
+  "Minimum Fälle je beobachteter Option": 9118,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 27447,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 4.310598609037697
+}

@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "channel",
+  "Art": "Control Flow",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 29185,
+  "Optionen": 2,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "1 vs. 0",
+  "Effekt (AIPW)": -0.049069258197440006,
+  "KI unten": -0.0630286014046681,
+  "KI oben": -0.03510991499021191,
+  "Zielereignis": "O_Returned",
+  "Entscheidungsfälle vor Ausschluss": 29219,
+  "Ziel bereits erreicht: ausgeschlossen": 34,
+  "Ziel später erreicht": 20311,
+  "Beobachtete Zielquote": 0.6959396950488265,
+  "Beobachtete Optionen": 2,
+  "Minimum Fälle je beobachteter Option": 14501,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 29185,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 4.91917333798483
+}

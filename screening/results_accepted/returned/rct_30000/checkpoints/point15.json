@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "laufzeit",
+  "Art": "Variable",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 29990,
+  "Optionen": 3,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "ueber_120_monate vs. bis_60_monate",
+  "Effekt (AIPW)": 0.01836075499261288,
+  "KI unten": 0.0019964386445165024,
+  "KI oben": 0.03472507134070926,
+  "Zielereignis": "O_Returned",
+  "Entscheidungsfälle vor Ausschluss": 29990,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 20799,
+  "Beobachtete Zielquote": 0.6935311770590197,
+  "Beobachtete Optionen": 3,
+  "Minimum Fälle je beobachteter Option": 9881,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 29990,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 4.521413371083327
+}

@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Call incomplete files",
+  "Art": "Mitarbeiter",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 14395,
+  "Optionen": 87,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "User_87 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": 0.018530179883029664,
+  "KI unten": -0.02823217488282008,
+  "KI oben": 0.06529253464887941,
+  "Zielereignis": "O_Accepted",
+  "Entscheidungsfälle vor Ausschluss": 14396,
+  "Ziel bereits erreicht: ausgeschlossen": 1,
+  "Ziel später erreicht": 12366,
+  "Beobachtete Zielquote": 0.8590482806530045,
+  "Beobachtete Optionen": 72,
+  "Minimum Fälle je beobachteter Option": 1,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 12942,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 12.029507346102037
+}

@@ -1,0 +1,30 @@
+{
+  "status": "complete",
+  "started_at": "2026-11-13T16:23:58.948245+00:00",
+  "objective": "negative_event_costs",
+  "cost_fingerprint": "2c7134cc6dbc8b064e95aef1161b2db2dae106ad55e77a371ffff3ccb4999396",
+  "dataset": "bpic17",
+  "policies": [
+    "bank",
+    "psp"
+  ],
+  "policy_params": {
+    "psp": {
+      "model_path": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/models/psp_model_durchlaufzeit_real_alle_s60_klassen_option_encoder.pkl",
+      "samples": 3
+    }
+  },
+  "samples": 3,
+  "scored_cases": 4,
+  "warmup": 0,
+  "cooldown": 0,
+  "seeds": 1,
+  "seed": 0,
+  "points": [
+    "angebot_nachlegen",
+    "annehmen_bei_konzept",
+    "annehmen_nach_vervollstaendigung",
+    "handle_leads"
+  ],
+  "completed_at": "2026-11-13T16:24:17.791672+00:00"
+}

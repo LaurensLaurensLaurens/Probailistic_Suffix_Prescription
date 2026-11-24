@@ -1,0 +1,17 @@
+{
+  "status": "complete",
+  "started_at": "2026-11-15T19:34:11+01:00",
+  "decisions": 659,
+  "model": "OE",
+  "objective": "cost",
+  "seed": 2,
+  "updated_at": "2026-11-15T20:24:15+01:00",
+  "elapsed_seconds": 2956.6625950336456,
+  "sampling_fallbacks": 3,
+  "decision_audit": {
+    "adaptive_calls": 626,
+    "uncertain_fallbacks": 392,
+    "samples_per_option_total": 71290,
+    "expanded_calls": 526
+  }
+}

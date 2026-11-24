@@ -1,0 +1,15 @@
+{
+  "case": "Application_730",
+  "point": "annehmen_nach_vervollstaendigung",
+  "options": [
+    "W_Complete application|resume",
+    "A_Accepted"
+  ],
+  "draws_per_option": 300,
+  "first_gap_draws_identical_across_options": true,
+  "mean_first_gap_hours": [
+    6.184444215371149,
+    6.184444215371149
+  ],
+  "scope": "First-step gap if c is switched to the existing option_as=encoder path; no model or running policy changed"
+}

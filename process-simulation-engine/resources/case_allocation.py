@@ -14,7 +14,8 @@ runs in the engine with employees) and live in BPIC2017/allocation/ (allocations
 - bank: like random, but an employee is chosen as often as they did the activity in the real log. In the
   real log a few employees do most of an activity (e.g. 20 employees 76 % of W_Validate application).
 - learned: chosen with the probabilities of a model learned from the real log (experience, continuity,
-  four-eyes principle; BPIC2017/allocation/learned_allocation.py).
+  four-eyes principle; BPIC2017/allocation/learned_allocation.py). Default BPIC17 basis assignment:
+  no prescriptive policy, a point outside its scope, or choose returning None all retain this bank draw.
 - batch: a free employee takes the task that the 1-Batch-1 optimisation gives them
   (BPIC2017/allocation/batch_policies.py), which looks at all waiting tasks and all employees.
 - drl: a free employee takes a task of the activity the trained policy chooses, or none (the model was trained for BPIC17).
@@ -23,6 +24,7 @@ runs in the engine with employees) and live in BPIC2017/allocation/ (allocations
 """
 from collections import Counter
 from dataclasses import dataclass
+import os
 from typing import Dict, List, Optional, Tuple
 
 from resources.selection_strategies import RandomStrategy, ResourceSelectionStrategy, create_strategy
@@ -131,15 +133,23 @@ def experienced_employees(counts: Dict[Tuple[str, str], int], activity: str, sys
 ALLOCATIONS = ("bank", "learned", "random", "round_robin", "shortest_queue", "batch", "drl", "pmsp")
 
 
-def create_allocation(name: str, event_log, dataset: str, keep_last_employee: bool = True) -> Allocation:
+def default_allocation(dataset: str) -> str:
+    """BPIC17: gelerntes Bankverhalten als Basiswahl, auch ohne preskriptive Policy."""
+    return "learned" if dataset == "bpic17" else "random"
+
+
+def create_allocation(name: Optional[str], event_log, dataset: str, keep_last_employee: bool = True) -> Allocation:
     """
     event_log: the real log (after the preprocessing); batch, drl and pmsp mine the expected working times from it.
     dataset: the saved models (learned, drl) and the system user (resources/datasets.py), the work items
     (next_event_prediction/datasets.py).
+    name None: Bankverhalten für BPIC17, sonst random. event_log darf beim Laden eines bereits vorhandenen
+    learned-Modells None sein; ohne gespeichertes Modell braucht das Training den echten Log.
     """
     from next_event_prediction.datasets import model_spec
     from resources.datasets import resource_spec, system_users
 
+    name = name or default_allocation(dataset)
     spec, prefix = resource_spec(dataset), model_spec(dataset)["work_item_prefix"]
     saved = {"learned": "learned_allocation", "drl": "drl_model"}.get(name)
     if saved and saved not in spec:
@@ -153,10 +163,13 @@ def create_allocation(name: str, event_log, dataset: str, keep_last_employee: bo
         # Gelernt aus dem echten Log, wen die Bank für einen Arbeitsschritt wählt (BPIC2017/allocation/learned_allocation.py)
         from resources.BPIC2017.allocation.learned_allocation import load_learned_allocation
         # Mit Arbeitsabschnitten (ohne resume und suspend im Log) eine eigene Datei: gelernt aus dem bereinigten Log
-        path = spec["learned_allocation"]
-        if "lifecycle:transition" in event_log and not event_log["lifecycle:transition"].isin(["resume", "suspend"]).any():
+        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), spec["learned_allocation"])
+        if event_log is not None and "lifecycle:transition" in event_log and not event_log["lifecycle:transition"].isin(["resume", "suspend"]).any():
             path = path.replace(".pkl", "_sessions.pkl")
-        return load_learned_allocation(event_log, path, system_users(dataset, event_log), prefix)
+        if event_log is None and not os.path.exists(path):
+            raise ValueError("Die gelernte Bank-Zuteilung fehlt; build_engine mit dem echten Event-Log aufrufen, um sie zu trainieren")
+        users = system_users(dataset, event_log) if event_log is not None else set()
+        return load_learned_allocation(event_log, path, users, prefix)
     from resources.BPIC2017.allocation.processing_time_estimator import ProcessingTimeEstimator
 
     estimator = ProcessingTimeEstimator(df=event_log)

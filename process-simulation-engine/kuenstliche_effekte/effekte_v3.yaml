@@ -1,0 +1,38 @@
+# Künstliche Effekte v3 (2026-11-20): v2 (Zeit- und Ablauf-Effekte) plus Conformance-Abweichungen im Protokoll (abweichung: art auslassen /
+# doppeln / vertauschen, aktivitaet, anteil = Wahrscheinlichkeit je ausgeführter Option), gemessen gegen
+# process_models/BPIC17_ToBe_angepasst.bpmn. Nutzer: das PSP soll Conformance-Abweichungen verhindern können; neue Arten wie bei Mustroph.
+# Abweichungen nur an konzept und nachlegen, je Teilgruppe bei einer anderen Option; an nach V. und leads keine (dort sollte eine
+# Conformance-Policy gleichgültig sein):
+# - konzept, Betrag ab 11.000 €, sofort annehmen → 40 %: Prüfung übersprungen (W_Validate application fehlt im Protokoll);
+#   Betrag unter 11.000 €, zuerst vervollständigen → 30 %: Antrag doppelt abgeschlossen (A_Complete zweimal; doppelter Versand
+#   wäre im angepassten Modell konform, da mehrere Versände erlaubt sind – Messung 11:40).
+# - nachlegen (1. Besuch), Fall ab 1,71 d (oberes Viertel), nur senden → 50 %: Nachfassen ausgelassen (W_Call after offers fehlt;
+#   das weitere Angebot erzeugt von sich aus ≈ 0,25 Abweichungen je Fall, bei 15 % und ab 0,84 d kippte es nicht – Messung 11:40);
+#   Fall unter 0,84 d, weiteres Angebot → 60 %: Reihenfolge vertauscht (O_Created nach dem folgenden Event).
+# Unter dem Bankverhalten (konzept 31 % annehmen, nachlegen 92 % senden) kommen so etwa 0,1–0,15 Abweichungen je Fall dazu.
+#
+punkte:
+  annehmen_bei_konzept:
+    "A_Accepted|complete":
+      - {betrag_ab: 11000, ablauf: {"A_Cancelled|complete": 1.8, "O_Accepted|complete": -1.8}}
+      - {betrag_ab: 11000, abweichung: {art: auslassen, aktivitaet: "W_Validate application", anteil: 0.4}}
+    "W_Complete application|start":
+      - {betrag_ab: 11000, ablauf: {"A_Cancelled|complete": -0.8, "O_Accepted|complete": 0.8}}
+      - {betrag_unter: 11000, abweichung: {art: doppeln, aktivitaet: "A_Complete", anteil: 0.3}}
+  annehmen_nach_vervollstaendigung:
+    "A_Accepted|complete":
+      - {ziel_in: [Car, Existing loan takeover], tage: 2.9}
+    "W_Complete application|resume":
+      - {ziel_in: [Car, Existing loan takeover], tage: -1.1}
+  angebot_nachlegen:
+    "O_Sent (mail and online)|complete":
+      - {dauer_ab_tage: 0.84, nur_erster_besuch: true, ablauf: {"A_Cancelled|complete": 0.1}}
+      - {dauer_ab_tage: 1.71, nur_erster_besuch: true, abweichung: {art: auslassen, aktivitaet: "W_Call after offers", anteil: 0.5}}
+    "O_Create Offer|complete":
+      - {dauer_ab_tage: 0.84, nur_erster_besuch: true, ablauf: {"O_Accepted|complete": 1.5, "A_Cancelled|complete": -1.5}}
+      - {dauer_unter_tage: 0.84, nur_erster_besuch: true, abweichung: {art: vertauschen, aktivitaet: "O_Created", anteil: 0.6}}
+  handle_leads:
+    "W_Handle leads|withdraw":
+      - {betrag_unter: 11000, tage: 0.6}
+    "W_Handle leads|start":
+      - {betrag_unter: 11000, tage: -2.4}

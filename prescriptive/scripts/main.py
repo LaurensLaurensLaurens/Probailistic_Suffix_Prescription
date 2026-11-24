@@ -52,7 +52,9 @@ from helpers.datasets import DATASETS, add_paths, dataset_info
 from helpers.report import calibration_chart, check_chart, portfolio_chart, scatter_chart, screening_chart, uplift_chart
 
 # Ordnernamen je Art des Schätzers bzw. Ansatzes; Vergleichs-Policies, die in jedem Ordner eines Ansatzes mitstehen
-APPROACHES = {"xgb": "XGBoost", "lstm": "LSTM", "psp": "PSP", "psp_lookahead": "PSP_Vorausschau", "psp_erm": "PSP_ERM", "regel": "Regel"}
+APPROACHES = {"xgb": "XGBoost", "lstm": "LSTM", "psp": "PSP", "psp_lookahead": "PSP_Vorausschau", "psp_erm": "PSP_ERM", "regel": "Regel", "psp_annahme": "PSP_Annahme",
+              "s_learner": "S_Learner", "x_learner": "X_Learner", "causal_forest": "Causal_Forest",
+              "s_learner_erm": "S_Learner_ERM", "x_learner_erm": "X_Learner_ERM", "causal_forest_erm": "Causal_Forest_ERM"}
 ONLINE_BASELINES = ("bank", "random")
 
 
@@ -117,10 +119,55 @@ def optional_int(text):
 # Einstellungen des PSP-Trainings aus --psp-epochs, --psp-train-cases, --psp-decoder-steps, --psp-learning-rate und --psp-point-weight
 # (ohne Angabe: wie im Original)
 def psp_params(args):
-    return {"train_cases": args.psp_train_cases, **({"epochs": args.psp_epochs} if args.psp_epochs else {}),
-            **({"suffix_size": args.psp_decoder_steps} if args.psp_decoder_steps else {}),
-            **({"learning_rate": args.psp_learning_rate} if args.psp_learning_rate else {}),
-            **({"point_weight": args.psp_point_weight} if args.psp_point_weight else {})}
+    params = {"train_cases": args.psp_train_cases, **({"epochs": args.psp_epochs} if args.psp_epochs else {}),
+              **({"suffix_size": args.psp_decoder_steps} if args.psp_decoder_steps else {}),
+              **({"learning_rate": args.psp_learning_rate} if args.psp_learning_rate else {}),
+              **({"point_weight": args.psp_point_weight} if args.psp_point_weight else {})}
+    if args.psp_gap_classes:
+        params["gap_classes"] = True
+    if args.psp_time_from:
+        params["time_from"] = args.psp_time_from
+    if args.psp_statics_without_future:
+        from prescriptive.estimators.psp_model import STATICS_WITHOUT_FUTURE
+        params["statics"] = STATICS_WITHOUT_FUTURE
+    if args.psp_checkpoints:
+        params["checkpoints"] = args.psp_checkpoints
+    if args.psp_option_in_encoder_after_training:
+        params["option_in_encoder_after_training"] = True
+    return params
+
+
+def online_policy_params(args):
+    """Modelle und Einstellungen der Online-Policies; γ gilt für PSP-ERM und prüft die trainierten CATE-ERM-Modelle."""
+    params = {}
+    for name, path in args.cate_model.items():
+        settings = {"model": path}
+        if args.cate_first_only:
+            settings["first_only"] = args.cate_first_only
+        if not name.endswith("_erm") and args.cate_threshold is not None:
+            settings["threshold"] = args.cate_threshold
+        params[name] = settings
+    if args.erm_gamma is not None:
+        for name in ("psp_erm", "s_learner_erm", "x_learner_erm", "causal_forest_erm"):
+            params.setdefault(name, {})["gamma"] = args.erm_gamma
+    if args.xgb_model:
+        params["xgb"] = {"model": args.xgb_model}
+    # Bei einem Vergleich müssen PSP und PSP-ERM dasselbe frei gewählte Modell und dieselbe Suffixzahl verwenden können.
+    for name in ("psp", "psp_erm", "psp_annahme"):
+        if args.psp_model:
+            params.setdefault(name, {})["model"] = args.psp_model
+        if args.psp_samples is not None:
+            params.setdefault(name, {})["samples"] = args.psp_samples
+    if args.psp_value:
+        params.setdefault("psp", {})["value_from"] = args.psp_value
+    if args.psp_first_only:
+        params.setdefault("psp", {})["first_only"] = args.psp_first_only
+        params.setdefault("psp_annahme", {})["first_only"] = args.psp_first_only
+    if args.regel_rules:
+        # zusätzliche bzw. geänderte Regeln je Wahlpunkt zu policies/rule_policy.py RULES
+        from prescriptive.policies.rule_policy import RULES
+        params["regel"] = {"rules": {**RULES, **dict(pair.split("=", 1) for pair in args.regel_rules)}}
+    return params
 
 
 def parse():
@@ -175,6 +222,7 @@ def parse():
     group.add_argument("--delta", type=float, default=0.0, help="Anteil der ersten Entscheidungspunkte wie die Bank statt zufällig")
     group.add_argument("--workers", type=int, default=8, help="parallele Simulationsprozesse; auch Threads des PSP-Trainings")
     group.add_argument("--regenerate-rct", action="store_true", help="neu simulieren und vorhandene RCT-Daten überschreiben")
+    group.add_argument("--rct-data-folder", default=None, help="separater Stammordner für RCT-Daten dieses Laufs")
 
     group = parser.add_argument_group("Training")
     group.add_argument("--estimators", nargs="+", choices=("xgb", "lstm", "psp"), default=["xgb", "lstm", "psp"], help="Modelle (estimators/, gespeichert in models/)")
@@ -184,6 +232,15 @@ def parse():
     group.add_argument("--psp-learning-rate", type=float, default=None, help="Lernrate des PSP (Standard wie im Original: 1e-5)")
     group.add_argument("--psp-point-weight", type=int, default=None,
                        help="PSP: Proben, deren Prefix am Options-Event eines Wahlpunkts endet, so oft im Training (Standard wie im Original: 1)")
+    group.add_argument("--psp-gap-classes", action="store_true", help="PSP Variante d: Abstandsklasse als zusätzliche Decoder-Ausgabe")
+    group.add_argument("--psp-time-from", choices=("elapsed", "gaps"), default=None,
+                       help="PSP-Durchlaufzeit aus der gezogenen Fallzeit oder Summe der Eventabstände")
+    group.add_argument("--psp-statics-without-future", action="store_true",
+                       help="PSP nur mit Fallattributen trainieren, die zu Fallbeginn bekannt sind")
+    group.add_argument("--psp-option-in-encoder-after-training", action="store_true",
+                       help="PSP option_as=encoder erst nach dem Fit setzen, ohne die Trainingsproben umzuwichten")
+    group.add_argument("--psp-model-out", default=None, help="eigener Dateipfad für das trainierte PSP-Modell")
+    group.add_argument("--psp-checkpoints", default=None, help="eigener Ordner für PSP-Epochen-Checkpoints")
     group.add_argument("--psp-suffix", default="", help="Lagebild: Zusatz des PSP-Ordners")
     group.add_argument("--train-seed", type=int, default=42, help="Zufall des Trainings")
     group.add_argument("--retrain-estimators", action="store_true", help="neu trainieren, auch wenn ein Modell auf denselben Daten vorhanden ist")
@@ -197,7 +254,8 @@ def parse():
     group.add_argument("--kpi-real-log", action=argparse.BooleanOptionalAction, default=True, help="auch auf dem echten Log bewerten")
 
     group = parser.add_argument_group("Online-Auswertung")
-    group.add_argument("--online-policies", nargs="+", choices=("bank", "random", "xgb", "lstm", "psp", "psp_lookahead", "psp_erm", "regel"), default=["bank", "random", "xgb", "lstm"],
+    group.add_argument("--online-policies", nargs="+", choices=ONLINE_BASELINES + tuple(APPROACHES),
+                       default=["bank", "random", "xgb", "lstm"],
                        help="Policies (evaluation/online_evaluation.py); die Bank immer als Vergleich")
     group.add_argument("--online-points", nargs="*", default=[], metavar="DATENSATZ=WAHLPUNKT",
                        help='nur an diesen Wahlpunkten wählt die Policy, mehrfach möglich, z. B. bpic17=channel; Standard: alle des Simulators')
@@ -207,10 +265,19 @@ def parse():
     group.add_argument("--online-seeds", type=int, default=5, help="Wiederholungen je Policy (seed, seed + 1, ...)")
     group.add_argument("--online-workers", type=int, default=8)
     group.add_argument("--erm-gamma", type=float, default=None,
-                       help="psp_erm: Risikoaversion γ in 1/Tag (Standard policies/psp_erm_policy.py GAMMA)")
+                       help="Risikoaversion γ in 1/Tag: PSP-ERM (Standard 0.1), CATE-ERM muss auf genau diesem γ trainiert sein")
     group.add_argument("--xgb-model", default=None, help="xgb: dieses XGBoost-Modell statt models/xgb_model_<datensatz><outcome>.pkl")
-    group.add_argument("--psp-model", default=None, help="psp: dieses PSP-Modell statt models/psp_model_<datensatz><outcome>.pkl")
-    group.add_argument("--psp-samples", type=int, default=None, help="psp: gezogene Suffixe je Option (Standard policies/psp_policy.py SAMPLES = 30)")
+    group.add_argument("--psp-model", default=None, help="psp und psp_erm: dieses PSP-Modell statt models/psp_model_<datensatz><outcome>.pkl")
+    group.add_argument("--cate-model", nargs="*", default=[], metavar="POLICY=PFAD",
+                       help="CATE-Policy (s_learner, x_learner, causal_forest, jeweils auch mit _erm): Modell aus scripts/train_cate_real.py; "
+                            "ERM-Modelle mit --erm-gamma trainieren, z. B. x_learner_erm=models/cate_erm_model_x_....pkl")
+    group.add_argument("--cate-threshold", type=float, default=None,
+                       help="s_learner, x_learner, causal_forest: die Aktion nur bei geschätztem Effekt über dieser Schwelle (Einheit des Outcomes; Standard 0)")
+    group.add_argument("--cate-first-only", nargs="+", default=None, metavar="WAHLPUNKT",
+                       help="alle CATE-Policies (EV und ERM): an diesen Wahlpunkten nur die erste Entscheidung je Fall (danach wie die Bank)")
+    group.add_argument("--psp-samples", type=int, default=None, help="psp, psp_erm, psp_annahme: gezogene Suffixe je Option (Standard 30, psp_annahme 100)")
+    group.add_argument("--regel-rules", nargs="*", default=[], metavar="WAHLPUNKT=OPTION",
+                       help="regel: zusätzliche oder geänderte feste Optionen zu policies/rule_policy.py RULES, z. B. neues_angebot_beim_nachfassen='O_Create Offer'")
     group.add_argument("--psp-first-only", nargs="+", default=None, metavar="WAHLPUNKT",
                        help="psp: an diesen Wahlpunkten nur die erste Entscheidung je Fall (danach wie die Bank), z. B. angebot_nachlegen")
     group.add_argument("--psp-value", choices=("suffix", "head"), default=None,
@@ -226,6 +293,15 @@ def parse():
     group.add_argument("--overview-seed", type=int, default=None, help="Standard: --seed")
 
     args = parser.parse_args()
+    if args.erm_gamma is not None and (not 0 < args.erm_gamma < float("inf")):
+        parser.error("--erm-gamma muss endlich und größer 0 sein")
+    cate_models = {}
+    for pair in args.cate_model:
+        name, sep, path = pair.partition("=")
+        if not sep or not path or name not in ("s_learner", "x_learner", "causal_forest", "s_learner_erm", "x_learner_erm", "causal_forest_erm"):
+            parser.error(f"--cate-model '{pair}': erwartet CATE-Policy=PFAD (EV oder ERM)")
+        cate_models[name] = path
+    args.cate_model = cate_models
     for name in ("outcome", "intervention", "sim_intervention", "case_ids", "bank_case_ids", "eval_point", "overview_model"):
         setattr(args, name, per_dataset_values(getattr(args, name)))
     # Das gewählte Outcome gilt in der ganzen Pipeline (Profil, angereicherte Logs, RCT-Daten, Training, Auswertung) und in
@@ -423,12 +499,14 @@ def main():
         heading("RCT-Daten" + (" und Training" if "train" in steps else ""))
         for dataset in args.datasets:
             data = simulate_rct(simulators[dataset], n_cases=args.rct_cases, runs=args.rct_runs, seed=args.rct_seed, delta=args.delta,
-                                workers=args.workers, costs=args.costs, regenerate=args.regenerate_rct)
+                                workers=args.workers, costs=args.costs, regenerate=args.regenerate_rct,
+                                **({"data_folder": args.rct_data_folder} if args.rct_data_folder else {}))
             report(args, dataset, "rct", rct_summary(data, simulators[dataset].intervention), "RCT-Daten", sub="daten")
             # ---- Training der Schätzer (Zelle 11); je Datensatz direkt nach seinen RCT-Daten, die danach freigegeben werden
             if "train" in steps:
                 table = train_estimators(simulators[dataset], data, estimators=args.estimators, delta=args.delta, seed=args.train_seed,
-                                         retrain=args.retrain_estimators, cases=args.train_cases, params={"psp": psp_params(args)})
+                                         retrain=args.retrain_estimators, cases=args.train_cases, params={"psp": psp_params(args)},
+                                         model_paths={"psp": args.psp_model_out} if args.psp_model_out else None)
                 report(args, dataset, "training", table, "Training der Schätzer", sub="daten")
             if "models" in steps:
                 rct[dataset] = data
@@ -463,13 +541,7 @@ def main():
             table, runs = evaluate_online(simulators[dataset], policies=args.online_policies, points=points, n_cases=args.online_cases,
                                           warmup=args.online_warmup, cooldown=args.online_cooldown, seeds=args.online_seeds, seed=args.seed,
                                           workers=args.online_workers, costs=args.costs,
-                                          policy_params={**({"psp_erm": {"gamma": args.erm_gamma}} if args.erm_gamma else {}),
-                                                         **({"xgb": {"model": args.xgb_model}} if args.xgb_model else {}),
-                                                         **({"psp": {**({"model": args.psp_model} if args.psp_model else {}),
-                                                                     **({"samples": args.psp_samples} if args.psp_samples else {}),
-                                                                     **({"value_from": args.psp_value} if args.psp_value else {}),
-                                                                     **({"first_only": args.psp_first_only} if args.psp_first_only else {})}}
-                                                            if args.psp_model or args.psp_samples or args.psp_value or args.psp_first_only else {})})
+                                          policy_params=online_policy_params(args))
             # Je Ansatz ein Ordner: seine Policy mit Bank und Zufall; mit --online-points ein Unterordner je Auswahl
             baselines = [name for name in ONLINE_BASELINES if name in table.index]
             for model in [name for name in table.index if name not in baselines]:

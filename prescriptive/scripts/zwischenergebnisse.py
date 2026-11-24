@@ -54,14 +54,18 @@ def number(value, digits=2, sign=False):
     return "0,0" if text in ("+0,0", "−0,0") else text
 
 
-def render(title, header, rows, path, note, highlight=None):
-    """Tabelle als PNG wie in EXTRAZWISCHENERGEBNISSE/2017: Kopf grau, Zeile highlight gelb, Fußnote grau."""
+def render(title, header, rows, path, note, highlight=None, span=None):
+    """Tabelle als PNG wie in EXTRAZWISCHENERGEBNISSE/2017: Kopf grau, Zeile highlight gelb, Fußnote grau.
+    span: Zeilennummern (wie highlight) von Abschnittszeilen, deren erster Text über die ganze Breite läuft; sie zählen nicht
+    für die Spaltenbreiten (sonst macht ein langer Abschnittstitel die erste Spalte breit und die übrigen zu schmal)."""
+    span = set([] if span is None else [span] if isinstance(span, int) else span)
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     # Breite je Spalte in Zeichen: die längste Zeile der Überschrift (fett, etwa 15 % breiter) oder der Zellen
-    widths = [max(1.15 * max(map(len, str(header[j]).split("\n"))), *(len(str(row[j])) for row in rows)) + 4 for j in range(len(header))]
-    widths[0] += 6
+    widths = [max(1.3 * max(map(len, str(header[j]).split("\n"))), *(len(str(row[j])) for i, row in enumerate(rows) if i not in span)) + 4
+              for j in range(len(header))]
+    widths[0] = widths[0] * 1.15 + 6  # Namen: proportionale Schrift mit vielen breiten Buchstaben
     total = sum(widths)
     note = textwrap.fill(note, NOTE_WIDTH)
     lines = note.count("\n") + 1
@@ -70,7 +74,8 @@ def render(title, header, rows, path, note, highlight=None):
     top, bottom = 1 - 1.0 / fig.get_figheight(), (0.75 + 0.28 * (lines - 1)) / fig.get_figheight()
     ax = fig.add_axes([0.012, bottom, 0.976, top - bottom])
     ax.axis("off")
-    table = ax.table(cellText=[list(map(str, row)) for row in rows], colLabels=header, colWidths=[w / total for w in widths],
+    table = ax.table(cellText=[["" if i in span and j == 0 else str(v) for j, v in enumerate(row)] for i, row in enumerate(rows)],
+                     colLabels=header, colWidths=[w / total for w in widths],
                      cellLoc="center", loc="upper left", bbox=[0, 0, 1, 1])
     table.auto_set_font_size(False)
     for (r, c), cell in table.get_celld().items():
@@ -85,6 +90,14 @@ def render(title, header, rows, path, note, highlight=None):
             cell.get_text().set_fontweight("bold")
         elif r - 1 in ([] if highlight is None else [highlight] if isinstance(highlight, int) else highlight):
             cell.set_facecolor("#fcf3d9")
+        if r - 1 in span:  # Abschnittszeile: keine inneren Trennlinien (Rand in Füllfarbe; offene Ränder zerstören die Füllung)
+            cell.set_edgecolor(cell.get_facecolor())
+    if span:
+        fig.canvas.draw()  # Zellpositionen festlegen
+        for i in sorted(span):
+            cell = table[i + 1, 0]
+            ax.text(cell.get_x() + 0.004, cell.get_y() + cell.get_height() / 2, str(rows[i][0]), transform=ax.transAxes, fontsize=16,
+                    color="#1f2329", va="center", ha="left", zorder=10)
     fig.text(0.012, (0.32 + 0.14 * (lines - 1)) / fig.get_figheight(), note, fontsize=14, color="#5f6670", va="center", linespacing=1.5)
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     fig.savefig(path)

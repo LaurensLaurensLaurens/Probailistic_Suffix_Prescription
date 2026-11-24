@@ -1,0 +1,17 @@
+{
+  "status": "incomplete",
+  "updated_at": "2026-11-15T17:45:01+01:00",
+  "requested_prefixes_per_model": 1000,
+  "draws_per_prefix": 100,
+  "report": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/d_oe_zustand_20261115/heldout_1000_prefixe_100_ziehungen/bericht.md",
+  "evaluation_finished": true,
+  "tested_prefixes_per_model": 1000,
+  "successful_prefixes_per_model": {
+    "D": 999,
+    "OE": 999
+  },
+  "complete_1000_prefix_mae_available": false,
+  "paired_prefixes": 999,
+  "failed_case": "Application_513583760",
+  "source_hashes_unchanged": true
+}

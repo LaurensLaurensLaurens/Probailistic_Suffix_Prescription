@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Validate application (resume)",
+  "Art": "Mitarbeiter",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 15756,
+  "Optionen": 73,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "User_87 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": -0.006086926538309431,
+  "KI unten": -0.06766068935867986,
+  "KI oben": 0.055486836282061004,
+  "Zielereignis": "O_Accepted",
+  "Entscheidungsfälle vor Ausschluss": 15756,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 12682,
+  "Beobachtete Zielquote": 0.8048997207413049,
+  "Beobachtete Optionen": 65,
+  "Minimum Fälle je beobachteter Option": 1,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 11883,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 11.015060942969285
+}

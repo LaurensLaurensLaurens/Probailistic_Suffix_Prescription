@@ -1,0 +1,17 @@
+{
+  "status": "complete",
+  "started_at": "2026-11-15T18:23:27+01:00",
+  "decisions": 679,
+  "model": "D",
+  "objective": "time",
+  "seed": 1,
+  "updated_at": "2026-11-15T19:13:19+01:00",
+  "elapsed_seconds": 2959.041571855545,
+  "sampling_fallbacks": 1,
+  "decision_audit": {
+    "adaptive_calls": 632,
+    "uncertain_fallbacks": 449,
+    "samples_per_option_total": 74740,
+    "expanded_calls": 559
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "stage": "complete",
+  "updated": "2026-11-12T18:17:52.831278+00:00",
+  "cate_results": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/scripts/results_100k/neue_punkte_online_cate_erm_gamma0.1_bank",
+  "psp_results": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/scripts/results_100k/neue_punkte_online_psp_erm_gamma0.1_suffixe100_bank",
+  "allocation": "learned",
+  "completed_cate_runs": 40,
+  "completed_psp_seeds": 10
+}

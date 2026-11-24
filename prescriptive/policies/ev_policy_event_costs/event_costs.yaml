@@ -1,0 +1,81 @@
+# Illustrative, editable EUR tariffs; these are not observed business costs.
+# Base and lifecycle fees are charged for EVERY event record, including complete.
+# Time fees apply only to active start/resume -> suspend/complete/abort intervals.
+version: 1
+currency: EUR
+unknown_activity: default
+defaults:
+  base_eur: 1.0
+  eur_per_work_hour: 0.0
+  lifecycle_eur:
+    default: 0.5
+    schedule: 0.1
+    start: 1.0
+    resume: 1.0
+    suspend: 0.5
+    complete: 2.0
+    ate_abort: 0.5
+    withdraw: 0.5
+events:
+  A_Accepted:
+    base_eur: 5.0
+  A_Cancelled:
+    base_eur: 2.0
+  A_Complete:
+    base_eur: 2.0
+  A_Concept:
+    base_eur: 2.0
+  A_Create Application:
+    base_eur: 3.0
+  A_Denied:
+    base_eur: 2.0
+  A_Incomplete:
+    base_eur: 2.0
+  A_Pending:
+    base_eur: 2.0
+  A_Submitted:
+    base_eur: 2.0
+  A_Validating:
+    base_eur: 2.0
+  O_Accepted:
+    base_eur: 3.0
+  O_Cancelled:
+    base_eur: 2.0
+  O_Create Offer:
+    base_eur: 4.0
+  O_Created:
+    base_eur: 2.0
+  O_Refused:
+    base_eur: 2.0
+  O_Returned:
+    base_eur: 2.0
+  O_Sent (mail and online):
+    base_eur: 3.0
+  O_Sent (online only):
+    base_eur: 1.5
+  W_Assess potential fraud:
+    base_eur: 3.0
+    eur_per_work_hour: 75.0
+  W_Call after offers:
+    base_eur: 2.0
+    eur_per_work_hour: 40.0
+  W_Call incomplete files:
+    base_eur: 2.0
+    eur_per_work_hour: 40.0
+  W_Complete application:
+    base_eur: 2.0
+    eur_per_work_hour: 45.0
+  W_Handle leads:
+    base_eur: 2.0
+    eur_per_work_hour: 35.0
+  W_Personal Loan collection:
+    base_eur: 2.0
+    eur_per_work_hour: 50.0
+  W_Shortened completion:
+    base_eur: 2.0
+    eur_per_work_hour: 45.0
+  W_Validate application:
+    base_eur: 2.0
+    eur_per_work_hour: 60.0
+    lifecycle_eur:
+      complete: 3.0

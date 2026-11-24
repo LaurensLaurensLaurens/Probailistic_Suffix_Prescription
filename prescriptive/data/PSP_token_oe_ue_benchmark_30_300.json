@@ -1,0 +1,77 @@
+{
+  "scope": "four held-out prefixes, two options each; speed benchmark, not a policy-quality evaluation",
+  "rows": [
+    {
+      "point": "annehmen_bei_konzept",
+      "case": "Application_1492548924",
+      "prefix_events": 4,
+      "draws_per_option": 30,
+      "seconds": 0.9274,
+      "action_advantage_days": 1.0672290116851164,
+      "paired_se_days": 2.296192035517392
+    },
+    {
+      "point": "annehmen_bei_konzept",
+      "case": "Application_1492548924",
+      "prefix_events": 4,
+      "draws_per_option": 300,
+      "seconds": 5.1968,
+      "action_advantage_days": 3.435428291104481,
+      "paired_se_days": 1.0108298136847997
+    },
+    {
+      "point": "annehmen_nach_vervollstaendigung",
+      "case": "Application_838067861",
+      "prefix_events": 8,
+      "draws_per_option": 300,
+      "seconds": 5.796,
+      "action_advantage_days": 0.03329612471029558,
+      "paired_se_days": 1.0228325390615736
+    },
+    {
+      "point": "annehmen_nach_vervollstaendigung",
+      "case": "Application_838067861",
+      "prefix_events": 8,
+      "draws_per_option": 30,
+      "seconds": 0.8892,
+      "action_advantage_days": 5.278490816586786,
+      "paired_se_days": 2.5253163257501816
+    },
+    {
+      "point": "angebot_nachlegen",
+      "case": "Application_482211839",
+      "prefix_events": 10,
+      "draws_per_option": 30,
+      "seconds": 0.8807,
+      "action_advantage_days": -2.424864897172154,
+      "paired_se_days": 3.8965204423590656
+    },
+    {
+      "point": "angebot_nachlegen",
+      "case": "Application_482211839",
+      "prefix_events": 10,
+      "draws_per_option": 300,
+      "seconds": 5.4328,
+      "action_advantage_days": -1.7816677762283817,
+      "paired_se_days": 1.0796163933213025
+    },
+    {
+      "point": "handle_leads",
+      "case": "Application_753867905",
+      "prefix_events": 3,
+      "draws_per_option": 300,
+      "seconds": 5.9385,
+      "action_advantage_days": -0.661886186372446,
+      "paired_se_days": 1.0697556512218969
+    },
+    {
+      "point": "handle_leads",
+      "case": "Application_753867905",
+      "prefix_events": 3,
+      "draws_per_option": 30,
+      "seconds": 0.9475,
+      "action_advantage_days": -2.0938598126807118,
+      "paired_se_days": 3.154257236516107
+    }
+  ]
+}

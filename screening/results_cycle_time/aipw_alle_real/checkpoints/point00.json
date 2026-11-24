@@ -1,0 +1,18 @@
+{
+  "Interventionspunkt": "channel",
+  "Art": "Control Flow",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 30723,
+  "Optionen": 2,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "1 vs. 0",
+  "Effekt (AIPW)": 1.6311459256260568,
+  "KI unten": 0.23737426694337982,
+  "KI oben": 3.0249175843087337,
+  "Beobachtete Optionen": 2,
+  "Minimum Fälle je beobachteter Option": 466,
+  "Überlappung": 0.06174527227158806,
+  "Fälle mit Wahl": 30723,
+  "Status": "geschätzt; geringe Überlappung",
+  "Laufzeit (s)": 7.896657384000719
+}

@@ -1,0 +1,78 @@
+{
+  "window_size": 207,
+  "min_suffix_size": 60,
+  "params": {
+    "epochs": 15,
+    "learning_rate": 0.0001,
+    "batch_size": 256,
+    "regularization_term": 0.0001,
+    "train_cases": 0,
+    "threads": 16,
+    "checkpoints": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/models/psp_training_real_alle_s60_klassen",
+    "lifecycle_tokens": true,
+    "suffix_size": 60,
+    "point_weight": 3,
+    "device": "auto",
+    "time_from": "gaps",
+    "gap_classes": true,
+    "statics": [
+      [
+        "case:LoanGoal",
+        "case:ApplicationType"
+      ],
+      [
+        "case:RequestedAmount"
+      ]
+    ],
+    "option_as": "encoder",
+    "sampling_control": {
+      "max_samples": 100,
+      "z": 2.0
+    }
+  },
+  "xgb_trained_on": {
+    "echter Log": "bpic17",
+    "outcome": "durchlaufzeit",
+    "cases": 10000,
+    "points": [
+      "angebot_nachlegen",
+      "annehmen_bei_konzept",
+      "annehmen_nach_vervollstaendigung",
+      "handle_leads"
+    ]
+  },
+  "xgb_summary": {
+    "angebot_nachlegen": {
+      "Proben": 12459,
+      "Fälle": 9727,
+      "Optionen": 2,
+      "Bäume": 136,
+      "RMSE Validierung": 12.035808540979515,
+      "Streuung Outcome": 13.718814093217922
+    },
+    "annehmen_bei_konzept": {
+      "Proben": 7693,
+      "Fälle": 7693,
+      "Optionen": 2,
+      "Bäume": 56,
+      "RMSE Validierung": 12.735537010793482,
+      "Streuung Outcome": 13.014617510611174
+    },
+    "annehmen_nach_vervollstaendigung": {
+      "Proben": 10089,
+      "Fälle": 5216,
+      "Optionen": 2,
+      "Bäume": 32,
+      "RMSE Validierung": 13.61410974317505,
+      "Streuung Outcome": 14.021442994331288
+    },
+    "handle_leads": {
+      "Proben": 6496,
+      "Fälle": 6488,
+      "Optionen": 2,
+      "Bäume": 15,
+      "RMSE Validierung": 13.711268650262635,
+      "Streuung Outcome": 13.758663015973182
+    }
+  }
+}

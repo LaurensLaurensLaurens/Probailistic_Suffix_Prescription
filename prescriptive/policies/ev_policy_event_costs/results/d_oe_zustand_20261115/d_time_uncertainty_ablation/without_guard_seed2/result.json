@@ -1,0 +1,20 @@
+{
+  "model": "D",
+  "objective": "time",
+  "arm": "without_uncertainty_bank_fallback",
+  "seed": 2,
+  "cases": 200,
+  "model_sha256": "82450f43b900fa17ec387706765b90400bfef88ca28d99116b2531bc9f384fe3",
+  "labor_eur": 58.099001578739944,
+  "cost_eur": 206.95950157873995,
+  "cycle_days": 20.803745872108042,
+  "active_hours": 1.227610413095355,
+  "uncertain_estimates": 469,
+  "uncertainty_overrides": 469,
+  "actual_uncertainty_bank_fallbacks": 0,
+  "sampling_failure_bank_fallbacks": 3,
+  "adaptive_calls": 646,
+  "expanded_calls": 567,
+  "samples_per_option_total": 75990,
+  "seconds": 3051.9211237430573
+}

@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Complete application (resume)",
+  "Art": "Mitarbeiter",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 9647,
+  "Optionen": 65,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "User_2 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": -0.004230285436304876,
+  "KI unten": -0.05986611594463714,
+  "KI oben": 0.05140554507202739,
+  "Zielereignis": "O_Accepted",
+  "Entscheidungsfälle vor Ausschluss": 9647,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 5495,
+  "Beobachtete Zielquote": 0.5696071317508034,
+  "Beobachtete Optionen": 61,
+  "Minimum Fälle je beobachteter Option": 1,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 7847,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 7.451904969057068
+}

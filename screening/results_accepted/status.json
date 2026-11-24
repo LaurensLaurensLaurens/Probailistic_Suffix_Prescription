@@ -1,0 +1,13 @@
+{
+  "state": "complete",
+  "updated": "2026-11-12T19:05:56.948983+00:00",
+  "points_per_family": 20,
+  "completed": {
+    "accepted_real": 20,
+    "accepted_rct": 20,
+    "returned_real": 20,
+    "returned_rct": 20
+  },
+  "rct_cases_reused": 30000,
+  "errors": []
+}

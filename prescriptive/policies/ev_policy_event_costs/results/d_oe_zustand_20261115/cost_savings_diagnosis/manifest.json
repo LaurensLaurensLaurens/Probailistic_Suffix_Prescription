@@ -1,0 +1,22 @@
+{
+  "prepared_at": "2026-11-15T18:15:51+01:00",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "scored_cases": 200,
+  "warmup": 700,
+  "cooldown": 1300,
+  "forest_model": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/vergleich_200_faelle_30_ziehungen_seed0_20261113/models/cate_model_cf_event_costs.pkl",
+  "source_sha256": {
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/scripts/analyse_event_cost_savings.py": "d5837bff5630e026585244c458531520945ba2ee9c801ffcb1f098e973ee771c",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/vergleich_200_faelle_30_ziehungen_seed0_20261113/models/cate_model_cf_event_costs.pkl": "b6f06bcb6360fbecf5f6e91c453158bfb26d871c03b43640901d5726e610f453",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/d_oe_zustand_20261115/catalog.yaml": "3a45637895f0238ec7b8879431966282732990dc4e410ca00af24f433963097a",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/d_oe_zustand_20261115/event_costs.yaml": "6e743f987dc5f3e3e4e3380b46bcd3ab65282f9868594262fd5ee2f65ce62f32",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/process-simulation-engine/simulation/case_engine_lifecycle_aware.py": "ba1914a2aa6e35e5521d8df0f4833bf76ee276bbe2177cc4b7edfdc2a5c0a3af",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/process-simulation-engine/simulation/dataset_simulator.py": "af4405f24430c8b73a3ac0696431515f9a6197e865c0aa6000cda2f61cfa5234",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/costs.py": "004db5a6d90f661bbdeab885643801d72ecedd9ef216aaba4797b3fce048791e"
+  },
+  "purpose": "separate cost composition, intervention behaviour and a cost-trained reference; no optimal-cost bound"
+}

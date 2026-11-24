@@ -1,0 +1,1687 @@
+{
+  "pairs": [
+    [
+      "A_Accepted|complete",
+      "O_Create Offer|complete"
+    ],
+    [
+      "A_Accepted|complete",
+      "W_Complete application|ate_abort"
+    ],
+    [
+      "A_Accepted|complete",
+      "W_Complete application|resume"
+    ],
+    [
+      "A_Accepted|complete",
+      "W_Complete application|start"
+    ],
+    [
+      "A_Accepted|complete",
+      "W_Complete application|suspend"
+    ],
+    [
+      "A_Accepted|complete",
+      "W_Shortened completion|schedule"
+    ],
+    [
+      "A_Cancelled|complete",
+      "O_Cancelled|complete"
+    ],
+    [
+      "A_Cancelled|complete",
+      "W_Call after offers|ate_abort"
+    ],
+    [
+      "A_Cancelled|complete",
+      "W_Call after offers|complete"
+    ],
+    [
+      "A_Cancelled|complete",
+      "W_Call after offers|withdraw"
+    ],
+    [
+      "A_Cancelled|complete",
+      "W_Call incomplete files|ate_abort"
+    ],
+    [
+      "A_Cancelled|complete",
+      "W_Call incomplete files|complete"
+    ],
+    [
+      "A_Cancelled|complete",
+      "W_Complete application|ate_abort"
+    ],
+    [
+      "A_Cancelled|complete",
+      "W_Complete application|complete"
+    ],
+    [
+      "A_Cancelled|complete",
+      "W_Complete application|withdraw"
+    ],
+    [
+      "A_Cancelled|complete",
+      "W_Validate application|ate_abort"
+    ],
+    [
+      "A_Complete|complete",
+      "A_Cancelled|complete"
+    ],
+    [
+      "A_Complete|complete",
+      "A_Denied|complete"
+    ],
+    [
+      "A_Complete|complete",
+      "O_Cancelled|complete"
+    ],
+    [
+      "A_Complete|complete",
+      "O_Create Offer|complete"
+    ],
+    [
+      "A_Complete|complete",
+      "O_Sent (mail and online)|complete"
+    ],
+    [
+      "A_Complete|complete",
+      "O_Sent (online only)|complete"
+    ],
+    [
+      "A_Complete|complete",
+      "W_Call after offers|complete"
+    ],
+    [
+      "A_Complete|complete",
+      "W_Call after offers|suspend"
+    ],
+    [
+      "A_Complete|complete",
+      "W_Shortened completion|schedule"
+    ],
+    [
+      "A_Complete|complete",
+      "W_Shortened completion|suspend"
+    ],
+    [
+      "A_Concept|complete",
+      "A_Accepted|complete"
+    ],
+    [
+      "A_Concept|complete",
+      "W_Complete application|complete"
+    ],
+    [
+      "A_Concept|complete",
+      "W_Complete application|schedule"
+    ],
+    [
+      "A_Concept|complete",
+      "W_Complete application|start"
+    ],
+    [
+      "A_Concept|complete",
+      "W_Complete application|suspend"
+    ],
+    [
+      "A_Concept|complete",
+      "W_Shortened completion|schedule"
+    ],
+    [
+      "A_Create Application|complete",
+      "A_Concept|complete"
+    ],
+    [
+      "A_Create Application|complete",
+      "A_Submitted|complete"
+    ],
+    [
+      "A_Create Application|complete",
+      "W_Complete application|schedule"
+    ],
+    [
+      "A_Denied|complete",
+      "O_Refused|complete"
+    ],
+    [
+      "A_Denied|complete",
+      "W_Call after offers|ate_abort"
+    ],
+    [
+      "A_Denied|complete",
+      "W_Call after offers|complete"
+    ],
+    [
+      "A_Denied|complete",
+      "W_Call incomplete files|ate_abort"
+    ],
+    [
+      "A_Denied|complete",
+      "W_Call incomplete files|complete"
+    ],
+    [
+      "A_Denied|complete",
+      "W_Complete application|ate_abort"
+    ],
+    [
+      "A_Denied|complete",
+      "W_Complete application|complete"
+    ],
+    [
+      "A_Denied|complete",
+      "W_Complete application|withdraw"
+    ],
+    [
+      "A_Denied|complete",
+      "W_Validate application|ate_abort"
+    ],
+    [
+      "A_Denied|complete",
+      "W_Validate application|complete"
+    ],
+    [
+      "A_Incomplete|complete",
+      "A_Denied|complete"
+    ],
+    [
+      "A_Incomplete|complete",
+      "O_Accepted|complete"
+    ],
+    [
+      "A_Incomplete|complete",
+      "O_Create Offer|complete"
+    ],
+    [
+      "A_Incomplete|complete",
+      "O_Returned|complete"
+    ],
+    [
+      "A_Incomplete|complete",
+      "W_Call incomplete files|complete"
+    ],
+    [
+      "A_Incomplete|complete",
+      "W_Call incomplete files|suspend"
+    ],
+    [
+      "A_Incomplete|complete",
+      "W_Shortened completion|suspend"
+    ],
+    [
+      "A_Pending|complete",
+      "W_Call after offers|ate_abort"
+    ],
+    [
+      "A_Pending|complete",
+      "W_Call incomplete files|ate_abort"
+    ],
+    [
+      "A_Pending|complete",
+      "W_Call incomplete files|complete"
+    ],
+    [
+      "A_Pending|complete",
+      "W_Validate application|ate_abort"
+    ],
+    [
+      "A_Pending|complete",
+      "W_Validate application|complete"
+    ],
+    [
+      "A_Submitted|complete",
+      "W_Handle leads|schedule"
+    ],
+    [
+      "A_Validating|complete",
+      "A_Cancelled|complete"
+    ],
+    [
+      "A_Validating|complete",
+      "A_Denied|complete"
+    ],
+    [
+      "A_Validating|complete",
+      "O_Accepted|complete"
+    ],
+    [
+      "A_Validating|complete",
+      "O_Create Offer|complete"
+    ],
+    [
+      "A_Validating|complete",
+      "O_Returned|complete"
+    ],
+    [
+      "A_Validating|complete",
+      "W_Validate application|complete"
+    ],
+    [
+      "A_Validating|complete",
+      "W_Validate application|start"
+    ],
+    [
+      "A_Validating|complete",
+      "W_Validate application|suspend"
+    ],
+    [
+      "O_Accepted|complete",
+      "A_Pending|complete"
+    ],
+    [
+      "O_Cancelled|complete",
+      "A_Cancelled|complete"
+    ],
+    [
+      "O_Cancelled|complete",
+      "A_Denied|complete"
+    ],
+    [
+      "O_Cancelled|complete",
+      "O_Accepted|complete"
+    ],
+    [
+      "O_Cancelled|complete",
+      "O_Cancelled|complete"
+    ],
+    [
+      "O_Cancelled|complete",
+      "O_Create Offer|complete"
+    ],
+    [
+      "O_Cancelled|complete",
+      "O_Returned|complete"
+    ],
+    [
+      "O_Cancelled|complete",
+      "O_Sent (mail and online)|complete"
+    ],
+    [
+      "O_Cancelled|complete",
+      "O_Sent (online only)|complete"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Call after offers|ate_abort"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Call after offers|complete"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Call after offers|resume"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Call after offers|suspend"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Call after offers|withdraw"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Call incomplete files|ate_abort"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Call incomplete files|complete"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Call incomplete files|resume"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Call incomplete files|suspend"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Complete application|ate_abort"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Complete application|complete"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Complete application|resume"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Complete application|start"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Complete application|suspend"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Complete application|withdraw"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Validate application|ate_abort"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Validate application|complete"
+    ],
+    [
+      "O_Cancelled|complete",
+      "W_Validate application|resume"
+    ],
+    [
+      "O_Create Offer|complete",
+      "O_Created|complete"
+    ],
+    [
+      "O_Created|complete",
+      "A_Cancelled|complete"
+    ],
+    [
+      "O_Created|complete",
+      "A_Denied|complete"
+    ],
+    [
+      "O_Created|complete",
+      "O_Cancelled|complete"
+    ],
+    [
+      "O_Created|complete",
+      "O_Create Offer|complete"
+    ],
+    [
+      "O_Created|complete",
+      "O_Sent (mail and online)|complete"
+    ],
+    [
+      "O_Created|complete",
+      "O_Sent (online only)|complete"
+    ],
+    [
+      "O_Created|complete",
+      "W_Call after offers|ate_abort"
+    ],
+    [
+      "O_Created|complete",
+      "W_Call after offers|resume"
+    ],
+    [
+      "O_Created|complete",
+      "W_Call after offers|suspend"
+    ],
+    [
+      "O_Created|complete",
+      "W_Call incomplete files|ate_abort"
+    ],
+    [
+      "O_Created|complete",
+      "W_Call incomplete files|complete"
+    ],
+    [
+      "O_Created|complete",
+      "W_Call incomplete files|resume"
+    ],
+    [
+      "O_Created|complete",
+      "W_Call incomplete files|suspend"
+    ],
+    [
+      "O_Created|complete",
+      "W_Complete application|resume"
+    ],
+    [
+      "O_Created|complete",
+      "W_Complete application|start"
+    ],
+    [
+      "O_Created|complete",
+      "W_Complete application|suspend"
+    ],
+    [
+      "O_Created|complete",
+      "W_Shortened completion|schedule"
+    ],
+    [
+      "O_Created|complete",
+      "W_Shortened completion|suspend"
+    ],
+    [
+      "O_Created|complete",
+      "W_Validate application|ate_abort"
+    ],
+    [
+      "O_Created|complete",
+      "W_Validate application|complete"
+    ],
+    [
+      "O_Created|complete",
+      "W_Validate application|resume"
+    ],
+    [
+      "O_Refused|complete",
+      "O_Refused|complete"
+    ],
+    [
+      "O_Refused|complete",
+      "W_Assess potential fraud|ate_abort"
+    ],
+    [
+      "O_Refused|complete",
+      "W_Assess potential fraud|complete"
+    ],
+    [
+      "O_Refused|complete",
+      "W_Call after offers|ate_abort"
+    ],
+    [
+      "O_Refused|complete",
+      "W_Call after offers|complete"
+    ],
+    [
+      "O_Refused|complete",
+      "W_Call after offers|withdraw"
+    ],
+    [
+      "O_Refused|complete",
+      "W_Call incomplete files|ate_abort"
+    ],
+    [
+      "O_Refused|complete",
+      "W_Call incomplete files|complete"
+    ],
+    [
+      "O_Refused|complete",
+      "W_Complete application|ate_abort"
+    ],
+    [
+      "O_Refused|complete",
+      "W_Complete application|complete"
+    ],
+    [
+      "O_Refused|complete",
+      "W_Complete application|withdraw"
+    ],
+    [
+      "O_Refused|complete",
+      "W_Validate application|ate_abort"
+    ],
+    [
+      "O_Refused|complete",
+      "W_Validate application|complete"
+    ],
+    [
+      "O_Returned|complete",
+      "A_Cancelled|complete"
+    ],
+    [
+      "O_Returned|complete",
+      "A_Denied|complete"
+    ],
+    [
+      "O_Returned|complete",
+      "O_Accepted|complete"
+    ],
+    [
+      "O_Returned|complete",
+      "O_Cancelled|complete"
+    ],
+    [
+      "O_Returned|complete",
+      "O_Create Offer|complete"
+    ],
+    [
+      "O_Returned|complete",
+      "O_Returned|complete"
+    ],
+    [
+      "O_Returned|complete",
+      "W_Call incomplete files|ate_abort"
+    ],
+    [
+      "O_Returned|complete",
+      "W_Call incomplete files|complete"
+    ],
+    [
+      "O_Returned|complete",
+      "W_Call incomplete files|resume"
+    ],
+    [
+      "O_Returned|complete",
+      "W_Call incomplete files|suspend"
+    ],
+    [
+      "O_Returned|complete",
+      "W_Validate application|ate_abort"
+    ],
+    [
+      "O_Returned|complete",
+      "W_Validate application|complete"
+    ],
+    [
+      "O_Returned|complete",
+      "W_Validate application|resume"
+    ],
+    [
+      "O_Returned|complete",
+      "W_Validate application|start"
+    ],
+    [
+      "O_Returned|complete",
+      "W_Validate application|suspend"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "A_Cancelled|complete"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "A_Denied|complete"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "O_Accepted|complete"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "O_Cancelled|complete"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "O_Create Offer|complete"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "O_Returned|complete"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "O_Sent (mail and online)|complete"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "O_Sent (online only)|complete"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Call after offers|ate_abort"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Call after offers|resume"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Call after offers|start"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Call after offers|suspend"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Call after offers|withdraw"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Call incomplete files|ate_abort"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Call incomplete files|complete"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Call incomplete files|resume"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Call incomplete files|suspend"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Complete application|ate_abort"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Complete application|complete"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Complete application|withdraw"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Validate application|ate_abort"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Validate application|complete"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Validate application|resume"
+    ],
+    [
+      "O_Sent (mail and online)|complete",
+      "W_Validate application|suspend"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "A_Cancelled|complete"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "A_Denied|complete"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "O_Accepted|complete"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "O_Cancelled|complete"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "O_Create Offer|complete"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "O_Returned|complete"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "O_Sent (online only)|complete"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Call after offers|ate_abort"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Call after offers|resume"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Call after offers|start"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Call after offers|suspend"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Call after offers|withdraw"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Call incomplete files|ate_abort"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Call incomplete files|complete"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Call incomplete files|resume"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Call incomplete files|start"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Call incomplete files|suspend"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Complete application|ate_abort"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Complete application|complete"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Complete application|withdraw"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Validate application|ate_abort"
+    ],
+    [
+      "O_Sent (online only)|complete",
+      "W_Validate application|resume"
+    ],
+    [
+      "W_Assess potential fraud|ate_abort",
+      "W_Assess potential fraud|schedule"
+    ],
+    [
+      "W_Assess potential fraud|ate_abort",
+      "W_Call after offers|schedule"
+    ],
+    [
+      "W_Assess potential fraud|ate_abort",
+      "W_Complete application|schedule"
+    ],
+    [
+      "W_Assess potential fraud|ate_abort",
+      "W_Handle leads|schedule"
+    ],
+    [
+      "W_Assess potential fraud|ate_abort",
+      "W_Validate application|schedule"
+    ],
+    [
+      "W_Assess potential fraud|complete",
+      "W_Assess potential fraud|schedule"
+    ],
+    [
+      "W_Assess potential fraud|complete",
+      "W_Call after offers|schedule"
+    ],
+    [
+      "W_Assess potential fraud|complete",
+      "W_Complete application|schedule"
+    ],
+    [
+      "W_Assess potential fraud|complete",
+      "W_Handle leads|schedule"
+    ],
+    [
+      "W_Assess potential fraud|complete",
+      "W_Validate application|schedule"
+    ],
+    [
+      "W_Assess potential fraud|resume",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Assess potential fraud|resume",
+      "W_Assess potential fraud|complete"
+    ],
+    [
+      "W_Assess potential fraud|resume",
+      "W_Assess potential fraud|start"
+    ],
+    [
+      "W_Assess potential fraud|resume",
+      "W_Assess potential fraud|suspend"
+    ],
+    [
+      "W_Assess potential fraud|schedule",
+      "W_Assess potential fraud|start"
+    ],
+    [
+      "W_Assess potential fraud|schedule",
+      "W_Assess potential fraud|withdraw"
+    ],
+    [
+      "W_Assess potential fraud|start",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Assess potential fraud|start",
+      "W_Assess potential fraud|complete"
+    ],
+    [
+      "W_Assess potential fraud|start",
+      "W_Assess potential fraud|start"
+    ],
+    [
+      "W_Assess potential fraud|start",
+      "W_Assess potential fraud|suspend"
+    ],
+    [
+      "W_Assess potential fraud|suspend",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Assess potential fraud|suspend",
+      "W_Assess potential fraud|ate_abort"
+    ],
+    [
+      "W_Assess potential fraud|suspend",
+      "W_Assess potential fraud|resume"
+    ],
+    [
+      "W_Assess potential fraud|suspend",
+      "W_Assess potential fraud|suspend"
+    ],
+    [
+      "W_Assess potential fraud|withdraw",
+      "W_Handle leads|schedule"
+    ],
+    [
+      "W_Call after offers|ate_abort",
+      "W_Assess potential fraud|schedule"
+    ],
+    [
+      "W_Call after offers|ate_abort",
+      "W_Call after offers|schedule"
+    ],
+    [
+      "W_Call after offers|ate_abort",
+      "W_Shortened completion|resume"
+    ],
+    [
+      "W_Call after offers|ate_abort",
+      "W_Validate application|schedule"
+    ],
+    [
+      "W_Call after offers|complete",
+      "W_Validate application|schedule"
+    ],
+    [
+      "W_Call after offers|resume",
+      "A_Cancelled|complete"
+    ],
+    [
+      "W_Call after offers|resume",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Call after offers|resume",
+      "O_Cancelled|complete"
+    ],
+    [
+      "W_Call after offers|resume",
+      "O_Create Offer|complete"
+    ],
+    [
+      "W_Call after offers|resume",
+      "O_Sent (mail and online)|complete"
+    ],
+    [
+      "W_Call after offers|resume",
+      "W_Call after offers|complete"
+    ],
+    [
+      "W_Call after offers|resume",
+      "W_Call after offers|start"
+    ],
+    [
+      "W_Call after offers|resume",
+      "W_Call after offers|suspend"
+    ],
+    [
+      "W_Call after offers|schedule",
+      "A_Cancelled|complete"
+    ],
+    [
+      "W_Call after offers|schedule",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Call after offers|schedule",
+      "O_Cancelled|complete"
+    ],
+    [
+      "W_Call after offers|schedule",
+      "O_Create Offer|complete"
+    ],
+    [
+      "W_Call after offers|schedule",
+      "W_Call after offers|start"
+    ],
+    [
+      "W_Call after offers|schedule",
+      "W_Call after offers|withdraw"
+    ],
+    [
+      "W_Call after offers|start",
+      "A_Cancelled|complete"
+    ],
+    [
+      "W_Call after offers|start",
+      "A_Complete|complete"
+    ],
+    [
+      "W_Call after offers|start",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Call after offers|start",
+      "W_Call after offers|complete"
+    ],
+    [
+      "W_Call after offers|start",
+      "W_Call after offers|start"
+    ],
+    [
+      "W_Call after offers|start",
+      "W_Call after offers|suspend"
+    ],
+    [
+      "W_Call after offers|suspend",
+      "A_Cancelled|complete"
+    ],
+    [
+      "W_Call after offers|suspend",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Call after offers|suspend",
+      "O_Accepted|complete"
+    ],
+    [
+      "W_Call after offers|suspend",
+      "O_Cancelled|complete"
+    ],
+    [
+      "W_Call after offers|suspend",
+      "O_Create Offer|complete"
+    ],
+    [
+      "W_Call after offers|suspend",
+      "O_Sent (mail and online)|complete"
+    ],
+    [
+      "W_Call after offers|suspend",
+      "W_Call after offers|ate_abort"
+    ],
+    [
+      "W_Call after offers|suspend",
+      "W_Call after offers|resume"
+    ],
+    [
+      "W_Call after offers|suspend",
+      "W_Call after offers|suspend"
+    ],
+    [
+      "W_Call after offers|suspend",
+      "W_Shortened completion|schedule"
+    ],
+    [
+      "W_Call after offers|suspend",
+      "W_Shortened completion|suspend"
+    ],
+    [
+      "W_Call after offers|withdraw",
+      "W_Assess potential fraud|schedule"
+    ],
+    [
+      "W_Call after offers|withdraw",
+      "W_Call after offers|schedule"
+    ],
+    [
+      "W_Call after offers|withdraw",
+      "W_Validate application|schedule"
+    ],
+    [
+      "W_Call incomplete files|ate_abort",
+      "O_Cancelled|complete"
+    ],
+    [
+      "W_Call incomplete files|ate_abort",
+      "W_Assess potential fraud|schedule"
+    ],
+    [
+      "W_Call incomplete files|ate_abort",
+      "W_Call after offers|schedule"
+    ],
+    [
+      "W_Call incomplete files|ate_abort",
+      "W_Call incomplete files|schedule"
+    ],
+    [
+      "W_Call incomplete files|ate_abort",
+      "W_Personal Loan collection|schedule"
+    ],
+    [
+      "W_Call incomplete files|ate_abort",
+      "W_Validate application|schedule"
+    ],
+    [
+      "W_Call incomplete files|complete",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Call incomplete files|complete",
+      "O_Cancelled|complete"
+    ],
+    [
+      "W_Call incomplete files|complete",
+      "W_Assess potential fraud|schedule"
+    ],
+    [
+      "W_Call incomplete files|complete",
+      "W_Validate application|schedule"
+    ],
+    [
+      "W_Call incomplete files|resume",
+      "A_Cancelled|complete"
+    ],
+    [
+      "W_Call incomplete files|resume",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Call incomplete files|resume",
+      "O_Accepted|complete"
+    ],
+    [
+      "W_Call incomplete files|resume",
+      "O_Cancelled|complete"
+    ],
+    [
+      "W_Call incomplete files|resume",
+      "O_Create Offer|complete"
+    ],
+    [
+      "W_Call incomplete files|resume",
+      "O_Returned|complete"
+    ],
+    [
+      "W_Call incomplete files|resume",
+      "O_Sent (mail and online)|complete"
+    ],
+    [
+      "W_Call incomplete files|resume",
+      "O_Sent (online only)|complete"
+    ],
+    [
+      "W_Call incomplete files|resume",
+      "W_Call incomplete files|complete"
+    ],
+    [
+      "W_Call incomplete files|resume",
+      "W_Call incomplete files|start"
+    ],
+    [
+      "W_Call incomplete files|resume",
+      "W_Call incomplete files|suspend"
+    ],
+    [
+      "W_Call incomplete files|schedule",
+      "W_Call incomplete files|start"
+    ],
+    [
+      "W_Call incomplete files|start",
+      "A_Cancelled|complete"
+    ],
+    [
+      "W_Call incomplete files|start",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Call incomplete files|start",
+      "A_Incomplete|complete"
+    ],
+    [
+      "W_Call incomplete files|start",
+      "O_Create Offer|complete"
+    ],
+    [
+      "W_Call incomplete files|start",
+      "W_Call incomplete files|complete"
+    ],
+    [
+      "W_Call incomplete files|start",
+      "W_Call incomplete files|start"
+    ],
+    [
+      "W_Call incomplete files|start",
+      "W_Call incomplete files|suspend"
+    ],
+    [
+      "W_Call incomplete files|suspend",
+      "A_Cancelled|complete"
+    ],
+    [
+      "W_Call incomplete files|suspend",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Call incomplete files|suspend",
+      "O_Accepted|complete"
+    ],
+    [
+      "W_Call incomplete files|suspend",
+      "O_Cancelled|complete"
+    ],
+    [
+      "W_Call incomplete files|suspend",
+      "O_Create Offer|complete"
+    ],
+    [
+      "W_Call incomplete files|suspend",
+      "O_Returned|complete"
+    ],
+    [
+      "W_Call incomplete files|suspend",
+      "O_Sent (mail and online)|complete"
+    ],
+    [
+      "W_Call incomplete files|suspend",
+      "O_Sent (online only)|complete"
+    ],
+    [
+      "W_Call incomplete files|suspend",
+      "W_Call incomplete files|ate_abort"
+    ],
+    [
+      "W_Call incomplete files|suspend",
+      "W_Call incomplete files|resume"
+    ],
+    [
+      "W_Call incomplete files|suspend",
+      "W_Call incomplete files|suspend"
+    ],
+    [
+      "W_Complete application|ate_abort",
+      "W_Assess potential fraud|schedule"
+    ],
+    [
+      "W_Complete application|ate_abort",
+      "W_Call after offers|schedule"
+    ],
+    [
+      "W_Complete application|ate_abort",
+      "W_Complete application|schedule"
+    ],
+    [
+      "W_Complete application|complete",
+      "W_Assess potential fraud|schedule"
+    ],
+    [
+      "W_Complete application|complete",
+      "W_Call after offers|schedule"
+    ],
+    [
+      "W_Complete application|complete",
+      "W_Complete application|schedule"
+    ],
+    [
+      "W_Complete application|complete",
+      "W_Shortened completion|schedule"
+    ],
+    [
+      "W_Complete application|resume",
+      "A_Accepted|complete"
+    ],
+    [
+      "W_Complete application|resume",
+      "A_Cancelled|complete"
+    ],
+    [
+      "W_Complete application|resume",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Complete application|resume",
+      "O_Cancelled|complete"
+    ],
+    [
+      "W_Complete application|resume",
+      "O_Create Offer|complete"
+    ],
+    [
+      "W_Complete application|resume",
+      "O_Sent (mail and online)|complete"
+    ],
+    [
+      "W_Complete application|resume",
+      "O_Sent (online only)|complete"
+    ],
+    [
+      "W_Complete application|resume",
+      "W_Complete application|complete"
+    ],
+    [
+      "W_Complete application|resume",
+      "W_Complete application|start"
+    ],
+    [
+      "W_Complete application|resume",
+      "W_Complete application|suspend"
+    ],
+    [
+      "W_Complete application|resume",
+      "W_Shortened completion|schedule"
+    ],
+    [
+      "W_Complete application|schedule",
+      "A_Concept|complete"
+    ],
+    [
+      "W_Complete application|schedule",
+      "W_Complete application|start"
+    ],
+    [
+      "W_Complete application|start",
+      "A_Accepted|complete"
+    ],
+    [
+      "W_Complete application|start",
+      "A_Cancelled|complete"
+    ],
+    [
+      "W_Complete application|start",
+      "A_Concept|complete"
+    ],
+    [
+      "W_Complete application|start",
+      "O_Cancelled|complete"
+    ],
+    [
+      "W_Complete application|start",
+      "O_Create Offer|complete"
+    ],
+    [
+      "W_Complete application|start",
+      "O_Sent (mail and online)|complete"
+    ],
+    [
+      "W_Complete application|start",
+      "W_Complete application|complete"
+    ],
+    [
+      "W_Complete application|start",
+      "W_Complete application|start"
+    ],
+    [
+      "W_Complete application|start",
+      "W_Complete application|suspend"
+    ],
+    [
+      "W_Complete application|start",
+      "W_Shortened completion|schedule"
+    ],
+    [
+      "W_Complete application|suspend",
+      "A_Accepted|complete"
+    ],
+    [
+      "W_Complete application|suspend",
+      "A_Cancelled|complete"
+    ],
+    [
+      "W_Complete application|suspend",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Complete application|suspend",
+      "O_Cancelled|complete"
+    ],
+    [
+      "W_Complete application|suspend",
+      "O_Create Offer|complete"
+    ],
+    [
+      "W_Complete application|suspend",
+      "O_Sent (mail and online)|complete"
+    ],
+    [
+      "W_Complete application|suspend",
+      "O_Sent (online only)|complete"
+    ],
+    [
+      "W_Complete application|suspend",
+      "W_Complete application|ate_abort"
+    ],
+    [
+      "W_Complete application|suspend",
+      "W_Complete application|resume"
+    ],
+    [
+      "W_Complete application|suspend",
+      "W_Complete application|suspend"
+    ],
+    [
+      "W_Complete application|suspend",
+      "W_Shortened completion|schedule"
+    ],
+    [
+      "W_Complete application|suspend",
+      "W_Shortened completion|suspend"
+    ],
+    [
+      "W_Complete application|withdraw",
+      "W_Call after offers|schedule"
+    ],
+    [
+      "W_Handle leads|ate_abort",
+      "W_Complete application|schedule"
+    ],
+    [
+      "W_Handle leads|complete",
+      "W_Complete application|schedule"
+    ],
+    [
+      "W_Handle leads|complete",
+      "W_Handle leads|schedule"
+    ],
+    [
+      "W_Handle leads|resume",
+      "W_Handle leads|complete"
+    ],
+    [
+      "W_Handle leads|resume",
+      "W_Handle leads|start"
+    ],
+    [
+      "W_Handle leads|resume",
+      "W_Handle leads|suspend"
+    ],
+    [
+      "W_Handle leads|schedule",
+      "W_Handle leads|start"
+    ],
+    [
+      "W_Handle leads|schedule",
+      "W_Handle leads|withdraw"
+    ],
+    [
+      "W_Handle leads|start",
+      "W_Handle leads|complete"
+    ],
+    [
+      "W_Handle leads|start",
+      "W_Handle leads|start"
+    ],
+    [
+      "W_Handle leads|start",
+      "W_Handle leads|suspend"
+    ],
+    [
+      "W_Handle leads|suspend",
+      "W_Handle leads|ate_abort"
+    ],
+    [
+      "W_Handle leads|suspend",
+      "W_Handle leads|resume"
+    ],
+    [
+      "W_Handle leads|withdraw",
+      "W_Assess potential fraud|schedule"
+    ],
+    [
+      "W_Handle leads|withdraw",
+      "W_Complete application|schedule"
+    ],
+    [
+      "W_Personal Loan collection|resume",
+      "W_Personal Loan collection|suspend"
+    ],
+    [
+      "W_Personal Loan collection|schedule",
+      "W_Personal Loan collection|start"
+    ],
+    [
+      "W_Personal Loan collection|start",
+      "W_Personal Loan collection|start"
+    ],
+    [
+      "W_Personal Loan collection|start",
+      "W_Personal Loan collection|suspend"
+    ],
+    [
+      "W_Personal Loan collection|suspend",
+      "W_Personal Loan collection|resume"
+    ],
+    [
+      "W_Personal Loan collection|suspend",
+      "W_Validate application|suspend"
+    ],
+    [
+      "W_Shortened completion|resume",
+      "W_Shortened completion|suspend"
+    ],
+    [
+      "W_Shortened completion|resume",
+      "W_Validate application|ate_abort"
+    ],
+    [
+      "W_Shortened completion|schedule",
+      "W_Shortened completion|start"
+    ],
+    [
+      "W_Shortened completion|start",
+      "A_Accepted|complete"
+    ],
+    [
+      "W_Shortened completion|start",
+      "O_Create Offer|complete"
+    ],
+    [
+      "W_Shortened completion|start",
+      "O_Sent (mail and online)|complete"
+    ],
+    [
+      "W_Shortened completion|start",
+      "W_Call after offers|suspend"
+    ],
+    [
+      "W_Shortened completion|start",
+      "W_Complete application|suspend"
+    ],
+    [
+      "W_Shortened completion|start",
+      "W_Shortened completion|start"
+    ],
+    [
+      "W_Shortened completion|start",
+      "W_Shortened completion|suspend"
+    ],
+    [
+      "W_Shortened completion|suspend",
+      "A_Accepted|complete"
+    ],
+    [
+      "W_Shortened completion|suspend",
+      "O_Create Offer|complete"
+    ],
+    [
+      "W_Shortened completion|suspend",
+      "O_Sent (mail and online)|complete"
+    ],
+    [
+      "W_Shortened completion|suspend",
+      "W_Call after offers|ate_abort"
+    ],
+    [
+      "W_Shortened completion|suspend",
+      "W_Call after offers|resume"
+    ],
+    [
+      "W_Shortened completion|suspend",
+      "W_Call after offers|suspend"
+    ],
+    [
+      "W_Shortened completion|suspend",
+      "W_Call incomplete files|suspend"
+    ],
+    [
+      "W_Shortened completion|suspend",
+      "W_Complete application|start"
+    ],
+    [
+      "W_Shortened completion|suspend",
+      "W_Complete application|suspend"
+    ],
+    [
+      "W_Shortened completion|suspend",
+      "W_Validate application|resume"
+    ],
+    [
+      "W_Validate application|ate_abort",
+      "O_Cancelled|complete"
+    ],
+    [
+      "W_Validate application|ate_abort",
+      "W_Assess potential fraud|schedule"
+    ],
+    [
+      "W_Validate application|ate_abort",
+      "W_Call incomplete files|schedule"
+    ],
+    [
+      "W_Validate application|ate_abort",
+      "W_Validate application|schedule"
+    ],
+    [
+      "W_Validate application|complete",
+      "O_Cancelled|complete"
+    ],
+    [
+      "W_Validate application|complete",
+      "W_Assess potential fraud|schedule"
+    ],
+    [
+      "W_Validate application|complete",
+      "W_Call incomplete files|schedule"
+    ],
+    [
+      "W_Validate application|complete",
+      "W_Personal Loan collection|resume"
+    ],
+    [
+      "W_Validate application|complete",
+      "W_Validate application|schedule"
+    ],
+    [
+      "W_Validate application|resume",
+      "A_Cancelled|complete"
+    ],
+    [
+      "W_Validate application|resume",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Validate application|resume",
+      "O_Accepted|complete"
+    ],
+    [
+      "W_Validate application|resume",
+      "O_Create Offer|complete"
+    ],
+    [
+      "W_Validate application|resume",
+      "O_Returned|complete"
+    ],
+    [
+      "W_Validate application|resume",
+      "W_Validate application|complete"
+    ],
+    [
+      "W_Validate application|resume",
+      "W_Validate application|start"
+    ],
+    [
+      "W_Validate application|resume",
+      "W_Validate application|suspend"
+    ],
+    [
+      "W_Validate application|schedule",
+      "W_Validate application|start"
+    ],
+    [
+      "W_Validate application|start",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Validate application|start",
+      "A_Validating|complete"
+    ],
+    [
+      "W_Validate application|start",
+      "O_Accepted|complete"
+    ],
+    [
+      "W_Validate application|start",
+      "O_Returned|complete"
+    ],
+    [
+      "W_Validate application|start",
+      "W_Personal Loan collection|schedule"
+    ],
+    [
+      "W_Validate application|start",
+      "W_Validate application|complete"
+    ],
+    [
+      "W_Validate application|start",
+      "W_Validate application|start"
+    ],
+    [
+      "W_Validate application|start",
+      "W_Validate application|suspend"
+    ],
+    [
+      "W_Validate application|suspend",
+      "A_Cancelled|complete"
+    ],
+    [
+      "W_Validate application|suspend",
+      "A_Denied|complete"
+    ],
+    [
+      "W_Validate application|suspend",
+      "O_Accepted|complete"
+    ],
+    [
+      "W_Validate application|suspend",
+      "O_Cancelled|complete"
+    ],
+    [
+      "W_Validate application|suspend",
+      "O_Create Offer|complete"
+    ],
+    [
+      "W_Validate application|suspend",
+      "O_Returned|complete"
+    ],
+    [
+      "W_Validate application|suspend",
+      "O_Sent (online only)|complete"
+    ],
+    [
+      "W_Validate application|suspend",
+      "W_Shortened completion|resume"
+    ],
+    [
+      "W_Validate application|suspend",
+      "W_Validate application|ate_abort"
+    ],
+    [
+      "W_Validate application|suspend",
+      "W_Validate application|resume"
+    ],
+    [
+      "W_Validate application|suspend",
+      "W_Validate application|suspend"
+    ]
+  ],
+  "ends": [
+    "A_Denied|complete",
+    "O_Cancelled|complete",
+    "O_Returned|complete",
+    "O_Sent (mail and online)|complete",
+    "O_Sent (online only)|complete",
+    "W_Assess potential fraud|ate_abort",
+    "W_Assess potential fraud|complete",
+    "W_Call after offers|ate_abort",
+    "W_Call after offers|complete",
+    "W_Call after offers|schedule",
+    "W_Call after offers|withdraw",
+    "W_Call incomplete files|ate_abort",
+    "W_Call incomplete files|complete",
+    "W_Call incomplete files|suspend",
+    "W_Complete application|ate_abort",
+    "W_Complete application|complete",
+    "W_Complete application|withdraw",
+    "W_Personal Loan collection|suspend",
+    "W_Shortened completion|suspend",
+    "W_Validate application|ate_abort",
+    "W_Validate application|complete",
+    "W_Validate application|suspend"
+  ],
+  "quelle": "25208 Fälle des echten Logs, ohne 6301 äußere Testfälle",
+  "training_cases": 25208,
+  "excluded_test_cases": 6301
+}

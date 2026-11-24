@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Handle leads",
+  "Art": "Mitarbeiter",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 9652,
+  "Optionen": 31,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "User_2 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": 0.003555991042352645,
+  "KI unten": -0.04321381255538063,
+  "KI oben": 0.050325794640085915,
+  "Zielereignis": "O_Accepted",
+  "Entscheidungsfälle vor Ausschluss": 9652,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 5225,
+  "Beobachtete Zielquote": 0.5413385826771654,
+  "Beobachtete Optionen": 31,
+  "Minimum Fälle je beobachteter Option": 4,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 5882,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 4.486168389907107
+}

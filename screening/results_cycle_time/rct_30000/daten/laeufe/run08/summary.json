@@ -1,0 +1,11 @@
+{
+  "run": 8,
+  "seed": 20262120,
+  "cases": 3000,
+  "events": 144681,
+  "assignments": 73008,
+  "forced_assignments": 0,
+  "truncated_cases": 1,
+  "deadlines_applied": 2537,
+  "elapsed_seconds": 39.09309499501251
+}

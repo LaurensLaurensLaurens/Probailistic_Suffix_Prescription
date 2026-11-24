@@ -1,0 +1,16 @@
+{
+  "status": "complete",
+  "seed": 1,
+  "started_at": "2026-11-15T21:50:12+01:00",
+  "decisions": 697,
+  "updated_at": "2026-11-15T22:42:28+01:00",
+  "elapsed_seconds": 3136.6664378643036,
+  "uncertainty_overrides": 537,
+  "sampling_fallbacks": 1,
+  "original_policy_audit": {
+    "adaptive_calls": 645,
+    "uncertain_fallbacks": 537,
+    "samples_per_option_total": 78620,
+    "expanded_calls": 593
+  }
+}

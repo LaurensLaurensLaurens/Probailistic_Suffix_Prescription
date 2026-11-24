@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "completed_at": "2026-11-14T18:36:38+01:00",
+  "same_200_case_ids": true,
+  "bank_cost_components_identical": true,
+  "same_model_rules_tariffs_and_points": true,
+  "no_unobserved_sampled_transitions": true,
+  "cost_delta_vs_constrained_300_eur": -2.2898085927499494
+}

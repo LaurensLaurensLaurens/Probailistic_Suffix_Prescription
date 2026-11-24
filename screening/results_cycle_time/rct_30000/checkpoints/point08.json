@@ -1,0 +1,18 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Validate application",
+  "Art": "Mitarbeiter",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 21709,
+  "Optionen": 77,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "User_87 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": 0.7031826622022568,
+  "KI unten": -0.301261114816904,
+  "KI oben": 1.7076264392214175,
+  "Beobachtete Optionen": 65,
+  "Minimum Fälle je beobachteter Option": 1,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 17602,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 13.576430637040175
+}

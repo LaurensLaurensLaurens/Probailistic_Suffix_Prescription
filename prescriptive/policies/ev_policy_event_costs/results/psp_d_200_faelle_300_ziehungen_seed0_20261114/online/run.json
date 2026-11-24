@@ -1,0 +1,26 @@
+{
+  "status": "interrupted",
+  "started_at": "2026-11-14T01:58:12.956770+00:00",
+  "objective": "negative_event_costs",
+  "cost_fingerprint": "2c7134cc6dbc8b064e95aef1161b2db2dae106ad55e77a371ffff3ccb4999396",
+  "dataset": "bpic17",
+  "policies": [
+    "bank",
+    "psp"
+  ],
+  "policy_params": {
+    "psp": {
+      "model_path": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/models/psp_model_durchlaufzeit_real_alle_s60_klassen_option_encoder.pkl",
+      "samples": 300
+    }
+  },
+  "samples": 300,
+  "scored_cases": 200,
+  "warmup": 700,
+  "cooldown": 1300,
+  "seeds": 1,
+  "seed": 0,
+  "checked_at": "2026-11-14T10:47:16+01:00",
+  "error": "No active process and no saved PSP results; original termination cause unavailable.",
+  "superseded_by": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/psp_d_200_faelle_300_ziehungen_seed0_20261114_neustart"
+}

@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Handle leads (resume)",
+  "Art": "Mitarbeiter",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 2188,
+  "Optionen": 31,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "User_2 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": 0.010870242430361667,
+  "KI unten": -0.04054386831175531,
+  "KI oben": 0.06228435317247864,
+  "Zielereignis": "O_Accepted",
+  "Entscheidungsfälle vor Ausschluss": 2188,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 1194,
+  "Beobachtete Zielquote": 0.5457038391224863,
+  "Beobachtete Optionen": 31,
+  "Minimum Fälle je beobachteter Option": 2,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 1549,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 4.521797653986141
+}

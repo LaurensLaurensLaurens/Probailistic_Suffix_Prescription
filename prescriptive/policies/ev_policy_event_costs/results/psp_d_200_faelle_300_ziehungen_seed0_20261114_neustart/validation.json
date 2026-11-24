@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "same_200_case_ids": true,
+  "bank_case_cost_components_identical": true,
+  "same_model_tariffs_points_and_window": true,
+  "completed_at": "2026-11-14T11:46:57+01:00"
+}

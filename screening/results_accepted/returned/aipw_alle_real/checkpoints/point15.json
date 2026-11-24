@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "laufzeit",
+  "Art": "Variable",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 31509,
+  "Optionen": 3,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "ueber_120_monate vs. bis_60_monate",
+  "Effekt (AIPW)": 0.018893200288562714,
+  "KI unten": -0.002442446369415374,
+  "KI oben": 0.0402288469465408,
+  "Zielereignis": "O_Returned",
+  "Entscheidungsfälle vor Ausschluss": 31509,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 21768,
+  "Beobachtete Zielquote": 0.6908502332666857,
+  "Beobachtete Optionen": 3,
+  "Minimum Fälle je beobachteter Option": 4897,
+  "Überlappung": 0.9668348725760894,
+  "Fälle mit Wahl": 31509,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 8.9599279910326
+}

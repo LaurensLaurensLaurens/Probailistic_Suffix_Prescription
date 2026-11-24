@@ -1,0 +1,14 @@
+{
+  "model": "XGBoost",
+  "objective": "time",
+  "seed": 0,
+  "cases": 200,
+  "cycle_days": 19.797656891473903,
+  "cost_eur": 175.42193177560137,
+  "bank_cycle_days": 20.373676117316034,
+  "bank_cost_eur": 178.63978288530976,
+  "time_saving_days": 0.5760192258421313,
+  "time_saving_percent": 2.8272719293527926,
+  "active_hours": 0.6139676833116345,
+  "seconds": 33.007885456085205
+}

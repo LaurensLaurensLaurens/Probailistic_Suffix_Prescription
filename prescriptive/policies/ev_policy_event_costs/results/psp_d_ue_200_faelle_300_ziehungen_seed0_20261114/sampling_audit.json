@@ -1,0 +1,8 @@
+{
+  "status": "complete",
+  "checked_transitions": 10146285,
+  "invalid_transitions": 0,
+  "checked_suffixes": 366000,
+  "decisions_completed": 610,
+  "updated_at": "2026-11-14T16:26:29+01:00"
+}

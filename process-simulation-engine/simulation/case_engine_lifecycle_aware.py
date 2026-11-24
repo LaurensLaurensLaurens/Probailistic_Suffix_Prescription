@@ -20,7 +20,7 @@ options, time, engine), every time a case reaches a point (_ask). The policy ret
   O_Created) the model draws the next event as always. If it is one of the options (O_Sent (mail and online) or O_Sent
   (online only)), the policy chooses which one happens; otherwise the case goes on as drawn.
 - employee (in _assign): when the work item of the point (BPIC17: W_Call incomplete files, start) gets an employee,
-  the allocation of the engine draws one (in the pipeline a selection strategy, lauf.zuteilung); the policy may replace
+  the allocation of the engine draws one (BPIC17 default: learned bank behaviour); the policy may replace
   it by another one who may do it, is on duty and is free; None: the drawn one.
 Every choice is logged in engine.choices.
 
@@ -40,7 +40,8 @@ import numpy as np
 from next_event_prediction.data_prep import BOS, END, sample_seconds
 from next_event_prediction.event_time_model import EventTimeModel
 from interventions import WAIT
-from resources.case_allocation import Allocation, Task
+from interventions.work_state import WorkState
+from resources.case_allocation import Allocation, Task, create_allocation
 
 OPENING = ("start", "resume")  # an employee takes the work item
 CLOSING = ("suspend", "complete", "ate_abort", "withdraw")  # the employee lets go of it
@@ -104,7 +105,8 @@ class CaseEngine:
     # Wird aufgerufen von Simulator.run -> build_engine -> CaseEngine.__init__
     def __init__(self, model: EventTimeModel, allocator, attribute_generator, arrival_timestamps: List[datetime],
                  seed: int = 42, min_probability: float = 0.0, allocation: Optional[Allocation] = None,
-                 experience: Optional[Dict[Tuple[str, str], int]] = None, min_experience: int = 0, permissions: str = "ordinor"):
+                 experience: Optional[Dict[Tuple[str, str], int]] = None, min_experience: int = 0, permissions: str = "ordinor",
+                 dataset: str = "bpic17"):
         """
         Args:
             model: Trained next-event model.
@@ -113,7 +115,8 @@ class CaseEngine:
             attribute_generator: CaseAttributes (case_attributes/datasets.py); draws the case attributes and the dynamic attributes.
             arrival_timestamps: When the cases arrive.
             min_probability: Events and times the model gives less than this are never drawn.
-            allocation: Decides who works on which task (default: a random free employee).
+            allocation: Basiswahl der Mitarbeiter; Standard bei BPIC17 ist das gelernte Bankverhalten.
+                Eine preskriptive Policy darf die gezogene Wahl überschreiben; None behält sie bei.
             experience: How often each employee started or resumed each work item in the real log
                 ((employee, activity) -> count, resources.case_allocation.work_counts).
             min_experience: An employee may do an activity only with at least this experience, among those
@@ -140,7 +143,7 @@ class CaseEngine:
         self.seed = seed
         self.rng = np.random.default_rng(seed)
         random.seed(seed)  # the selection strategies draw from Python's random module
-        self.allocation = allocation or Allocation()
+        self.allocation = allocation if allocation is not None else create_allocation(None, None, dataset)
         self.allocation.bind(self)
         self._tokens = [tuple(token.split("|")) for token in model.encoder.tokens]
         self._eligible: Dict[str, List[str]] = {}
@@ -300,7 +303,17 @@ class CaseEngine:
         # Modell hat eine seiner Optionen gezogen (drawn in point[1]); sonst hat es keine wirkliche Wahl
         point_control_flow = self._control_flow.get(token)
         if point_control_flow is not None and drawn in point_control_flow[1]:
-            chosen = self._ask(point_control_flow[0], case, list(point_control_flow[0].options), now)
+            # A repeated opening is not a new task waiting to be started. Apply
+            # the same feasible options to bank and policy, before drawing time.
+            options = self.control_options(case, point_control_flow[0].options)
+            if not options:
+                raise ValueError(f"No feasible intervention at {point_control_flow[0].name}, case {case.case_id}")
+            feasible = [point_control_flow[1][point_control_flow[0].options.index(option)] for option in options]
+            if drawn not in feasible:
+                allowed_logits = np.full_like(logits, -np.inf)
+                allowed_logits[:, feasible] = logits[:, feasible]
+                drawn = int(self.model.draw(allowed_logits, case.rng, self.min_probability)[0])
+            chosen = self._ask(point_control_flow[0], case, options, now)
             if chosen is not None:
                 drawn = point_control_flow[1][point_control_flow[0].options.index(chosen)]
         token = drawn
@@ -340,6 +353,15 @@ class CaseEngine:
         case.pending = (token, due)
         # Schedule für das Case handling
         self._schedule(due, EVENT, case.case_id)
+
+    @staticmethod
+    def control_options(case, options):
+        """Feasible interventions from the complete prefix and live sessions."""
+        state = WorkState.from_events(case.prefix)
+        # The live engine state is authoritative for currently allocated work.
+        for activity in case.sessions:
+            state.states[activity] = "active"
+        return [option for option in options if state.permits(option if "|" in option else option+"|complete")]
 
     # Wird aufgerufen von run -> _process -> _due (wenn das nächste Event eines Falls fällig ist)
     def _due(self, case: Case, time: float) -> None:
@@ -495,11 +517,11 @@ class CaseEngine:
             anybody = [r for r in self.eligible_for(task.activity) if r not in self.busy]
             if anybody:
                 self.forced_assignments += 1
-                self._commit(task, anybody[self.rng.integers(len(anybody))], time, new_task)
+                resource = self.allocation.resource_for_task(task, anybody, time)
+                self._commit(task, resource, time, new_task)
 
-        # HIER IST DIE RESOURCEN-ZUORDNUNGSLOGIK: die Zuteilung der Engine zieht (in der Pipeline eine Strategie aus
-        # resources/selection_strategies.py, lauf.zuteilung im Katalog)
-        # Erst Allocation strategx wie gewählt, wenn policy vorhanden, dann durch policy überschrieben
+        # Zuerst die Basiswahl der Engine (BPIC17: gelerntes Bankverhalten).
+        # Nur eine konkrete Wahl der preskriptiven Policy ersetzt diesen Vorschlag; None behält ihn bei.
         for task, resource in self.allocation.assign(list(self.waiting), time, new_task=new_task, freed=freed):
             if task in self.waiting and resource not in self.busy:
                 # Wahlpunkt employee: die Strategie hat resource gezogen; ist eine Policy gesetzt, darf sie unter allen, die den
@@ -591,7 +613,7 @@ def raise_load(arrivals, factor: float, seed: int):
 
 
 def build_engine(event_log, num_cases: int, seed: int = 42, model_folder: str = DEFAULT_MODEL_FOLDER,
-                 allocation: str = "bank", min_experience: int = MIN_EXPERIENCE,
+                 allocation: Optional[str] = None, min_experience: int = MIN_EXPERIENCE,
                  dataset: str = "bpic17", load: float = 1.0, permissions: str = "ordinor") -> CaseEngine:
     """
     Engine with everything it needs: the trained next-event model, the arrivals, the case attribute generator, the
@@ -638,6 +660,7 @@ def build_engine(event_log, num_cases: int, seed: int = 42, model_folder: str = 
         experience=work_counts(event_log, work_items),
         min_experience=min_experience,
         permissions=permissions,
+        dataset=dataset,
     )
 
 
@@ -656,8 +679,8 @@ if __name__ == "__main__":
     parser.add_argument("--cases", type=int, default=None, help="Number of cases (default: as many as the real log)")
     parser.add_argument("--output", default=os.path.join("simulation", "output", "engine_log.csv"))
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--allocation", choices=["bank", "learned", "random", "round_robin", "shortest_queue", "batch", "drl", "pmsp"], default="bank",
-                        help="Who works on which task (see resources/case_allocation.py)")
+    parser.add_argument("--allocation", choices=["bank", "learned", "random", "round_robin", "shortest_queue", "batch", "drl", "pmsp"], default=None,
+                        help="Basiszuteilung (Standard BPIC17: gelerntes Bankverhalten); Policy-Entscheidungen dürfen sie überschreiben")
     args = parser.parse_args()
 
     # Der Log nach dem Preprocessing (prescriptive/helpers/preprocessing), wie für das Modell

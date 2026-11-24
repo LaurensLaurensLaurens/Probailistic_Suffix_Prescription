@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "erste_auszahlung",
+  "Art": "Variable",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 31509,
+  "Optionen": 3,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "voll vs. keine",
+  "Effekt (AIPW)": 0.0837295048353981,
+  "KI unten": 0.06757757197458422,
+  "KI oben": 0.09988143769621197,
+  "Zielereignis": "O_Returned",
+  "Entscheidungsfälle vor Ausschluss": 31509,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 21768,
+  "Beobachtete Zielquote": 0.6908502332666857,
+  "Beobachtete Optionen": 3,
+  "Minimum Fälle je beobachteter Option": 8759,
+  "Überlappung": 0.852200958456314,
+  "Fälle mit Wahl": 31509,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 9.141394490026869
+}

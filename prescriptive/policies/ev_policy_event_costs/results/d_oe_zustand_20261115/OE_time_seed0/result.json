@@ -1,0 +1,17 @@
+{
+  "model": "OE",
+  "objective": "time",
+  "seed": 0,
+  "cases": 200,
+  "cost_eur": 204.14871465759313,
+  "cycle_days": 20.633107835175405,
+  "active_hours": 1.0742493411464822,
+  "seconds": 3756.8196692466736,
+  "sampling_fallbacks": 2,
+  "decision_audit": {
+    "adaptive_calls": 711,
+    "uncertain_fallbacks": 613,
+    "samples_per_option_total": 88370,
+    "expanded_calls": 671
+  }
+}

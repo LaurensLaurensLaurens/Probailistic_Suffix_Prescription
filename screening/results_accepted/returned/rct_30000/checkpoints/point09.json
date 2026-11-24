@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Call after offers (resume)",
+  "Art": "Mitarbeiter",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 23570,
+  "Optionen": 57,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "User_2 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": -0.024132712328274953,
+  "KI unten": -0.05461279044484068,
+  "KI oben": 0.006347365788290774,
+  "Zielereignis": "O_Returned",
+  "Entscheidungsfälle vor Ausschluss": 23575,
+  "Ziel bereits erreicht: ausgeschlossen": 5,
+  "Ziel später erreicht": 16119,
+  "Beobachtete Zielquote": 0.6838778107764107,
+  "Beobachtete Optionen": 54,
+  "Minimum Fälle je beobachteter Option": 2,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 16926,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 12.176645137020387
+}

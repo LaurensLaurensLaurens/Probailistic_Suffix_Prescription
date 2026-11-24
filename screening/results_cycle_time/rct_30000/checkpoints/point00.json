@@ -1,0 +1,18 @@
+{
+  "Interventionspunkt": "channel",
+  "Art": "Control Flow",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 29219,
+  "Optionen": 2,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "1 vs. 0",
+  "Effekt (AIPW)": 1.3646180196609994,
+  "KI unten": 1.057748396301108,
+  "KI oben": 1.6714876430208907,
+  "Beobachtete Optionen": 2,
+  "Minimum Fälle je beobachteter Option": 14509,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 29219,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 5.064797573024407
+}

@@ -1,0 +1,17 @@
+{
+  "model": "D",
+  "objective": "time",
+  "seed": 0,
+  "cases": 200,
+  "cost_eur": 179.03615264543063,
+  "cycle_days": 21.308021548539003,
+  "active_hours": 0.7429715409484174,
+  "seconds": 3238.611348628998,
+  "sampling_fallbacks": 2,
+  "decision_audit": {
+    "adaptive_calls": 659,
+    "uncertain_fallbacks": 478,
+    "samples_per_option_total": 78010,
+    "expanded_calls": 583
+  }
+}

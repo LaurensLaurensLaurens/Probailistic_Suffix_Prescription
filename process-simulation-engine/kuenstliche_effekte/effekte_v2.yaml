@@ -1,0 +1,36 @@
+# Künstliche Effekte v2 (2026-11-20, Nutzer: Effekte auch auf das Auftreten anderer Aktivitäten). Format wie effekte_v1.yaml, dazu
+# ablauf: {Aktivität|lifecycle: Zuschlag auf die Logits beim Ziehen der folgenden Events} (+1: Chance × e ≈ 2,7; −1: Chance / e), für den
+# Rest des Falls (oder höchstens `schritte` Schritte), nur für Event-Typen, die das Modell an der Stelle für möglich hält (≥ 0,1 %);
+# anteil: {Aktivität|lifecycle: α}: an der ersten Stelle, an der das Event erlaubt ist, mit Wahrscheinlichkeit α ziehen (α < 0: verbieten).
+#
+# konzept und nachlegen wirken über den Ablauf, nach V. und leads wie in v1 über die Zeit:
+# - konzept, Beträge ab 11.000 €: sofort annehmen → später häufiger abgebrochen (A_Cancelled, nach der 30-Tage-Frist) und seltener
+#   angenommen (O_Accepted); zuerst vervollständigen → umgekehrt. Verhältnis der Zuschläge ≈ Bank-Anteile (31 % / 69 %).
+#   Verworfen (Diagnose 10:05–10:30): Nachfrageschleife (A_Incomplete / W_Call incomplete files) – an der Verzweigung nach
+#   W_Validate application ist das Modell je Fall fast sicher (≈ 99 % oder ≈ 0 %), ein Zuschlag wirkt nicht; als Anteil erzwungen
+#   ändert sie den Ablauf (+0,23 Schleifen je Fall), aber nicht die Durchlaufzeit. Der Abbruch dagegen kostet ≈ 12 d (30,2 statt 18,3).
+# - nachlegen (1. Besuch, Fälle ab 0,84 d Dauer): weiteres Angebot → häufiger angenommen (O_Accepted), seltener abgebrochen
+#   (A_Cancelled, kommt nach der 30-Tage-Frist); nur senden → etwas häufiger abgebrochen. Bank sendet zu 92 %.
+# Die Größe der Wirkung auf die Durchlaufzeit ist vorab nicht bekannt, sie wird mit wahrheit.py gemessen und die Zuschläge danach
+# eingestellt.
+punkte:
+  annehmen_bei_konzept:
+    "A_Accepted|complete":
+      - {betrag_ab: 11000, ablauf: {"A_Cancelled|complete": 1.8, "O_Accepted|complete": -1.8}}
+    "W_Complete application|start":
+      - {betrag_ab: 11000, ablauf: {"A_Cancelled|complete": -0.8, "O_Accepted|complete": 0.8}}
+  annehmen_nach_vervollstaendigung:
+    "A_Accepted|complete":
+      - {ziel_in: [Car, Existing loan takeover], tage: 2.9}
+    "W_Complete application|resume":
+      - {ziel_in: [Car, Existing loan takeover], tage: -1.1}
+  angebot_nachlegen:
+    "O_Sent (mail and online)|complete":
+      - {dauer_ab_tage: 0.84, nur_erster_besuch: true, ablauf: {"A_Cancelled|complete": 0.1}}
+    "O_Create Offer|complete":
+      - {dauer_ab_tage: 0.84, nur_erster_besuch: true, ablauf: {"O_Accepted|complete": 1.5, "A_Cancelled|complete": -1.5}}
+  handle_leads:
+    "W_Handle leads|withdraw":
+      - {betrag_unter: 11000, tage: 0.6}
+    "W_Handle leads|start":
+      - {betrag_unter: 11000, tage: -2.4}

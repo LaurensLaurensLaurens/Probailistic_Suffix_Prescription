@@ -33,7 +33,8 @@ TEST_SHARE = 0.2  # Anteil der RCT-Fälle, die das Training nicht sieht
 TEST_SEED = 17
 
 
-def train_estimators(simulator, data, estimators=ESTIMATORS, delta=DELTA, seed=TRAIN_SEED, retrain=False, cases=None, params=None):
+def train_estimators(simulator, data, estimators=ESTIMATORS, delta=DELTA, seed=TRAIN_SEED, retrain=False, cases=None, params=None,
+                     model_paths=None):
     """
     Trainiert die Modelle estimators auf den RCT-Daten data (simulate_rct mit demselben delta) und gibt je Modell und
     Wahlpunkt Proben, Fälle, Optionen, Bäume und den Fehler auf dem Validierungsteil zurück. cases: nur so viele zufällig
@@ -47,8 +48,9 @@ def train_estimators(simulator, data, estimators=ESTIMATORS, delta=DELTA, seed=T
     trained_on = {"rct": os.path.basename(rct_folder(simulator, delta, DATA_FOLDER)), "outcome": profiles.outcome_tag(simulator.dataset) or "Standard",
                   "cases": int(data[CASE].nunique()), "points": [point.name for point in simulator.points]}
     rows = {}
+    model_paths = model_paths or {}
     for name in estimators:
-        path = model_path(name, simulator.dataset)
+        path = model_paths.get(name, model_path(name, simulator.dataset))
         if os.path.exists(path) and not retrain:
             model = model_class(name).load(path)
             if getattr(model, "trained_on", None) == trained_on:
@@ -58,8 +60,12 @@ def train_estimators(simulator, data, estimators=ESTIMATORS, delta=DELTA, seed=T
             print(f"{name}: vorhanden, aber auf {getattr(model, 'trained_on', 'unbekannten Daten')} trainiert: neu", flush=True)
         held_out = test_cases(data)
         print(f"{name}: Training auf {data[CASE].nunique() - len(held_out):,} Fällen, {len(held_out):,} Testfälle ...", flush=True)
-        settings = {"params": (params or {})[name]} if (params or {}).get(name) else {}
+        settings = dict((params or {}).get(name) or {})
+        option_in_encoder_after_training = settings.pop("option_in_encoder_after_training", False)
+        settings = {"params": settings} if settings else {}
         model = model_class(name)(simulator.dataset, simulator.points, seed=seed, **settings).fit(data[~data[CASE].isin(held_out)])
+        if option_in_encoder_after_training:
+            model.params["option_as"] = "encoder"
         model.test_cases, model.trained_on = held_out, trained_on
         model.save(path)
         print(f"{name}: gespeichert in {path}", flush=True)

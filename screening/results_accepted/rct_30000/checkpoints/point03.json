@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "angebot_nachlegen",
+  "Art": "Control Flow",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 24036,
+  "Optionen": 2,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "1 vs. 0",
+  "Effekt (AIPW)": -0.045519808690110304,
+  "KI unten": -0.05845617056113908,
+  "KI oben": -0.03258344681908153,
+  "Zielereignis": "O_Accepted",
+  "Entscheidungsfälle vor Ausschluss": 24036,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 14350,
+  "Beobachtete Zielquote": 0.5970211349642204,
+  "Beobachtete Optionen": 2,
+  "Minimum Fälle je beobachteter Option": 11936,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 24036,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 4.325913532986306
+}

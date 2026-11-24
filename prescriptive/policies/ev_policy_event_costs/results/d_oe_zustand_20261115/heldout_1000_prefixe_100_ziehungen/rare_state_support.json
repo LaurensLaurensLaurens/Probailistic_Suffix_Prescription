@@ -1,0 +1,120 @@
+{
+  "status": "diagnosed",
+  "state_after_shortened_start": {
+    "W_Handle leads": "closed",
+    "W_Complete application": "scheduled",
+    "W_Shortened completion": "active"
+  },
+  "successors": [
+    {
+      "next": "A_Accepted|complete",
+      "state_permits": true,
+      "gap_support_count": 13133
+    },
+    {
+      "next": "O_Create Offer|complete",
+      "state_permits": true,
+      "gap_support_count": 15223
+    },
+    {
+      "next": "O_Sent (mail and online)|complete",
+      "state_permits": true,
+      "gap_support_count": 14075
+    },
+    {
+      "next": "W_Call after offers|suspend",
+      "state_permits": true,
+      "gap_support_count": 0
+    },
+    {
+      "next": "W_Complete application|suspend",
+      "state_permits": true,
+      "gap_support_count": 0
+    },
+    {
+      "next": "W_Shortened completion|start",
+      "state_permits": false,
+      "gap_support_count": 0
+    },
+    {
+      "next": "W_Shortened completion|suspend",
+      "state_permits": true,
+      "gap_support_count": 51
+    }
+  ],
+  "suspend_time_pools": [
+    {
+      "key": [
+        "W_Shortened completion|start",
+        "W_Shortened completion|suspend",
+        "active",
+        true
+      ],
+      "count": 22
+    },
+    {
+      "key": [
+        null,
+        "W_Shortened completion|suspend",
+        "active",
+        true
+      ],
+      "count": 51
+    },
+    {
+      "key": [
+        "W_Shortened completion|resume",
+        "W_Shortened completion|suspend",
+        "active",
+        true
+      ],
+      "count": 2
+    },
+    {
+      "key": [
+        "W_Call after offers|suspend",
+        "W_Shortened completion|suspend",
+        "active",
+        true
+      ],
+      "count": 13
+    },
+    {
+      "key": [
+        "A_Complete|complete",
+        "W_Shortened completion|suspend",
+        "active",
+        true
+      ],
+      "count": 11
+    },
+    {
+      "key": [
+        "O_Created|complete",
+        "W_Shortened completion|suspend",
+        "active",
+        true
+      ],
+      "count": 1
+    },
+    {
+      "key": [
+        "A_Incomplete|complete",
+        "W_Shortened completion|suspend",
+        "active",
+        true
+      ],
+      "count": 1
+    },
+    {
+      "key": [
+        "W_Complete application|suspend",
+        "W_Shortened completion|suspend",
+        "active",
+        true
+      ],
+      "count": 1
+    }
+  ],
+  "scope": "observed support from the unchanged training-only calibration and transition masks; no test trace inserted into the model"
+}

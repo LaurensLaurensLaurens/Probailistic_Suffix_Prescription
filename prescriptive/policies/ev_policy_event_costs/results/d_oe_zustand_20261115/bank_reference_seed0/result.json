@@ -1,0 +1,12 @@
+{
+  "model": "bank",
+  "objective": "reference",
+  "seed": 0,
+  "cases": 200,
+  "cost_eur": 178.63978288530976,
+  "cycle_days": 20.373676117316034,
+  "active_hours": 0.835092929516567,
+  "seconds": 26.245421171188354,
+  "sampling_fallbacks": 0,
+  "decision_audit": {}
+}

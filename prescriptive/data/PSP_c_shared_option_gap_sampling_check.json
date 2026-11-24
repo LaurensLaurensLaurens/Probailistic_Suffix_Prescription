@@ -1,0 +1,47 @@
+{
+  "identical_network_weights": true,
+  "identical_params": true,
+  "both_without_transition_rules": true,
+  "checks": [
+    {
+      "variant": "original_1ms",
+      "seconds": 0.5246925399405882,
+      "options": [
+        "W_Complete application|resume",
+        "A_Accepted"
+      ],
+      "suffixes_per_option": [
+        30,
+        30
+      ]
+    },
+    {
+      "variant": "shared_normal",
+      "seconds": 0.522651007049717,
+      "options": [
+        "W_Complete application|resume",
+        "A_Accepted"
+      ],
+      "suffixes_per_option": [
+        30,
+        30
+      ],
+      "shared_first_gap_seconds": [
+        388264.3532892844,
+        154022.63087970292
+      ],
+      "draw_metadata": {
+        "point": "annehmen_nach_vervollstaendigung",
+        "gaps_seconds": {
+          "W_Complete application|resume": [
+            388264.3532892844
+          ],
+          "A_Accepted": [
+            154022.63087970292
+          ]
+        },
+        "draws_per_case_and_option": 1
+      }
+    }
+  ]
+}

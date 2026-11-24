@@ -1,0 +1,8 @@
+{
+  "updated": "2026-11-12T18:38:09.204907+00:00",
+  "purpose": "Display concrete catalog action names instead of numeric CF codes. All estimates, CIs and data unchanged.",
+  "old_report_renderer_sha256": "41b1d955cc37a8c4d774167edf4c57985e6e3229ca07787e29990f7a6a7498cd",
+  "new_report_renderer_sha256": "59df62157551c1d6f1c776691527cfec4e850cccc6eca905150ae62b12827d20",
+  "original_renderer_archive": "report_versions/",
+  "verified_numeric_contrasts_unchanged": true
+}

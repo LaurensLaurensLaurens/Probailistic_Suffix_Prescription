@@ -43,3 +43,8 @@ process-simulation-engine/**/*.png
 process-simulation-engine/**/*.xlsx
 SCOPE_WORKSPACE/src/readable.txt
 *.vor_*
+# Laufzeit-Reste der Pipelines (2026-11-24)
+*.pid
+**/matplotlib/fontlist-*.json
+**/.matplotlib_cache/
+**/matplotlib_cache/

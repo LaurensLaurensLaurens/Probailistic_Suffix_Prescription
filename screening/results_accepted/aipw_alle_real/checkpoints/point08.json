@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Validate application",
+  "Art": "Mitarbeiter",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 21870,
+  "Optionen": 66,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "User_123 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": 0.007754061453681735,
+  "KI unten": -0.013720343081347959,
+  "KI oben": 0.029228465988711427,
+  "Zielereignis": "O_Accepted",
+  "Entscheidungsfälle vor Ausschluss": 21870,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 17228,
+  "Beobachtete Zielquote": 0.7877457704618198,
+  "Beobachtete Optionen": 66,
+  "Minimum Fälle je beobachteter Option": 1,
+  "Überlappung": 0.0017401657736868617,
+  "Fälle mit Wahl": 21837,
+  "Status": "geschätzt; geringe Überlappung",
+  "Laufzeit (s)": 69.73066475102678
+}

@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "neues_angebot_beim_nachfassen",
+  "Art": "Control Flow",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 25295,
+  "Optionen": 2,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "1 vs. 0",
+  "Effekt (AIPW)": 0.06533235879042422,
+  "KI unten": 0.056341279195229244,
+  "KI oben": 0.0743234383856192,
+  "Zielereignis": "O_Returned",
+  "Entscheidungsfälle vor Ausschluss": 25297,
+  "Ziel bereits erreicht: ausgeschlossen": 2,
+  "Ziel später erreicht": 17398,
+  "Beobachtete Zielquote": 0.6878039138169598,
+  "Beobachtete Optionen": 2,
+  "Minimum Fälle je beobachteter Option": 12643,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 25295,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 5.04870350798592
+}

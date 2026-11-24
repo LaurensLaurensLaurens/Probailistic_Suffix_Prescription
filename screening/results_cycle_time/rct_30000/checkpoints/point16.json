@@ -1,0 +1,18 @@
+{
+  "Interventionspunkt": "erste_auszahlung",
+  "Art": "Variable",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 29990,
+  "Optionen": 3,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "voll vs. keine",
+  "Effekt (AIPW)": 0.6373710298392511,
+  "KI unten": 0.24082074286487576,
+  "KI oben": 1.0339213168136263,
+  "Beobachtete Optionen": 3,
+  "Minimum Fälle je beobachteter Option": 9906,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 29990,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 4.3005646710516885
+}

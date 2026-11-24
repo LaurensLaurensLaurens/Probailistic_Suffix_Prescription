@@ -1,0 +1,35 @@
+# Künstliche Effekte v1 (2026-11-20). Je Wahlpunkt und Option eine Liste von Regeln; jede zutreffende Regel wirkt ab dem Options-Event:
+# tage > 0 verzögert den nächsten Wartespalt (Zeit vor dem nächsten W_* start / resume) um so viele Tage, tage < 0 zieht so viele Tage
+# von den folgenden Wartespalten ab (Beschleunigung). Bedingungen (alle müssen gelten): betrag_ab / betrag_unter (case:RequestedAmount
+# in €), ziel_in (case:LoanGoal), typ_in (case:ApplicationType), dauer_ab_tage / dauer_unter_tage (Tage seit Fallbeginn beim
+# Options-Event), nur_erster_besuch (nur beim ersten Mal, dass an diesem Punkt eine Option ausgeführt wird).
+#
+# Aufbau je Punkt: in einer Teilgruppe der Fälle ist die andere Option um D Tage besser als ohne Effekt. D liegt etwa 1,5 d über dem
+# eigenen Vorteil der Regel-Option im Simulator (RCT, Aufbau F: konzept 2,79, nach V. 2,40, nachlegen 1. Besuch 2,11, leads 1,32 d),
+# also ist dort die andere Option um etwa 1,5 d besser, sonst bleibt die Regel-Option besser. D wird aufgeteilt in eine Verzögerung d
+# der Regel-Option und eine Beschleunigung s der anderen Option, mit Anteil Regel · d = Anteil andere · s unter dem Bankverhalten
+# (Probe 2.000 Fälle, erster Besuch: konzept A_Accepted 31 %, nach V. A_Accepted 26 %, nachlegen O_Sent 92 %, leads withdraw 80 %),
+# damit sich die Effekte im Bank-Log im Mittel aufheben und der Log nah am Original bleibt.
+# Teilgruppen: Betrag (Median 11.000 €), Kreditzweck (Car 33 %, Existing loan takeover 18 %), bisherige Dauer (nachlegen 1. Besuch:
+# Median 0,84 d) – alles Merkmale, die der PSP sieht (statische Fallattribute bzw. Zeiten im Prefix).
+punkte:
+  annehmen_bei_konzept:                    # D = 4,5 für Beträge ab 11.000 €: dort W_Complete application besser
+    "A_Accepted|complete":
+      - {betrag_ab: 11000, tage: 3.1}
+    "W_Complete application|start":
+      - {betrag_ab: 11000, tage: -1.4}
+  annehmen_nach_vervollstaendigung:        # D = 4,0 für Car / Existing loan takeover: dort weiter bearbeiten besser
+    "A_Accepted|complete":
+      - {ziel_in: [Car, Existing loan takeover], tage: 2.9}
+    "W_Complete application|resume":
+      - {ziel_in: [Car, Existing loan takeover], tage: -1.1}
+  angebot_nachlegen:                       # D = 3,5 für Fälle ab 0,84 d Dauer (nur 1. Besuch): dort weiteres Angebot besser
+    "O_Sent (mail and online)|complete":
+      - {dauer_ab_tage: 0.84, nur_erster_besuch: true, tage: 0.3}
+    "O_Create Offer|complete":
+      - {dauer_ab_tage: 0.84, nur_erster_besuch: true, tage: -3.2}
+  handle_leads:                            # D = 3,0 für Beträge unter 11.000 €: dort Rückruf (start) besser
+    "W_Handle leads|withdraw":
+      - {betrag_unter: 11000, tage: 0.6}
+    "W_Handle leads|start":
+      - {betrag_unter: 11000, tage: -2.4}

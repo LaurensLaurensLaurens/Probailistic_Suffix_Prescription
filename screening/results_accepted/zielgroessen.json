@@ -1,0 +1,34 @@
+{
+  "real": {
+    "cases": 31509,
+    "events": 1202267,
+    "targets": {
+      "accepted": {
+        "event": "O_Accepted",
+        "cases": 17228,
+        "observed_rate": 0.5467644165159161
+      },
+      "returned": {
+        "event": "O_Returned",
+        "cases": 21768,
+        "observed_rate": 0.6908502332666857
+      }
+    }
+  },
+  "rct": {
+    "cases": 30000,
+    "events": 1458352,
+    "targets": {
+      "accepted": {
+        "event": "O_Accepted",
+        "cases": 17769,
+        "observed_rate": 0.5923
+      },
+      "returned": {
+        "event": "O_Returned",
+        "cases": 20801,
+        "observed_rate": 0.6933666666666667
+      }
+    }
+  }
+}

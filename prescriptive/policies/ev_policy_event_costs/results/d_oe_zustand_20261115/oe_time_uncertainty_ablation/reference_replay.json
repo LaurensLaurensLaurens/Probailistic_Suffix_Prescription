@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "seed": 0,
+  "cases": 200,
+  "decisions": 748,
+  "events": 9071,
+  "same_complete_event_frame": true,
+  "completed_at": "2026-11-15T21:47:21+01:00"
+}

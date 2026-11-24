@@ -1,0 +1,48 @@
+{
+  "model": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/models/psp_model_durchlaufzeit_real_alle_s60_token_oe_ue.pkl",
+  "allowed_pairs": 414,
+  "allowed_end_tokens": 22,
+  "checks": [
+    {
+      "point": "annehmen_bei_konzept",
+      "case": "Application_1000086665",
+      "suffixes": 600,
+      "unseen_transitions": 0,
+      "unobserved_eos": 0,
+      "capped_suffixes": 0,
+      "without_terminal": 178,
+      "seconds": 5.83
+    },
+    {
+      "point": "annehmen_nach_vervollstaendigung",
+      "case": "Application_1000086665",
+      "suffixes": 600,
+      "unseen_transitions": 0,
+      "unobserved_eos": 0,
+      "capped_suffixes": 0,
+      "without_terminal": 167,
+      "seconds": 5.52
+    },
+    {
+      "point": "angebot_nachlegen",
+      "case": "Application_1000086665",
+      "suffixes": 600,
+      "unseen_transitions": 0,
+      "unobserved_eos": 0,
+      "capped_suffixes": 0,
+      "without_terminal": 177,
+      "seconds": 5.29
+    },
+    {
+      "point": "handle_leads",
+      "case": "Application_1000086665",
+      "suffixes": 600,
+      "unseen_transitions": 0,
+      "unobserved_eos": 0,
+      "capped_suffixes": 0,
+      "without_terminal": 158,
+      "seconds": 5.81
+    }
+  ],
+  "original_model_unchanged": true
+}

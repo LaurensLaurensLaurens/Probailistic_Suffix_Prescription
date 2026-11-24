@@ -1,0 +1,739 @@
+[
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/bericht.html",
+    "Kopie": "originale/screening_alle/bericht.html",
+    "Bytes": 71585,
+    "SHA256": "2e0356c5dbc7ca563e67cf085769cd83bea0c02364bc8047458bd4ed0f7d3f51",
+    "Geändert UTC": "2026-11-06T13:37:07.248985+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/daten/bpic17_interventionen.csv",
+    "Kopie": "originale/screening_alle/daten/bpic17_interventionen.csv",
+    "Bytes": 878,
+    "SHA256": "178f581294d8f91def9eefe1e1e38035610a2685ca54be6252191a727214f7c1",
+    "Geändert UTC": "2026-11-06T13:19:41.339479+00:00",
+    "Zeilen": 20,
+    "Spalten": 4,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/daten/bpic17_interventionen.png",
+    "Kopie": "originale/screening_alle/daten/bpic17_interventionen.png",
+    "Bytes": 133949,
+    "SHA256": "52941ce90d97e00bd163ec8ebb286d035efe4d3abea541f75dbab214d2dde673",
+    "Geändert UTC": "2026-11-06T13:19:41.846486+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/control_flow/bpic17_screening_control_flow.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/control_flow/bpic17_screening_control_flow.csv",
+    "Bytes": 812,
+    "SHA256": "5f16b6faa1327de7ba188f395e5ca7ad4a3601efa239b75d4b2f1ceb5a35d4c0",
+    "Geändert UTC": "2026-11-06T13:21:25.105790+00:00",
+    "Zeilen": 6,
+    "Spalten": 10,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/control_flow/bpic17_screening_control_flow.png",
+    "Kopie": "originale/screening_alle/prescription/screening/control_flow/bpic17_screening_control_flow.png",
+    "Bytes": 82927,
+    "SHA256": "4de23de66bade2858d579e6b7ae3a56df6af61a6e1c761049bfbb6ad93990016",
+    "Geändert UTC": "2026-11-06T13:21:25.275917+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/control_flow/bpic17_screening_control_flow_detailliert.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/control_flow/bpic17_screening_control_flow_detailliert.csv",
+    "Bytes": 3309,
+    "SHA256": "e84026040ba59c7529681789a9386d32227842692551daf5346c3297294a586d",
+    "Geändert UTC": "2026-11-06T13:41:08.381718+00:00",
+    "Zeilen": 6,
+    "Spalten": 26,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/control_flow/bpic17_screening_control_flow_diagramm.png",
+    "Kopie": "originale/screening_alle/prescription/screening/control_flow/bpic17_screening_control_flow_diagramm.png",
+    "Bytes": 62791,
+    "SHA256": "98d2ab1eb4a71597db236b490c53fbdbc174eaa6d31a7bfd1417de3c0056271e",
+    "Geändert UTC": "2026-11-06T13:21:25.090914+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_beispiel_angaben.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_beispiel_angaben.csv",
+    "Bytes": 328,
+    "SHA256": "46aff941ec2908d3538858521f94952ee2a9d410195109facc1f9de1e527140d",
+    "Geändert UTC": "2026-11-06T13:19:51.399587+00:00",
+    "Zeilen": 11,
+    "Spalten": 2,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_beispiel_angaben.png",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_beispiel_angaben.png",
+    "Bytes": 63704,
+    "SHA256": "c5b96a9a78e63680d03e537915d0235c65d312605b87a1630c8b8050040f9b5d",
+    "Geändert UTC": "2026-11-06T13:19:51.481619+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_beispiel_events.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_beispiel_events.csv",
+    "Bytes": 3679,
+    "SHA256": "dfa0d95515a4b865a7fb70575340e896d10b9a746cebc1229c3674ece9fd806f",
+    "Geändert UTC": "2026-11-06T13:19:52.676555+00:00",
+    "Zeilen": 16,
+    "Spalten": 22,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_beispiel_events.png",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_beispiel_events.png",
+    "Bytes": 212938,
+    "SHA256": "f2e60e88d56fee7af92acd8e5134208a137ce4c6bd9862e8c8c92fa5c80f3cc1",
+    "Geändert UTC": "2026-11-06T13:19:53.373645+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_beispiel_merkmale.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_beispiel_merkmale.csv",
+    "Bytes": 3080,
+    "SHA256": "8efd3e3772a6635f91ae2d0c46ab54d27f3249211c8ed8627587ff3e2f0cd989",
+    "Geändert UTC": "2026-11-06T13:19:51.487625+00:00",
+    "Zeilen": 30,
+    "Spalten": 7,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_beispiel_merkmale.png",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_beispiel_merkmale.png",
+    "Bytes": 397744,
+    "SHA256": "9061a84a084a9c4231ab6c22687df11551f9f5d6282c3b3bd786a74e73fdad05",
+    "Geändert UTC": "2026-11-06T13:19:51.969626+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_beispiel_original.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_beispiel_original.csv",
+    "Bytes": 3156,
+    "SHA256": "bf84a003ce7150abdd88fe2e8fec0afb599cf7826f4d28cc498328f62a7a67b4",
+    "Geändert UTC": "2026-11-06T13:19:51.978626+00:00",
+    "Zeilen": 16,
+    "Spalten": 21,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_beispiel_original.png",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_beispiel_original.png",
+    "Bytes": 196891,
+    "SHA256": "1a76e7e90cc530fc312f28890735cc7844807e86a008a4aa6e610e1b4a233d51",
+    "Geändert UTC": "2026-11-06T13:19:52.663635+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_after_offers_resume_.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_after_offers_resume_.csv",
+    "Bytes": 1469,
+    "SHA256": "e87bec7955a7ae68cf8d4fd258e209716bc68ddd46f188df974d6fd3827f3580",
+    "Geändert UTC": "2026-11-06T13:37:06.291932+00:00",
+    "Zeilen": 33,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_after_offers_resume_.png",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_after_offers_resume_.png",
+    "Bytes": 246879,
+    "SHA256": "1d67be82f73c24b13342add2e1e6966fe97090795ac9e4af11562d6a6c292273",
+    "Geändert UTC": "2026-11-06T13:37:06.537935+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_incomplete_files.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_incomplete_files.csv",
+    "Bytes": 944,
+    "SHA256": "c3ba9622b388338564523318d791350060400f09eaac7e94cf1f860e71fb055d",
+    "Geändert UTC": "2026-11-06T13:37:05.491975+00:00",
+    "Zeilen": 20,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_incomplete_files.png",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_incomplete_files.png",
+    "Bytes": 160683,
+    "SHA256": "a391d20d33227c00939ee5cccdd6ea1ae1ee17f9cc39ab902ea69a601b7db88c",
+    "Geändert UTC": "2026-11-06T13:37:05.651923+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_incomplete_files_resume_.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_incomplete_files_resume_.csv",
+    "Bytes": 1007,
+    "SHA256": "399e81a756708e9c351b17541b3a0c5d118395df89dd9476a99697342dd21c3d",
+    "Geändert UTC": "2026-11-06T13:37:06.553727+00:00",
+    "Zeilen": 22,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_incomplete_files_resume_.png",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_incomplete_files_resume_.png",
+    "Bytes": 172832,
+    "SHA256": "1fcf9152f898cc32b7bd8a547a667086b411e0c98a6c709d67941acf6e7af06d",
+    "Geändert UTC": "2026-11-06T13:37:06.724938+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Complete_application.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Complete_application.csv",
+    "Bytes": 2493,
+    "SHA256": "b19de4e52bc6a02ba0741651741ed1715532aad4055b66932756c817f7861099",
+    "Geändert UTC": "2026-11-06T13:37:05.664618+00:00",
+    "Zeilen": 57,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Complete_application.png",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Complete_application.png",
+    "Bytes": 409874,
+    "SHA256": "a4a18789042efbde6c3a485d8e087770e31c7d72ce06d6039bcd284b7386eadb",
+    "Geändert UTC": "2026-11-06T13:37:06.064929+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Complete_application_resume_.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Complete_application_resume_.csv",
+    "Bytes": 881,
+    "SHA256": "f176e00bd0a503a470b787854e14094038f91805d6fe74e0b43418f25b758106",
+    "Geändert UTC": "2026-11-06T13:37:06.758970+00:00",
+    "Zeilen": 19,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Complete_application_resume_.png",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Complete_application_resume_.png",
+    "Bytes": 158524,
+    "SHA256": "f71d474e10257ceb9605edd6e7a44749a4234a005260dec82abc672f8810142e",
+    "Geändert UTC": "2026-11-06T13:37:07.027942+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Handle_leads.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Handle_leads.csv",
+    "Bytes": 212,
+    "SHA256": "c71070949f9a9b52cd4a5732b834217b3b639f4e93696488cc1ff2b5258c0b4e",
+    "Geändert UTC": "2026-11-06T13:37:06.077424+00:00",
+    "Zeilen": 3,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Handle_leads.png",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Handle_leads.png",
+    "Bytes": 42383,
+    "SHA256": "5e4284fe08922a2121444b856409a27ee180cb22747091aa2d4292f121875ed1",
+    "Geändert UTC": "2026-11-06T13:37:06.119929+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Validate_application.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Validate_application.csv",
+    "Bytes": 860,
+    "SHA256": "76ffd56c1399fec9a296117d2baf2eecbba17b26861237dbebd525695f1a7905",
+    "Geändert UTC": "2026-11-06T13:37:06.132930+00:00",
+    "Zeilen": 18,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Validate_application.png",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Validate_application.png",
+    "Bytes": 145617,
+    "SHA256": "d10a1350ffd16c207f1de8a8740b41d8579e187219f8e4bd0f3bbe39e8615ff1",
+    "Geändert UTC": "2026-11-06T13:37:06.275931+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Validate_application_resume_.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Validate_application_resume_.csv",
+    "Bytes": 556,
+    "SHA256": "5a0f0fcdb9667bb3582f7c47f98365c33dc9881db966a3912947c4eca566819f",
+    "Geändert UTC": "2026-11-06T13:37:07.054942+00:00",
+    "Zeilen": 11,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Validate_application_resume_.png",
+    "Kopie": "originale/screening_alle/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Validate_application_resume_.png",
+    "Bytes": 100213,
+    "SHA256": "4895e5d8c342dd9350456c7cd721c6c0898cc387ba1649ddfa68846a4befe384",
+    "Geändert UTC": "2026-11-06T13:37:07.221945+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/variables/bpic17_screening_variablen.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/variables/bpic17_screening_variablen.csv",
+    "Bytes": 3558,
+    "SHA256": "aa3e3b98e1470562aa2243f5c1f14d8e8d4c507e6021e210ce341916154d0281",
+    "Geändert UTC": "2026-11-06T13:37:05.108908+00:00",
+    "Zeilen": 14,
+    "Spalten": 17,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/variables/bpic17_screening_variablen.png",
+    "Kopie": "originale/screening_alle/prescription/screening/variables/bpic17_screening_variablen.png",
+    "Bytes": 282699,
+    "SHA256": "0a02b005458a1d33238a72030cfdd1397ba471b651a7155b519112179679658e",
+    "Geändert UTC": "2026-11-06T13:37:05.479920+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/variables/bpic17_screening_variablen_detailliert.csv",
+    "Kopie": "originale/screening_alle/prescription/screening/variables/bpic17_screening_variablen_detailliert.csv",
+    "Bytes": 1907,
+    "SHA256": "5772653a9e4d3d1863c6c457ca52d4d29c36a041df3911d8eaae9a95d2021737",
+    "Geändert UTC": "2026-11-06T13:41:08.382262+00:00",
+    "Zeilen": 4,
+    "Spalten": 17,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/scripts/results_100k/screening_alle/prescription/screening/variables/bpic17_screening_variablen_diagramm.png",
+    "Kopie": "originale/screening_alle/prescription/screening/variables/bpic17_screening_variablen_diagramm.png",
+    "Bytes": 116020,
+    "SHA256": "6f7bc553f9a8ff650eafb106952415e164fb777863aece354811aa6b69de3402",
+    "Geändert UTC": "2026-11-06T13:37:05.083915+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/bericht.html",
+    "Kopie": "originale/screening_alt/bericht.html",
+    "Bytes": 6066,
+    "SHA256": "ac9993aa92dddfe1b861eda3b669bb5a1d313e25099873e0ffe10a70772897fa",
+    "Geändert UTC": "2026-10-27T08:57:47.295257+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/control_flow/bpic17_screening_control_flow.csv",
+    "Kopie": "originale/screening_alt/control_flow/bpic17_screening_control_flow.csv",
+    "Bytes": 218,
+    "SHA256": "73dfee41a276178fb8b6df4b3995b98728f4238ab30d6d08b7f65ddd2056866c",
+    "Geändert UTC": "2026-10-29T10:17:22.356253+00:00",
+    "Zeilen": 1,
+    "Spalten": 10,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/control_flow/bpic17_screening_control_flow.png",
+    "Kopie": "originale/screening_alt/control_flow/bpic17_screening_control_flow.png",
+    "Bytes": 26854,
+    "SHA256": "d84912571795e0f9af4c6b956c4e9c481fb97688c5ed89508433559cec3dcf7b",
+    "Geändert UTC": "2026-10-29T10:17:22.389624+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/control_flow/bpic17_screening_control_flow_diagramm.png",
+    "Kopie": "originale/screening_alt/control_flow/bpic17_screening_control_flow_diagramm.png",
+    "Bytes": 28994,
+    "SHA256": "5b4c5b0ebafc5a7feb2dc5b6859ec841c0373f0486c169b4c0d7671276421915",
+    "Geändert UTC": "2026-10-29T10:17:22.343504+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bericht.html",
+    "Kopie": "originale/screening_alt/details/bericht.html",
+    "Bytes": 146704,
+    "SHA256": "15ca5d9007d81774f51cfe8bb05e966b8c60eaf8f9699460037c8f90308283a2",
+    "Geändert UTC": "2026-10-27T08:36:29.086406+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_beispiel_angaben.csv",
+    "Kopie": "originale/screening_alt/details/bpic17_beispiel_angaben.csv",
+    "Bytes": 308,
+    "SHA256": "514f3bfdba37605f4e04afe8d64b1b4068dddb6609885603abf0f62d1464d472",
+    "Geändert UTC": "2026-10-29T10:17:05.838195+00:00",
+    "Zeilen": 11,
+    "Spalten": 2,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_beispiel_angaben.png",
+    "Kopie": "originale/screening_alt/details/bpic17_beispiel_angaben.png",
+    "Bytes": 60815,
+    "SHA256": "fa9a9241cd327f854a8e6d3c59bf2a78595dd531ddd4731e55dd18a5c19b0e9c",
+    "Geändert UTC": "2026-10-29T10:17:05.877962+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_beispiel_events.csv",
+    "Kopie": "originale/screening_alt/details/bpic17_beispiel_events.csv",
+    "Bytes": 14081,
+    "SHA256": "022cd08aa2709097428a8f1ed4beefd47eba51fff73185391c04682fbbec15dc",
+    "Geändert UTC": "2026-10-29T10:17:06.365570+00:00",
+    "Zeilen": 69,
+    "Spalten": 22,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_beispiel_merkmale.csv",
+    "Kopie": "originale/screening_alt/details/bpic17_beispiel_merkmale.csv",
+    "Bytes": 6699,
+    "SHA256": "51e0d0b333f02e1f51ef117241374b4b19085029006b5315473a85f7965a86ab",
+    "Geändert UTC": "2026-10-29T10:17:05.880670+00:00",
+    "Zeilen": 59,
+    "Spalten": 7,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_beispiel_merkmale.png",
+    "Kopie": "originale/screening_alt/details/bpic17_beispiel_merkmale.png",
+    "Bytes": 838082,
+    "SHA256": "9a6d9d3fe619c8dc50eda3e7380c619fd3b6f18ee075b76fedf8e1537086c9ad",
+    "Geändert UTC": "2026-10-29T10:17:06.348433+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_beispiel_original.csv",
+    "Kopie": "originale/screening_alt/details/bpic17_beispiel_original.csv",
+    "Bytes": 12640,
+    "SHA256": "3c4d964b034a8b8bf3a1fa4682814b6818b99245ff7822ca2a3f81f62076a095",
+    "Geändert UTC": "2026-10-29T10:17:06.355235+00:00",
+    "Zeilen": 69,
+    "Spalten": 21,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_interventionen.csv",
+    "Kopie": "originale/screening_alt/details/bpic17_interventionen.csv",
+    "Bytes": 2560,
+    "SHA256": "a990aad991776c8916a586ae422f036bd4383cbd4656f07e492faf0dfe53ee18",
+    "Geändert UTC": "2026-10-27T08:29:58.349435+00:00",
+    "Zeilen": 12,
+    "Spalten": 9,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_interventionen.png",
+    "Kopie": "originale/screening_alt/details/bpic17_interventionen.png",
+    "Bytes": 287857,
+    "SHA256": "1706a87991064992c275eaf59bb3022d4e4b8fe9ef5bb79c7f0965e094d35483",
+    "Geändert UTC": "2026-10-27T08:29:58.663971+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_A_Denied.csv",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_A_Denied.csv",
+    "Bytes": 3552,
+    "SHA256": "af52153fc79628c97ebecd44143facb38798d9c4d5a42e76d5ae34d84c43b7f2",
+    "Geändert UTC": "2026-10-29T10:49:31.475638+00:00",
+    "Zeilen": 99,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_A_Denied.png",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_A_Denied.png",
+    "Bytes": 487228,
+    "SHA256": "56dfb7c57f239be5032c77a64051083cb3cd42c87a394e0bcb894c34e8f31c6a",
+    "Geändert UTC": "2026-10-29T10:49:32.175237+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_O_Accepted.csv",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_O_Accepted.csv",
+    "Bytes": 1630,
+    "SHA256": "98f891f6738a443624cd6d84fd1cb3de207e24c9e7071fca8e9f8789371cddcb",
+    "Geändert UTC": "2026-10-29T10:49:32.205692+00:00",
+    "Zeilen": 40,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_O_Accepted.png",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_O_Accepted.png",
+    "Bytes": 232055,
+    "SHA256": "59009e3bf4336ed68818427e702c6cfe3e84729af43fd05bb6f3921013957173",
+    "Geändert UTC": "2026-10-29T10:49:32.518631+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Assess_potential_fraud.csv",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_W_Assess_potential_fraud.csv",
+    "Bytes": 1299,
+    "SHA256": "d0c9325642042a01cc411c8bf065434f8751aec1e0bf0b0dac621f74879d5df2",
+    "Geändert UTC": "2026-10-29T10:49:32.543570+00:00",
+    "Zeilen": 36,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Assess_potential_fraud.png",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_W_Assess_potential_fraud.png",
+    "Bytes": 165436,
+    "SHA256": "0e340f6dc3df264dccfde33e803d38691cb1082ae91a8af4c972d74556ff5c94",
+    "Geändert UTC": "2026-10-29T10:49:32.862076+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_incomplete_files.csv",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_W_Call_incomplete_files.csv",
+    "Bytes": 2527,
+    "SHA256": "784604e0f8d355f6e2817c92b46663adb5a50fb2f9d31b385e43a07eb3bd763b",
+    "Geändert UTC": "2026-10-29T10:49:32.894653+00:00",
+    "Zeilen": 67,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Call_incomplete_files.png",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_W_Call_incomplete_files.png",
+    "Bytes": 340109,
+    "SHA256": "0337fe8e89976bbfe623312ed1c5e00f80f11331d4a566843aabe4abaf63f297",
+    "Geändert UTC": "2026-10-29T10:49:33.391773+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Complete_application.csv",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_W_Complete_application.csv",
+    "Bytes": 4399,
+    "SHA256": "429e6aaf852bee45f8356eef5c4d4101b8a788d82e7a0f77dbbe0d5ca24c56ce",
+    "Geändert UTC": "2026-10-29T10:49:33.419561+00:00",
+    "Zeilen": 118,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Complete_application.png",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_W_Complete_application.png",
+    "Bytes": 607211,
+    "SHA256": "2817f9f04a1b598d0e0d5ccb557a26249fd542e94e984e8390003ba7b8b6add9",
+    "Geändert UTC": "2026-10-29T10:49:34.369644+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Handle_leads.csv",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_W_Handle_leads.csv",
+    "Bytes": 3147,
+    "SHA256": "62bc9233a0a3ed8cf1307c0511853befec766cb162f4b3437480df4f951e230c",
+    "Geändert UTC": "2026-10-29T10:49:34.393149+00:00",
+    "Zeilen": 85,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Handle_leads.png",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_W_Handle_leads.png",
+    "Bytes": 428181,
+    "SHA256": "8c6614de2686a3a7bd54bf88a9316c21cb3f207071f69035581ca6b6b2985560",
+    "Geändert UTC": "2026-10-29T10:49:34.933718+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Validate_application.csv",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_W_Validate_application.csv",
+    "Bytes": 2480,
+    "SHA256": "bbe842e686276ee6f10f7ce2c5b9572dcb8aec22b9b44850cb5fa4fb69d821e7",
+    "Geändert UTC": "2026-10-29T10:49:34.958451+00:00",
+    "Zeilen": 66,
+    "Spalten": 6,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/details/bpic17_screening_Mitarbeiter_W_Validate_application.png",
+    "Kopie": "originale/screening_alt/details/bpic17_screening_Mitarbeiter_W_Validate_application.png",
+    "Bytes": 315670,
+    "SHA256": "18e4c7f31c6c18bb1c5f95dd1e22cfa191cb98283b3af29e8e33531e5f9d9507",
+    "Geändert UTC": "2026-10-29T10:49:35.363574+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/variables/bpic17_screening_variablen.csv",
+    "Kopie": "originale/screening_alt/variables/bpic17_screening_variablen.csv",
+    "Bytes": 1451,
+    "SHA256": "38a6a4a8e259297ebf018ce64b91e3944c7987f3000cc7b8c71e847a385faa49",
+    "Geändert UTC": "2026-10-29T10:49:31.318636+00:00",
+    "Zeilen": 7,
+    "Spalten": 14,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/variables/bpic17_screening_variablen.png",
+    "Kopie": "originale/screening_alt/variables/bpic17_screening_variablen.png",
+    "Bytes": 143063,
+    "SHA256": "ea412b6fc9fb30e4822cc3bd291cbde7255c2db814c64b09701ddabaf6109f07",
+    "Geändert UTC": "2026-10-29T10:49:31.457500+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/scripts/results/prescription/screening/variables/bpic17_screening_variablen_diagramm.png",
+    "Kopie": "originale/screening_alt/variables/bpic17_screening_variablen_diagramm.png",
+    "Bytes": 78547,
+    "SHA256": "cf87a5b9109668358e3c39d125863f155d7bfaababa0aebc8f5be3ead5bf1510",
+    "Geändert UTC": "2026-10-29T10:49:31.303228+00:00"
+  },
+  {
+    "Lauf": "validierung_gesamt",
+    "Quelle": "prescriptive/scripts/results_100k/screening_validierung/validierung.csv",
+    "Kopie": "originale/validierung_gesamt/validierung.csv",
+    "Bytes": 4689,
+    "SHA256": "35dc3b796e81ccef1dd0d988e4508a89547ff10700a4f93f184bd970c791571c",
+    "Geändert UTC": "2026-11-06T13:09:00.999663+00:00",
+    "Zeilen": 13,
+    "Spalten": 31,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "validierung_gesamt",
+    "Quelle": "prescriptive/scripts/results_100k/screening_validierung/validierung_mitarbeiter.csv",
+    "Kopie": "originale/validierung_gesamt/validierung_mitarbeiter.csv",
+    "Bytes": 61297,
+    "SHA256": "2d677c4554a7b5a6ecf5e0ea33cd536e1b1afc8a3074616c4b1112bbc2d0751f",
+    "Geändert UTC": "2026-11-06T13:09:01.004743+00:00",
+    "Zeilen": 553,
+    "Spalten": 8,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "validierung_neue_punkte",
+    "Quelle": "prescriptive/scripts/results_100k/neue_punkte_validierung/validierung.csv",
+    "Kopie": "originale/validierung_neue_punkte/validierung.csv",
+    "Bytes": 1476,
+    "SHA256": "00dfc940aa7768756cb14984d8c6c37d3d5db7867447a688ef24f694c3dadb60",
+    "Geändert UTC": "2026-11-06T14:32:48.320000+00:00",
+    "Zeilen": 4,
+    "Spalten": 16,
+    "Status": "vorhanden"
+  },
+  {
+    "Lauf": "validierung_neue_punkte",
+    "Quelle": "prescriptive/scripts/results_100k/neue_punkte_validierung/validierung_mitarbeiter.csv",
+    "Kopie": "originale/validierung_neue_punkte/validierung_mitarbeiter.csv",
+    "Bytes": 1,
+    "SHA256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "Geändert UTC": "2026-11-06T14:32:48.320632+00:00",
+    "Zeilen": 0,
+    "Spalten": 0,
+    "Status": "leer"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/data/screening_alle.log",
+    "Kopie": "provenienz/screening_alle/screening_alle.log",
+    "Bytes": 53612,
+    "SHA256": "3d8d0e810c8d65fede3519db7c6312b7d17ec1074e78b9293d8b623c03c9157c",
+    "Geändert UTC": "2026-11-06T13:37:08.678965+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/data/bpic17_screening_alle.sh",
+    "Kopie": "provenienz/screening_alle/bpic17_screening_alle.sh",
+    "Bytes": 1615,
+    "SHA256": "3768af5268f7ea47470a9882107b7d2e1a5e143b0f591efafcaa847b00d71615",
+    "Geändert UTC": "2026-11-06T13:19:39.786901+00:00"
+  },
+  {
+    "Lauf": "screening_alle",
+    "Quelle": "prescriptive/data/catalog_screening_alle.yaml",
+    "Kopie": "provenienz/screening_alle/catalog_screening_alle.yaml",
+    "Bytes": 17619,
+    "SHA256": "d9565e32459c9510b5bec28fd942ae77f2a27b9863bfa8627472e56267f25fc3",
+    "Geändert UTC": "2026-11-06T13:18:41.253263+00:00"
+  },
+  {
+    "Lauf": "screening_alt",
+    "Quelle": "prescriptive/data/screening_run.log",
+    "Kopie": "provenienz/screening_alt/screening_run.log",
+    "Bytes": 147172,
+    "SHA256": "74d7e1e961aae7eb72bad55b97e5032aabfa6c13782c30f25a29303b87db98a6",
+    "Geändert UTC": "2026-10-29T10:49:35.969686+00:00"
+  },
+  {
+    "Lauf": "validierung_gesamt",
+    "Quelle": "prescriptive/data/screening_validierung.log",
+    "Kopie": "provenienz/validierung_gesamt/screening_validierung.log",
+    "Bytes": 19975,
+    "SHA256": "62c90e7cef1bf23c0b7b29ae405e899acd5b8aef74092e725173ef62d7fe7e87",
+    "Geändert UTC": "2026-11-06T13:09:01.780674+00:00"
+  },
+  {
+    "Lauf": "validierung_gesamt",
+    "Quelle": "prescriptive/data/bpic17_screening_validierung.sh",
+    "Kopie": "provenienz/validierung_gesamt/bpic17_screening_validierung.sh",
+    "Bytes": 1286,
+    "SHA256": "5ae3a29b30c59ad782497f857fb59e75e17bce8ffe9c5984f5d3db96f8aecb14",
+    "Geändert UTC": "2026-11-06T12:39:06.312028+00:00"
+  },
+  {
+    "Lauf": "validierung_gesamt",
+    "Quelle": "prescriptive/data/catalog_simulator_kpis_gesamt.yaml",
+    "Kopie": "provenienz/validierung_gesamt/catalog_simulator_kpis_gesamt.yaml",
+    "Bytes": 15736,
+    "SHA256": "63abc277614916eb3937243acbe3265f3a8884a1f9e39cf8d9137058ef51997b",
+    "Geändert UTC": "2026-11-06T12:04:49.281504+00:00"
+  },
+  {
+    "Lauf": "validierung_neue_punkte",
+    "Quelle": "prescriptive/data/neue_punkte_treue.log",
+    "Kopie": "provenienz/validierung_neue_punkte/neue_punkte_treue.log",
+    "Bytes": 49850,
+    "SHA256": "b2cb3c2c85c27f091b650893c7622f2800a21a325d0efdc1404e4a214479e851",
+    "Geändert UTC": "2026-11-06T14:44:35.233635+00:00"
+  },
+  {
+    "Lauf": "validierung_neue_punkte",
+    "Quelle": "prescriptive/data/bpic17_neue_punkte_treue.sh",
+    "Kopie": "provenienz/validierung_neue_punkte/bpic17_neue_punkte_treue.sh",
+    "Bytes": 1465,
+    "SHA256": "13e9dabc20571304cf8346637950ff2490098af3f13666294f1a9db4da2df7c7",
+    "Geändert UTC": "2026-11-06T14:09:28.562771+00:00"
+  },
+  {
+    "Lauf": "validierung_neue_punkte",
+    "Quelle": "prescriptive/data/catalog_neue_punkte.yaml",
+    "Kopie": "provenienz/validierung_neue_punkte/catalog_neue_punkte.yaml",
+    "Bytes": 17262,
+    "SHA256": "62eff891713cdb9ec28d1c6cb5672d3b80ff8552a0070e8c9ae3fe95ad6c385b",
+    "Geändert UTC": "2026-11-06T14:08:40.759370+00:00"
+  }
+]

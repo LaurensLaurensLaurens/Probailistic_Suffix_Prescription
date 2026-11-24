@@ -76,7 +76,9 @@ class Simulator:
         extra = {"permissions": interventions.run_permissions(self.dataset)} if model_spec(self.dataset)["work_item_prefix"] else {}
         engine = build_engine(self.log, n_cases, seed, self.model_folder, allocation=interventions.run_allocation(self.dataset), dataset=self.dataset,
                               load=interventions.arrival_load(self.dataset), **extra)
-        engine.set_policy(policy, chosen if policy is not None else [], window)
+        # Feasibility of control-flow options applies to the bank too. _ask
+        # preserves bank behaviour when policy is None.
+        engine.set_policy(policy, chosen, window)
         if observer is not None:
             engine.observer, engine.observe_seconds = observer, observe_hours * 3600
         events = pd.DataFrame(engine.run(n_cases))

@@ -1,0 +1,18 @@
+{
+  "Interventionspunkt": "angebot_nachlegen",
+  "Art": "Control Flow",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 30592,
+  "Optionen": 2,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "1 vs. 0",
+  "Effekt (AIPW)": -1.3770007176629022,
+  "KI unten": -1.9971666435102624,
+  "KI oben": -0.7568347918155419,
+  "Beobachtete Optionen": 2,
+  "Minimum Fälle je beobachteter Option": 3245,
+  "Überlappung": 0.8048509414225942,
+  "Fälle mit Wahl": 30592,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 6.800316473003477
+}

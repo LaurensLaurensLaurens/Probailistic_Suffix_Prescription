@@ -1,0 +1,18 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Complete application (resume)",
+  "Art": "Mitarbeiter",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 11842,
+  "Optionen": 100,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "User_49 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": 0.29064186822566895,
+  "KI unten": -1.636486769884991,
+  "KI oben": 2.2177705063363287,
+  "Beobachtete Optionen": 100,
+  "Minimum Fälle je beobachteter Option": 1,
+  "Überlappung": 0.2142796789184622,
+  "Fälle mit Wahl": 11835,
+  "Status": "geschätzt; geringe Überlappung",
+  "Laufzeit (s)": 65.08698357094545
+}

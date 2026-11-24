@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "annehmen_bei_konzept",
+  "Art": "Control Flow",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 24296,
+  "Optionen": 2,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "1 vs. 0",
+  "Effekt (AIPW)": 0.09250853998551391,
+  "KI unten": 0.07330826986154995,
+  "KI oben": 0.11170881010947786,
+  "Zielereignis": "O_Returned",
+  "Entscheidungsfälle vor Ausschluss": 24296,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 16554,
+  "Beobachtete Zielquote": 0.6813467237405334,
+  "Beobachtete Optionen": 2,
+  "Minimum Fälle je beobachteter Option": 9231,
+  "Überlappung": 0.5658133026012513,
+  "Fälle mit Wahl": 24296,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 5.391413017990999
+}

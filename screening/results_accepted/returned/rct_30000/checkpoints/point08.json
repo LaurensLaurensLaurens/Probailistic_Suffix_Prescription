@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Validate application",
+  "Art": "Mitarbeiter",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 21707,
+  "Optionen": 77,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "User_87 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": -0.03431926982425728,
+  "KI unten": -0.06386075892914304,
+  "KI oben": -0.004777780719371516,
+  "Zielereignis": "O_Returned",
+  "Entscheidungsfälle vor Ausschluss": 21709,
+  "Ziel bereits erreicht: ausgeschlossen": 2,
+  "Ziel später erreicht": 20797,
+  "Beobachtete Zielquote": 0.9580780393421477,
+  "Beobachtete Optionen": 65,
+  "Minimum Fälle je beobachteter Option": 1,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 17600,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 12.271906344918534
+}

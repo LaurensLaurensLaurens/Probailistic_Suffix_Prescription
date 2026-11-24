@@ -1,0 +1,119 @@
+[
+  {
+    "policy": "D-Kosten",
+    "point": "angebot_nachlegen",
+    "two_option_calls": 256,
+    "bank_fallbacks": 161,
+    "explicit_choices": {
+      "O_Sent (mail and online)": 93,
+      "O_Create Offer": 2
+    }
+  },
+  {
+    "policy": "D-Kosten",
+    "point": "annehmen_bei_konzept",
+    "two_option_calls": 114,
+    "bank_fallbacks": 64,
+    "explicit_choices": {
+      "A_Accepted": 49,
+      "W_Complete application|start": 1
+    }
+  },
+  {
+    "policy": "D-Kosten",
+    "point": "annehmen_nach_vervollstaendigung",
+    "two_option_calls": 106,
+    "bank_fallbacks": 59,
+    "explicit_choices": {
+      "A_Accepted": 47
+    }
+  },
+  {
+    "policy": "D-Kosten",
+    "point": "handle_leads",
+    "two_option_calls": 128,
+    "bank_fallbacks": 78,
+    "explicit_choices": {
+      "W_Handle leads|withdraw": 50
+    }
+  },
+  {
+    "policy": "D-Zeit",
+    "point": "angebot_nachlegen",
+    "two_option_calls": 275,
+    "bank_fallbacks": 185,
+    "explicit_choices": {
+      "O_Sent (mail and online)": 72,
+      "O_Create Offer": 18
+    }
+  },
+  {
+    "policy": "D-Zeit",
+    "point": "annehmen_bei_konzept",
+    "two_option_calls": 105,
+    "bank_fallbacks": 91,
+    "explicit_choices": {
+      "W_Complete application|start": 8,
+      "A_Accepted": 6
+    }
+  },
+  {
+    "policy": "D-Zeit",
+    "point": "annehmen_nach_vervollstaendigung",
+    "two_option_calls": 151,
+    "bank_fallbacks": 83,
+    "explicit_choices": {
+      "A_Accepted": 67,
+      "W_Complete application|resume": 1
+    }
+  },
+  {
+    "policy": "D-Zeit",
+    "point": "handle_leads",
+    "two_option_calls": 128,
+    "bank_fallbacks": 121,
+    "explicit_choices": {
+      "W_Handle leads|withdraw": 5,
+      "W_Handle leads|start": 2
+    }
+  },
+  {
+    "policy": "XGB-Zeit",
+    "point": "angebot_nachlegen",
+    "two_option_calls": 381,
+    "bank_fallbacks": 0,
+    "explicit_choices": {
+      "O_Sent (mail and online)": 222,
+      "O_Create Offer": 159
+    }
+  },
+  {
+    "policy": "XGB-Zeit",
+    "point": "annehmen_bei_konzept",
+    "two_option_calls": 123,
+    "bank_fallbacks": 0,
+    "explicit_choices": {
+      "A_Accepted": 120,
+      "W_Complete application|start": 3
+    }
+  },
+  {
+    "policy": "XGB-Zeit",
+    "point": "annehmen_nach_vervollstaendigung",
+    "two_option_calls": 36,
+    "bank_fallbacks": 0,
+    "explicit_choices": {
+      "A_Accepted": 36
+    }
+  },
+  {
+    "policy": "XGB-Zeit",
+    "point": "handle_leads",
+    "two_option_calls": 128,
+    "bank_fallbacks": 0,
+    "explicit_choices": {
+      "W_Handle leads|withdraw": 121,
+      "W_Handle leads|start": 7
+    }
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "case": "Application_730",
+  "draws_per_option": 30,
+  "replacement_gap_seconds": 0.001,
+  "all_60_future_event_paths_identical": true,
+  "same_selected_option": true,
+  "max_outcome_difference_seconds": 2.1361621117875984,
+  "max_encoded_numeric_differences": {
+    "case_elapsed_time": 1.1920928955078125e-07,
+    "event_elapsed_time": 0.0,
+    "day_in_week": 1.1920928955078125e-07,
+    "seconds_in_day": 0.0
+  },
+  "equivalent_within_10_seconds": true,
+  "note": "Minor numeric precision differences from re-encoding the time features; no categorical rollout changes"
+}

@@ -20,6 +20,26 @@ import torch
 from torch import Tensor, nn
 
 
+def clock_days(ids: Tensor, gaps: Tensor, size: int, ignore, mean: float, std: float):
+    """
+    Event clocks: for every position of ids (batch x seq) and every value 0..size-1 the days since the last
+    occurrence of that value up to and including the position (0 at the occurrence itself), and whether it has
+    occurred. gaps (batch x seq): standardised seconds since the previous event (value * std + mean, at least 0);
+    padding (id 0) adds no time. Returns (since, seen), both batch x seq x size.
+    """
+    onehot = nn.functional.one_hot(ids.long(), size).bool()
+    if ignore:
+        onehot[..., list(ignore)] = False
+    days = (gaps.reshape(ids.shape).float() * std + mean).clamp(min=0.0) / 86400.0
+    days = days.masked_fill(ids == 0, 0.0)
+    elapsed = days.cumsum(dim=1)
+    times = torch.where(onehot, elapsed.unsqueeze(-1), torch.full(onehot.shape, float("-inf"), device=elapsed.device))
+    last = torch.cummax(times, dim=1).values
+    seen = torch.isfinite(last)
+    since = torch.where(seen, elapsed.unsqueeze(-1) - last, torch.zeros_like(last)).clamp(min=0.0)
+    return since, seen
+
+
 class DropoutUncertaintyLSTMEncoder(nn.Module):
     """
     Encoder part of the Encoder-Decoder LSTM with MC-Dropout uncertainty estimation.
@@ -39,6 +59,16 @@ class DropoutUncertaintyLSTMEncoder(nn.Module):
         static_input_size: Optional[int] = 0,
         # mc-dropout
         dropout: Optional[float] = None,
+        # optional event counters (cumulative counts of one categorical input)
+        count_size: Optional[int] = None,
+        count_index: Optional[int] = None,
+        count_ignore: Optional[Tuple[int, ...]] = None,
+        count_scale: float = 10.0,
+        # optional event clocks (days since the last occurrence of each counted value)
+        clock_index: Optional[int] = None,
+        clock_mean: float = 0.0,
+        clock_std: float = 1.0,
+        clock_scale: float = 4.0,
     ):
         """
         Encoder part of the Encoder-Decoder LSTM.
@@ -101,6 +131,36 @@ class DropoutUncertaintyLSTMEncoder(nn.Module):
             ]
         )
 
+        # Optional event counters: per timestep the cumulative count of each value
+        # of one categorical input (e.g. activity tokens), added to the input
+        # projection through a zero-initialised map (no change at initialisation,
+        # no random numbers consumed).
+        self.count_size = count_size
+        if count_size:
+            self.count_index = count_index
+            self.count_ignore = tuple(count_ignore or ())
+            self.count_scale = float(count_scale)
+            self.count_weight = nn.Parameter(torch.zeros(hidden_size, count_size))
+        # Optional event clocks (2026-11-17): per timestep and counted value the time since its last occurrence,
+        # from the gap feature (standardised seconds since the previous event, tensor clock_index), as
+        # log(1 + days) / clock_scale, 0 before the first occurrence; zero-initialised map like the counters.
+        self.clock_index = clock_index
+        if count_size and clock_index is not None:
+            self.clock_mean, self.clock_std, self.clock_scale = float(clock_mean), float(clock_std), float(clock_scale)
+            self.clock_weight = nn.Parameter(torch.zeros(hidden_size, count_size))
+
+    def clocks(self, ids: Tensor, gaps: Tensor) -> Tensor:
+        """Scaled clocks per position: ids, gaps batch x seq -> batch x seq x count_size."""
+        since, seen = clock_days(ids, gaps, self.count_size, self.count_ignore, self.clock_mean, self.clock_std)
+        return (torch.log1p(since) / self.clock_scale * seen).to(self.clock_weight.dtype)
+
+    def counts(self, ids: Tensor) -> Tensor:
+        """Cumulative scaled counts per position: ids batch x seq -> batch x seq x count_size."""
+        onehot = nn.functional.one_hot(ids.long(), self.count_size).to(self.count_weight.dtype)
+        if self.count_ignore:
+            onehot[..., list(self.count_ignore)] = 0
+        return onehot.cumsum(dim=1) / self.count_scale
+
     def regularizer(self) -> Tuple[float, float]:
         """
         L2 regularization of Encoder weights, biases and dropout.
@@ -162,6 +222,12 @@ class DropoutUncertaintyLSTMEncoder(nn.Module):
 
         # Project input features to hidden size
         prefixes = self.input_proj(prefixes)
+        if getattr(self, "count_size", None):
+            counts = self.counts(input[0][self.count_index]).permute(1, 0, 2)  # seq x batch x count_size
+            prefixes = prefixes + counts.to(prefixes.dtype) @ self.count_weight.t()
+            if getattr(self, "clock_index", None) is not None:
+                clocks = self.clocks(input[0][self.count_index], input[1][self.clock_index]).permute(1, 0, 2)
+                prefixes = prefixes + clocks.to(prefixes.dtype) @ self.clock_weight.t()
         prefixes = self.layernorm(prefixes)
         prefixes = self.act(prefixes)
 

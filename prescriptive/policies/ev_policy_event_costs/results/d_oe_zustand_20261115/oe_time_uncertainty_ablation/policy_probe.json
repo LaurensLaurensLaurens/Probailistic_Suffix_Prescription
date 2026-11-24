@@ -1,0 +1,124 @@
+{
+  "status": "passed",
+  "same_sample_values_and_torch_rng": true,
+  "checkpoint_model": "OE",
+  "checkpoint_training_epochs": 15,
+  "joint_gap_tokens_and_state_constraints_verified": true,
+  "attempts": [
+    {
+      "torch_seed": 0,
+      "guarded": {
+        "case": "Application_772",
+        "point": "annehmen_bei_konzept",
+        "time": 1452549149.614398,
+        "options": [
+          "W_Complete application|start",
+          "A_Accepted"
+        ],
+        "selected": "W_Complete application|start",
+        "uncertain_estimate": false,
+        "sampling_failure": false,
+        "bank_on_uncertain": true,
+        "estimates": [
+          {
+            "samples_per_option": 30,
+            "mean_values": [
+              -23.359089095841068,
+              -32.784709235115756
+            ],
+            "paired_mcse": 4.471656317501273
+          }
+        ]
+      },
+      "unguarded": {
+        "case": "Application_772",
+        "point": "annehmen_bei_konzept",
+        "time": 1452549149.614398,
+        "options": [
+          "W_Complete application|start",
+          "A_Accepted"
+        ],
+        "selected": "W_Complete application|start",
+        "uncertain_estimate": false,
+        "sampling_failure": false,
+        "bank_on_uncertain": false,
+        "estimates": [
+          {
+            "samples_per_option": 30,
+            "mean_values": [
+              -23.359089095841068,
+              -32.784709235115756
+            ],
+            "paired_mcse": 4.471656317501273
+          }
+        ]
+      }
+    },
+    {
+      "torch_seed": 1,
+      "guarded": {
+        "case": "Application_772",
+        "point": "annehmen_bei_konzept",
+        "time": 1452549149.614398,
+        "options": [
+          "W_Complete application|start",
+          "A_Accepted"
+        ],
+        "selected": null,
+        "uncertain_estimate": true,
+        "sampling_failure": false,
+        "bank_on_uncertain": true,
+        "estimates": [
+          {
+            "samples_per_option": 30,
+            "mean_values": [
+              -24.815916509807113,
+              -22.923135102013905
+            ],
+            "paired_mcse": 3.075739734406553
+          },
+          {
+            "samples_per_option": 100,
+            "mean_values": [
+              -25.49959215884261,
+              -26.373462635231498
+            ],
+            "paired_mcse": 2.209123716699221
+          }
+        ]
+      },
+      "unguarded": {
+        "case": "Application_772",
+        "point": "annehmen_bei_konzept",
+        "time": 1452549149.614398,
+        "options": [
+          "W_Complete application|start",
+          "A_Accepted"
+        ],
+        "selected": "W_Complete application|start",
+        "uncertain_estimate": true,
+        "sampling_failure": false,
+        "bank_on_uncertain": false,
+        "estimates": [
+          {
+            "samples_per_option": 30,
+            "mean_values": [
+              -24.815916509807113,
+              -22.923135102013905
+            ],
+            "paired_mcse": 3.075739734406553
+          },
+          {
+            "samples_per_option": 100,
+            "mean_values": [
+              -25.49959215884261,
+              -26.373462635231498
+            ],
+            "paired_mcse": 2.209123716699221
+          }
+        ]
+      }
+    }
+  ],
+  "completed_at": "2026-11-15T21:47:13+01:00"
+}

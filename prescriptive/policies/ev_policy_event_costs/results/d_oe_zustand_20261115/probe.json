@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "valid_suffixes": 1440,
+  "invalid_returned_suffixes": 0,
+  "fallback_calls": [],
+  "mean_call_seconds": 1.4738479394179125,
+  "case750_duplicate_start_filtered": true
+}

@@ -10,12 +10,21 @@ Policies:
               Outcomes (helpers/training.model_path: models/xgb_model.pkl bzw. z. B. xgb_model_gewinn.pkl; ein anderes über
               policy_params, z. B. {"xgb": {"model": "models/xgb_model_repair_kosten_satz.pkl"}})
     lstm      dasselbe mit dem LSTM (policies/lstm_policy.py, models/lstm_model.pkl bzw. z. B. lstm_model_gewinn.pkl)
-    psp       dasselbe mit dem PSP, Outcome aus gezogenen Suffixen (policies/psp_policy.py, models/psp_model<outcome>.pkl)
+    psp       dasselbe mit dem PSP, Outcome aus gezogenen Suffixen (policies/ev_policy/psp_policy.py, models/psp_model<outcome>.pkl)
+    s_learner, x_learner, causal_forest
+              die kausalen Schätzer nach Bozorgi et al. (2023) als Vergleich zum PSP (policies/ev_policy/cate_policy.py,
+              estimators/cate_model.py): die Aktion, wenn ihr geschätzter Effekt gegenüber der Referenz über der Schwelle
+              liegt (Standard 0). Das Modell über policy_params, z. B. {"x_learner": {"model": "models/cate_model_x_....pkl"}};
+              dazu optional threshold und first_only
+    s_learner_erm, x_learner_erm, causal_forest_erm
+              dieselben Verfahren auf exponentiellem Verlust (policies/erm_policy/cate_policy.py): kleinster Effekt,
+              neues Modell je γ aus scripts/train_cate_real.py --erm-gamma. Modell über policy_params model;
+              first_only wie bei EV, gamma optional zur Prüfung gegen das trainierte γ. Keine Schwelle in Tagen.
     psp_lookahead
               Mitarbeiterwahl nach dem PSP mit Blick auf die anderen laufenden Fälle, darf warten (policies/psp_lookahead_policy.py,
               dasselbe Modell wie psp); nur an Mitarbeiter-Wahlpunkten, sonst wie die Bank
     psp_erm   wie psp, aber die Option mit dem kleinsten entropischen Risikomaß der gezogenen Durchlaufzeiten
-              (policies/psp_erm_policy.py, dasselbe Modell wie psp; γ über policy_params, z. B. {"psp_erm": {"gamma": 0.1}})
+              (policies/erm_policy/psp_erm_policy.py, dasselbe Modell wie psp; γ über policy_params, z. B. {"psp_erm": {"gamma": 0.1}})
 
 Je Wiederholung (seed) läuft jede Policy einmal über n_cases Ankünfte mit demselben seed (gleiche Ankünfte und
 Fallattribute, jeder Fall zieht aus eigenen Zufallszahlen). Die Policy wird nur für die Fälle mit Ankunftsnummer im
@@ -27,6 +36,8 @@ Dazu der Schwanz der Durchlaufzeit (TAIL), je Policy und gepaart gegen die Bank 
 CVaR 90 % (Mittel der längsten 10 % der Fälle) und der Anteil der Fälle über τ, dem TAIL_QUANTILE-Quantil der Bank in
 derselben Wiederholung (bei der Bank also 1 − TAIL_QUANTILE). Je Mitarbeiter-Wahlpunkt die Wartezeit auf einen
 Mitarbeiter dort (WAITING): je Fall, der ihn erreicht, wie oft gewartet wurde, 90-%-Quantil, Anteil "alle beschäftigt".
+Bei ERM-Policies außerdem das empirische entropische Risiko der gewerteten Durchlaufzeiten, für jedes im Lauf
+verwendete γ auch bei der Bank, mit gepaarter Differenz und 95-%-KI über die Wiederholungen.
 
     from prescriptive.evaluation.online_evaluation import evaluate_online
     table, runs = evaluate_online(simulator, policies=("bank", "random", "xgb"), points=["channel"], seeds=5)
@@ -42,8 +53,13 @@ import pandas as pd
 from helpers.datasets import ACTIVITY, CASE, LIFECYCLE, TIMESTAMP, add_paths
 from helpers.parameters import SEED, WORKERS
 
-POLICIES = ("bank", "random", "xgb", "lstm", "psp", "psp_lookahead", "psp_erm", "regel")
-PSP_POLICIES = ("psp", "psp_lookahead", "psp_erm")  # alle mit dem Modell des PSP
+CATE_POLICIES = ("s_learner", "x_learner", "causal_forest")  # policies/ev_policy/cate_policy.py, je eigenes Modell (policy_params model)
+CATE_ERM_POLICIES = tuple(f"{name}_erm" for name in CATE_POLICIES)
+POLICIES = ("bank", "random", "xgb", "lstm", "psp", "psp_lookahead", "psp_erm", "regel", "psp_annahme") + CATE_POLICIES + CATE_ERM_POLICIES
+# Je Datensatz: Ziel-Events, deren Anteil je Lauf mitgezählt wird ("Anteil <Event>": Anteil der gewerteten Fälle mit dem Event;
+# BPIC17 O_Accepted wie screening/results_accepted und die Policy psp_annahme)
+TARGET_EVENTS = {"bpic17": ("O_Accepted",)}
+PSP_POLICIES = ("psp", "psp_lookahead", "psp_erm", "psp_annahme")  # alle mit dem Modell des PSP
 N_CASES, WARMUP, COOLDOWN, SEEDS = 4000, 700, 1300, 5  # wie scripts/main.py --online-cases, --online-warmup, --online-cooldown, --online-seeds
 TAIL_QUANTILE = 0.9  # τ: dieses Quantil der Durchlaufzeit unter der Bank, je Wiederholung
 ABOVE = "Anteil über τ (Bank-P90)"
@@ -91,15 +107,22 @@ def compare(rows):
     bank = runs[runs["Policy"] == "bank"].set_index("seed")
     tau = bank["_days"].map(lambda days: float(np.quantile(days, TAIL_QUANTILE)))
     runs[ABOVE] = [float(np.mean(days > tau[seed])) for days, seed in zip(runs["_days"], runs["seed"])]
+    metrics = list(TAIL)
+    if "ERM γ (1/Tag)" in runs:
+        from prescriptive.policies.erm_policy.psp_erm_policy import entropic_risk
+        for gamma in sorted(runs["ERM γ (1/Tag)"].dropna().unique()):
+            metric = f"ERM γ={gamma:g} (Tage)"
+            runs[metric] = runs["_days"].map(lambda days: float(entropic_risk(np.asarray(days)[None, :], gamma)[0]))
+            metrics.append(metric)
     runs = runs.drop(columns="_days")
     bank = runs[runs["Policy"] == "bank"].set_index("seed")
     reference = runs["seed"].map(bank["Outcome je Fall"])
     runs["ggü. Bank je Fall"] = runs["Outcome je Fall"] - reference
     runs["Uplift ggü. Bank (%)"] = runs["ggü. Bank je Fall"] / reference.abs() * 100
-    for metric in TAIL:
+    for metric in metrics:
         runs[f"{metric} ggü. Bank"] = runs[metric] - runs["seed"].map(bank[metric])
     table = runs.drop(columns="seed").groupby("Policy", sort=False).mean(numeric_only=True)
-    for column, label in [("Uplift ggü. Bank (%)", "Uplift")] + [(f"{metric} ggü. Bank",) * 2 for metric in TAIL]:
+    for column, label in [("Uplift ggü. Bank (%)", "Uplift")] + [(f"{metric} ggü. Bank",) * 2 for metric in metrics]:
         spread = runs.groupby("Policy", sort=False)[column]
         n = spread.count()
         half = spread.std() / np.sqrt(n) * stats.t.ppf(0.975, np.maximum(n - 1, 1))
@@ -128,20 +151,39 @@ def _policy(name, seed):
     if name == "regel":
         from prescriptive.policies.rule_policy import RulePolicy
         return RulePolicy(**(_SHARED["policy_params"].get(name) or {}))  # feste Regel je Wahlpunkt (policies/rule_policy.py)
+    if name in CATE_POLICIES + CATE_ERM_POLICIES:
+        from prescriptive.policies.ev_policy.cate_policy import CATEPolicy
+        params = _SHARED["policy_params"].get(name) or {}
+        if not params.get("model"):
+            raise ValueError(f"{name}: das Modell fehlt (policy_params model, scripts/main.py --cate-model {name}=PFAD)")
+        if name in CATE_ERM_POLICIES:
+            from prescriptive.policies.erm_policy.cate_policy import CATEERMPolicy
+            if params.get("threshold", 0) != 0:
+                raise ValueError(f"{name}: keine Schwelle in Tagen; ERM vergleicht den exponentiellen Verlust bei Schwelle 0")
+            policy = CATEERMPolicy(params["model"], seed=seed, **{key: params[key] for key in ("gamma", "first_only") if params.get(key) is not None})
+            expected = dict(zip(CATE_ERM_POLICIES, ("s", "x", "cf")))[name]
+            if policy.model.learner != expected:
+                raise ValueError(f"{name}: erwartet learner={expected}, Modell hat learner={policy.model.learner}")
+            return policy
+        return CATEPolicy(params["model"], seed=seed, **{key: params[key] for key in ("threshold", "first_only") if params.get(key) is not None})
     from helpers.training import model_path
     path = model_path("psp" if name in PSP_POLICIES else name, _SHARED["simulator"].dataset)
     params = _SHARED["policy_params"].get(name) or {}
     if name == "psp_lookahead":
         from prescriptive.policies.psp_lookahead_policy import PSPLookaheadPolicy
         return PSPLookaheadPolicy(path, seed=seed, **params)
+    if name == "psp_annahme":
+        # das PSP nach der Angebotsannahme (policies/accepted_policy/psp_accepted_policy.py): model, samples, first_only
+        from prescriptive.policies.accepted_policy.psp_accepted_policy import PSPAcceptedPolicy
+        return PSPAcceptedPolicy(params.get("model") or path, seed=seed, **{key: params[key] for key in ("samples", "first_only") if params.get(key)})
     if name == "psp_erm":
-        from prescriptive.policies.psp_erm_policy import PSPERMPolicy
-        return PSPERMPolicy(path, seed=seed, **params)
+        from prescriptive.policies.erm_policy.psp_erm_policy import PSPERMPolicy
+        return PSPERMPolicy(params.get("model") or path, seed=seed, **{key: value for key, value in params.items() if key != "model"})
     if name == "lstm":
         from prescriptive.policies.lstm_policy import LSTMPolicy
         return LSTMPolicy(path, seed=seed)
     if name == "psp":
-        from prescriptive.policies.psp_policy import PSPPolicy
+        from prescriptive.policies.ev_policy.psp_policy import PSPPolicy
         # model: ein anderes PSP (z. B. auf dem echten Log trainiert); samples: gezogene Suffixe je Option (Standard psp_policy.SAMPLES);
         # value_from: "head" bewertet über den Restzeit-Kopf (psp_model remaining_head) statt über die gezogenen Suffixe;
         # first_only: Wahlpunkte, an denen die Policy nur beim ersten Mal im Fall entscheidet (psp_policy)
@@ -173,6 +215,8 @@ def _run(job):
     p90, p95 = np.quantile(days, [0.9, 0.95])
     # _days: die Durchlaufzeiten, für den Anteil über τ der Bank in compare (danach entfernt)
     row.update({TAIL[0]: p90, TAIL[1]: p95, TAIL[2]: days[days >= p90].mean(), "_days": days.to_numpy()})
+    for target in TARGET_EVENTS.get(simulator.dataset, ()):
+        row[f"Anteil {target}"] = float(log.loc[log[ACTIVITY] == target, CASE].nunique() / max(log[CASE].nunique(), 1))
     row.update(_point_rows(simulator, log, choices, points))
     row.update(getattr(policy, "stats", None) or {})  # was die Policy selbst zählt (psp_lookahead, psp_erm)
     print(f"seed {seed}, {name}: Outcome je Fall {row['Outcome je Fall']:,.1f} ({time.time() - started:.0f} s)", flush=True)

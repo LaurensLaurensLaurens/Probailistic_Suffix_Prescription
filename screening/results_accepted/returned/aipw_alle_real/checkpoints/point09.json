@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Call after offers (resume)",
+  "Art": "Mitarbeiter",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 25112,
+  "Optionen": 88,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "User_5 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": 0.004825093232414999,
+  "KI unten": -0.01944835775446952,
+  "KI oben": 0.02909854421929952,
+  "Zielereignis": "O_Returned",
+  "Entscheidungsfälle vor Ausschluss": 25113,
+  "Ziel bereits erreicht: ausgeschlossen": 1,
+  "Ziel später erreicht": 17080,
+  "Beobachtete Zielquote": 0.680152914941064,
+  "Beobachtete Optionen": 88,
+  "Minimum Fälle je beobachteter Option": 1,
+  "Überlappung": 0.013985732134940148,
+  "Fälle mit Wahl": 24811,
+  "Status": "geschätzt; geringe Überlappung",
+  "Laufzeit (s)": 111.40543526597321
+}

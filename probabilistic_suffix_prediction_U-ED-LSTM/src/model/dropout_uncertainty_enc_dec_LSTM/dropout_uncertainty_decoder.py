@@ -34,6 +34,9 @@ class DropoutUncertaintyLSTMDecoder(nn.Module):
         data_indices_dec,
         num_layers: int,
         dropout: Optional[float] = None,
+        categorical_conditioning: Optional[Tuple[str, str]] = None,
+        count_size: Optional[int] = None,
+        numeric_conditioning: Optional[Tuple[str, int]] = None,
     ):
         """
         Decoder part of the Encoder-Decoder LSTM.
@@ -47,6 +50,13 @@ class DropoutUncertaintyLSTMDecoder(nn.Module):
             data_indices_dec: Indices of event attributes
             num_layers (int): Number of hidden layers in the LSTM
             dropout (Optional[float]): Dropout probability
+            categorical_conditioning: Optional (output, event) feature names. The
+                output head additionally sees the current event, not the previous one.
+            count_size: Optional number of event counters given to every step
+                (forward argument counts: batch x count_size, already scaled).
+            numeric_conditioning: Optional (event feature, number of event values).
+                All numerical outputs additionally see the current event of that
+                categorical output (same step), e.g. the gap of the drawn activity.
         """
         super(DropoutUncertaintyLSTMDecoder, self).__init__()
 
@@ -90,6 +100,93 @@ class DropoutUncertaintyLSTMDecoder(nn.Module):
         for key, size in num_output_sizes.items():
             self.output_layers[f"{key}_mean"] = nn.Linear(hidden_size, size)
             self.output_layers[f"{key}_var"] = nn.Linear(hidden_size, size)
+
+        self.categorical_conditioning = categorical_conditioning
+        if categorical_conditioning is not None:
+            conditioned, event = categorical_conditioning
+            if conditioned == event or any(key not in cat_output_sizes for key in (conditioned, event)):
+                raise ValueError("Categorical conditioning needs two different categorical outputs")
+            size = cat_output_sizes[event]
+            embedding_size = min(600, round(1.6 * size**0.56))
+            self.condition_embedding = nn.Embedding(size, embedding_size)
+            for suffix in ("mean", "var"):
+                self.output_layers[f"{conditioned}_{suffix}"] = nn.Linear(
+                    hidden_size + embedding_size, cat_output_sizes[conditioned]
+                )
+
+        # Optional event counters (zero-initialised map into the input projection).
+        self.count_size = count_size
+        if count_size:
+            self.count_weight = nn.Parameter(torch.zeros(hidden_size, count_size))
+
+        # Optional numerical outputs conditioned on the current event: the existing
+        # heads on the hidden state plus a zero-initialised term of an event
+        # embedding (mean and log-variance alike, so the attenuated loss is unchanged).
+        self.numeric_conditioning = numeric_conditioning
+        if numeric_conditioning is not None:
+            event, size = numeric_conditioning
+            if event not in cat_output_sizes:
+                raise ValueError("Numeric conditioning needs a categorical output as event")
+            embedding_size = min(600, round(1.6 * size**0.56))
+            self.num_condition_embedding = nn.Embedding(size, embedding_size)
+            self.num_condition_weights = nn.ParameterDict()
+            for key, out_size in num_output_sizes.items():
+                for suffix in ("mean", "var"):
+                    self.num_condition_weights[f"{key}_{suffix}_w"] = nn.Parameter(torch.zeros(out_size, embedding_size))
+                    self.num_condition_weights[f"{key}_{suffix}_b"] = nn.Parameter(torch.zeros(out_size))
+
+    def add_event_time_parameters(self, slopes: bool = False):
+        """
+        Own parameters per event for every numerical output (2026-11-18, needs numeric_conditioning).
+        The shared event embedding above feeds mean and log-variance alike; in trained models it
+        shifts almost only the log-variance (e.g. the gap before A_Cancelled: mean offset ~0,
+        log-variance offset +1.6). Added here, separately for each output (mean and log-variance
+        of every numerical feature): a free offset per event and, with slopes, a slope vector per
+        event on the hidden state (interaction event x hidden state). Zero-initialised: an
+        existing model predicts exactly as before. Loss and drawing are unchanged.
+        """
+        numeric = getattr(self, "numeric_conditioning", None)
+        if numeric is None:
+            raise ValueError("Event time parameters need numeric_conditioning")
+        size = numeric[1]
+        self.num_event_offsets = nn.ParameterDict()
+        self.num_event_slopes = nn.ParameterDict() if slopes else None
+        for key, out_size in self.output_sizes[1].items():
+            for suffix in ("mean", "var"):
+                name = f"{key}_{suffix}"
+                self.num_event_offsets[name] = nn.Parameter(torch.zeros(size, out_size))
+                if slopes:
+                    hidden_size = self.output_layers[name].in_features
+                    self.num_event_slopes[name] = nn.Parameter(torch.zeros(size, out_size, hidden_size))
+
+    def numeric_prediction(self, hidden: Tensor, event_ids: Tensor):
+        """Numerical means/log-variances given the hidden state and the current event (no LSTM step)."""
+        ids = event_ids.long().reshape(-1)
+        embedded = self.num_condition_embedding(ids)
+        offsets = getattr(self, "num_event_offsets", None)
+        slopes = getattr(self, "num_event_slopes", None)
+        means, variances = {}, {}
+        for key in self.output_sizes[1]:
+            for suffix, target in (("mean", means), ("var", variances)):
+                name = f"{key}_{suffix}"
+                weight = self.num_condition_weights[f"{name}_w"]
+                bias = self.num_condition_weights[f"{name}_b"]
+                value = self.output_layers[name](hidden) + embedded @ weight.t() + bias
+                if offsets is not None:
+                    value = value + offsets[name][ids]
+                if slopes is not None:
+                    value = value + torch.einsum("bh,boh->bo", hidden, slopes[name][ids])
+                target[name] = value
+        return means, variances
+
+    def conditioned_prediction(self, hidden: Tensor, event_ids: Tensor):
+        """Predict the conditional categorical logits/log-variance without another LSTM step."""
+        conditioning = getattr(self, "categorical_conditioning", None)
+        if conditioning is None:
+            raise ValueError("This decoder has no event-conditioned output")
+        features = torch.cat((hidden, self.condition_embedding(event_ids.long().reshape(-1))), dim=-1)
+        key = conditioning[0]
+        return self.output_layers[f"{key}_mean"](features), self.output_layers[f"{key}_var"](features)
 
     def regularizer(self):
         """
@@ -170,6 +267,9 @@ class DropoutUncertaintyLSTMDecoder(nn.Module):
         hx: Tuple[Tensor, Tensor],
         z: Optional[Tuple[List, List]] = None,
         pred: Optional[bool] = True,
+        condition_event: Optional[Tensor] = None,
+        counts: Optional[Tensor] = None,
+        num_condition_event: Optional[Tensor] = None,
     ) -> Tuple[list, Tuple[Tensor, Tensor]]:
         """
         Prediction of next event based on last hidden state and last event.
@@ -200,6 +300,10 @@ class DropoutUncertaintyLSTMDecoder(nn.Module):
         )  # dim: Tensor: seq_len x batch_size x input feature
 
         input_proj = self.input_proj(event)
+        if getattr(self, "count_size", None):
+            if counts is None:
+                raise ValueError("This decoder expects event counters (counts)")
+            input_proj = input_proj + (counts.to(input_proj.dtype) @ self.count_weight.t()).unsqueeze(0)
         input_proj = self.layernorm(input_proj)
         input_proj = self.act(input_proj)
 
@@ -234,6 +338,18 @@ class DropoutUncertaintyLSTMDecoder(nn.Module):
 
         # Predict means and variances for categorical features
         for key in cat_output_sizes:
+            conditioning = getattr(self, "categorical_conditioning", None)
+            if conditioning is not None and key == conditioning[0]:
+                # Training/validation supply the current target event. During
+                # generation this default uses argmax; the sampler recomputes the
+                # head with the event it actually draws (or the forced option).
+                event_ids = condition_event
+                if event_ids is None:
+                    event_ids = self.output_layers[f"{conditioning[1]}_mean"](final_output).argmax(dim=-1)
+                mean, logvar = self.conditioned_prediction(final_output, event_ids)
+                prediction_means[0][f"{key}_mean"] = mean
+                prediction_vars[0][f"{key}_var"] = logvar
+                continue
             pred_mean = self.output_layers[f"{key}_mean"](final_output)
             prediction_means[0][f"{key}_mean"] = (
                 pred_mean  # Store in the first dict (for cat features)
@@ -243,6 +359,18 @@ class DropoutUncertaintyLSTMDecoder(nn.Module):
             prediction_vars[0][f"{key}_var"] = (
                 pred_var  # Store in the first dict (for cat features)
             )
+
+        numeric = getattr(self, "numeric_conditioning", None)
+        if numeric is not None:
+            # Training/validation supply the current target event; otherwise the
+            # argmax event (the sampler recomputes with the event it draws).
+            event_ids = num_condition_event
+            if event_ids is None:
+                event_ids = prediction_means[0][f"{numeric[0]}_mean"].argmax(dim=-1)
+            means, variances = self.numeric_prediction(final_output, event_ids)
+            prediction_means[1].update(means)
+            prediction_vars[1].update(variances)
+            return [prediction_means, prediction_vars], (h, c), z
 
         # Predict means and variances for numerical features
         for key in num_output_sizes:

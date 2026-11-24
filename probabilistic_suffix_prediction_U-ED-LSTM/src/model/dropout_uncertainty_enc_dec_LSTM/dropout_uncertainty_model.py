@@ -9,7 +9,7 @@ Enocder-Decoder LSTM modelling epistemic uncertainty via dropout.
 import os
 
 from .dropout_uncertainty_decoder import DropoutUncertaintyLSTMDecoder
-from .dropout_uncertainty_encoder import DropoutUncertaintyLSTMEncoder
+from .dropout_uncertainty_encoder import DropoutUncertaintyLSTMEncoder, clock_days
 
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -38,6 +38,13 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
         # optional static attributes (only for encoder)
         static_data_set_categories: Optional[list[tuple[str, dict[str, int]]]] = None,
         static_enc_feat: Optional[list] = None,
+        categorical_conditioning: Optional[Tuple[str, str]] = None,
+        count_feature: Optional[str] = None,
+        numeric_conditioning: Optional[str] = None,
+        count_scale: float = 10.0,
+        clock_feature: Optional[str] = None,
+        clock_stats: Optional[Tuple[float, float]] = None,
+        clock_scale: float = 4.0,
     ):
         """
         Full Encoder-Decoder architecture with droput uncertainty LSTM.
@@ -53,6 +60,20 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
             static_data_set_categories: Event attribute categories for static encoder
                 input
             static_enc_feat: Static event attributes used by encoder as input
+            categorical_conditioning: Optional (output, event) categorical feature
+                names, e.g. a gap class conditioned on the current event.
+            count_feature: Optional categorical feature (e.g. the activity) whose
+                values are counted: the encoder sees the cumulative counts at every
+                prefix position, the decoder the counts up to its input event
+                (deterministic bookkeeping, not predicted, no loss).
+            numeric_conditioning: Optional categorical decoder output (e.g. the
+                activity); the numerical outputs of a step then also see the event
+                of the same step (true event in the loss, drawn event when sampling).
+            count_scale: Counts are divided by this value.
+            clock_feature: Optional numerical feature with the standardised gap to the previous event (seconds);
+                needs count_feature. Encoder and decoder then also see, per counted value, the days since its last
+                occurrence (log(1 + days) / clock_scale, 0 before the first one), updated from the fed gaps.
+            clock_stats: (mean, std) of the standardisation of clock_feature (seconds).
         """
         super(DropoutUncertaintyEncoderDecoderLSTM, self).__init__()
 
@@ -70,7 +91,43 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
             print("Encoder static input features: ", self.static_enc_feat)
 
         self.dec_feat = dec_feat
+        self.categorical_conditioning = categorical_conditioning
         print("Decoder input and output features: ", dec_feat)
+
+        # Optional event counters and event-conditioned numerical outputs
+        cat_entries = {entry[0]: (i, entry) for i, entry in enumerate(data_set_categories[0])}
+        self.count_feature, self.count_scale = count_feature, float(count_scale)
+        count_kwargs = {}
+        if count_feature is not None:
+            if count_feature not in cat_entries or count_feature not in dec_feat[0] or count_feature not in enc_feat[0]:
+                raise ValueError("count_feature must be a categorical encoder and decoder feature")
+            index, entry = cat_entries[count_feature]
+            mapping = entry[2] if len(entry) > 2 else {}
+            self.count_size = int(entry[1])
+            self.count_index = index  # tensor index in the data set (prefixes and suffixes)
+            self.count_ignore = tuple(sorted({0} | ({int(mapping["EOS"])} if "EOS" in mapping else set())))
+            self.count_dec_position = [f for f in dec_feat[0] if f in cat_entries].index(count_feature)
+            count_kwargs = {"count_size": self.count_size, "count_index": self.count_index,
+                            "count_ignore": self.count_ignore, "count_scale": self.count_scale}
+            print("Event counters: ", count_feature, self.count_size, "ignored ids", self.count_ignore)
+        self.clock_feature = clock_feature
+        self.clock_stats, self.clock_scale = clock_stats, float(clock_scale)
+        if clock_feature is not None:
+            num_entries = {entry[0]: i for i, entry in enumerate(data_set_categories[1])}
+            if count_feature is None or clock_feature not in num_entries or clock_feature not in dec_feat[1] or clock_feature not in enc_feat[1]:
+                raise ValueError("clock_feature must be a numerical encoder and decoder feature, and counters must be on")
+            if clock_stats is None:
+                raise ValueError("clock_stats (mean, std of the gap standardisation) is required")
+            self.clock_index = num_entries[clock_feature]
+            self.clock_dec_position = [f for f in dec_feat[1] if f in num_entries].index(clock_feature)
+            count_kwargs.update({"clock_index": self.clock_index, "clock_mean": float(clock_stats[0]),
+                                 "clock_std": float(clock_stats[1]), "clock_scale": self.clock_scale})
+            print("Event clocks: ", clock_feature, "index", self.clock_index, "stats", clock_stats)
+        self.numeric_conditioning = numeric_conditioning
+        if numeric_conditioning is not None:
+            if numeric_conditioning not in cat_entries or numeric_conditioning not in dec_feat[0]:
+                raise ValueError("numeric_conditioning must be a categorical decoder output")
+            print("Numerical outputs conditioned on the current event: ", numeric_conditioning)
         # Sequence lenght prediciton
         self.seq_len_pred = seq_len_pred
         print("Sequence length of decoder output: ", seq_len_pred)
@@ -212,6 +269,7 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
                 static_input_size=self.static_input_size_enc,
                 # dropout
                 dropout=dropout,
+                **count_kwargs,
             )
 
         else:
@@ -228,6 +286,7 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
                 num_layers=num_layers,
                 # dropout
                 dropout=dropout,
+                **count_kwargs,
             )
         print("Encoder initialized! \n")
 
@@ -294,6 +353,10 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
             data_indices_dec=self.data_indices_dec,
             num_layers=num_layers,
             dropout=dropout,
+            categorical_conditioning=categorical_conditioning,
+            count_size=(2 * count_kwargs["count_size"] if clock_feature is not None else count_kwargs.get("count_size")),
+            numeric_conditioning=(numeric_conditioning, int(cat_entries[numeric_conditioning][1][1]))
+            if numeric_conditioning is not None else None,
         )
         print("Decoder initialized! \n")
 
@@ -416,6 +479,65 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
         # Return a list of two dicts: one for categorical and one for numerical features
         return [cat_index_dict, num_index_dict]
 
+    def _decoder_condition(self, suffixes, step):
+        """Condition the loss on the current target event, independently of history teacher forcing."""
+        result = {}
+        conditioning = getattr(self, "categorical_conditioning", None)
+        if conditioning is not None:
+            index = self.output_feature_indeces[0][conditioning[1]]
+            result["condition_event"] = suffixes[0][index][:, step : step + 1]
+        numeric = getattr(self, "numeric_conditioning", None)
+        if numeric is not None:
+            index = self.output_feature_indeces[0][numeric]
+            result["num_condition_event"] = suffixes[0][index][:, step : step + 1]
+        return result
+
+    def _counts_of(self, ids: Tensor) -> Tensor:
+        """Scaled counts of the counted feature in ids (batch x k) -> batch x count_size."""
+        onehot = nn.functional.one_hot(ids.long().reshape(ids.shape[0], -1), self.count_size).sum(dim=1).float()
+        onehot[:, list(self.count_ignore)] = 0
+        return onehot / self.count_scale
+
+    def _counting(self) -> bool:
+        return getattr(self, "count_feature", None) is not None
+
+    def _clocking(self) -> bool:
+        return getattr(self, "clock_feature", None) is not None
+
+    def _state_of_prefix(self, cat_prefixes, num_prefixes):
+        """Counter state after the prefix: counts (as before) or, with clocks, (counts, days since, seen) at its last event."""
+        if not self._counting():
+            return None
+        counts = self._counts_of(cat_prefixes[self.count_index])
+        if not self._clocking():
+            return counts
+        since, seen = clock_days(cat_prefixes[self.count_index], num_prefixes[self.clock_index], self.count_size,
+                                 self.count_ignore, self.clock_stats[0], self.clock_stats[1])
+        return (counts, since[:, -1], seen[:, -1])
+
+    def _advance(self, state, ids: Tensor, gaps: Optional[Tensor] = None):
+        """State after feeding one event per row (ids, gaps: batch x 1; gaps standardised seconds)."""
+        if state is None:
+            return None
+        if not isinstance(state, tuple):
+            return state + self._counts_of(ids)
+        counts, since, seen = state
+        ids = ids.reshape(ids.shape[0], -1)[:, -1]
+        days = (gaps.reshape(gaps.shape[0], -1)[:, -1].float() * self.clock_stats[1] + self.clock_stats[0]).clamp(min=0.0) / 86400.0
+        occurred = nn.functional.one_hot(ids.long(), self.count_size).bool()
+        occurred[:, list(self.count_ignore)] = False
+        since = (since + days.unsqueeze(1)).masked_fill(occurred, 0.0)
+        return (counts + self._counts_of(ids.unsqueeze(1)), since, seen | occurred)
+
+    def _count_kwargs(self, counts):
+        if counts is None:
+            return {}
+        if isinstance(counts, tuple):  # counters and clocks in one vector for the decoder
+            values, since, seen = counts
+            clocks = (torch.log1p(since) / self.clock_scale * seen).to(values.dtype)
+            return {"counts": torch.cat([values, clocks], dim=1)}
+        return {"counts": counts}
+
     def forward(
         self,
         prefixes: List,
@@ -468,6 +590,8 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
         cat_sos_events = [cat_tens[:, -1:] for cat_tens in cat_prefixes]
         num_sos_events = [num_tens[:, -1:] for num_tens in num_prefixes]
         sos_event = [cat_sos_events, num_sos_events]
+        # Event counters of the whole prefix (the SOS event is its last event)
+        counts = self._state_of_prefix(cat_prefixes, num_prefixes)
 
         # output_sizes is a list of two dicts: [cat_dict, num_dict]
         cat_output_features_labels, num_output_features_labels = self.output_sizes
@@ -494,7 +618,8 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
                     # preds: list containing two dicts one for all means (cat, num),
                     # one for all vars (cat, num)
                     preds, (h, c), z = self.decoder(
-                        input=sos_event, hx=(h_enc, c_enc), z=None, pred=False
+                        input=sos_event, hx=(h_enc, c_enc), z=None, pred=False,
+                        **self._decoder_condition(suffixes, t), **self._count_kwargs(counts)
                     )
                     pred_means, pred_vars = preds
 
@@ -512,23 +637,31 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
                             num_tens[:, t - 1 : t] for num_tens in suffixes[1]
                         ]
                         t_suffix_event = [cat_t_suffix_event, num_t_suffix_event]
+                        if counts is not None:
+                            counts = self._advance(counts, suffixes[0][self.count_index][:, t - 1 : t],
+                                                   suffixes[1][self.clock_index][:, t - 1 : t] if self._clocking() else None)
 
                         preds, (h, c), _ = self.decoder(
-                            input=t_suffix_event, hx=(h, c), z=z, pred=False
+                            input=t_suffix_event, hx=(h, c), z=z, pred=False,
+                            **self._decoder_condition(suffixes, t), **self._count_kwargs(counts)
                         )
                         pred_means, pred_vars = preds
 
                     else:
                         # Use model prediction
                         last_pred_event = self.__transform_pred_into_next_event(
-                            pred_means=pred_means, pred_index=t, suffix=suffixes
+                            pred_means=pred_means, pred_index=t, suffix=suffixes, decoder_hidden=h
                         )
                         # For prediction, we assume valid input (or we could carry over
                         # mask if we wanted to propagate padding)
                         # But usually we don't mask predictions during generation unless
                         # we track finished state.
+                        if counts is not None:
+                            counts = self._advance(counts, last_pred_event[0][self.count_dec_position],
+                                                   last_pred_event[1][self.clock_dec_position] if self._clocking() else None)
                         preds, (h, c), _ = self.decoder(
-                            input=last_pred_event, hx=(h, c), z=z, pred=True
+                            input=last_pred_event, hx=(h, c), z=z, pred=True,
+                            **self._decoder_condition(suffixes, t), **self._count_kwargs(counts)
                         )
                         pred_means, pred_vars = preds
 
@@ -590,15 +723,20 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
             for k in range(self.seq_len_pred):
                 if k == 0:
                     preds, (h, c), z = self.decoder(
-                        input=sos_event, hx=(h_enc, c_enc), z=None, pred=False
+                        input=sos_event, hx=(h_enc, c_enc), z=None, pred=False,
+                        **self._decoder_condition(suffixes, k), **self._count_kwargs(counts)
                     )
                     pred_means, pred_vars = preds
                 else:
                     last_pred_event = self.__transform_pred_into_next_event(
-                        pred_means=pred_means
+                        pred_means=pred_means, decoder_hidden=h
                     )
+                    if counts is not None:
+                        counts = self._advance(counts, last_pred_event[0][self.count_dec_position],
+                                               last_pred_event[1][self.clock_dec_position] if self._clocking() else None)
                     preds, (h, c), z = self.decoder(
-                        input=last_pred_event, hx=(h, c), z=z, pred=True
+                        input=last_pred_event, hx=(h, c), z=z, pred=True,
+                        **self._decoder_condition(suffixes, k), **self._count_kwargs(counts)
                     )
                     pred_means, pred_vars = preds
 
@@ -663,6 +801,7 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
         pred_means,
         pred_index: Optional[int] = None,
         suffix: Optional[list] = None,
+        decoder_hidden: Optional[Tensor] = None,
     ):
         """
         Transform predictions into next event for decoder input.
@@ -680,6 +819,19 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
             next_event: event in decoder input data format
         """
         cat_pred_means, num_pred_means = pred_means
+        conditioning = getattr(self, "categorical_conditioning", None)
+        if conditioning is not None:
+            # The loss uses the true current event; autoregressive feedback must
+            # instead use the class conditional on the event fed back into the net.
+            event_ids = cat_pred_means[f"{conditioning[1]}_mean"].argmax(dim=-1)
+            logits, _ = self.decoder.conditioned_prediction(decoder_hidden, event_ids)
+            cat_pred_means = {**cat_pred_means, f"{conditioning[0]}_mean": logits}
+        numeric = getattr(self, "numeric_conditioning", None)
+        if numeric is not None:
+            # Same for the numerical outputs: the loss saw the true current event,
+            # the fed-back times belong to the event that is fed back (argmax).
+            event_ids = cat_pred_means[f"{numeric}_mean"].argmax(dim=-1)
+            num_pred_means, _ = self.decoder.numeric_prediction(decoder_hidden, event_ids)
 
         # Create index tensor based on predicted logits
         cat_preds = [
@@ -773,8 +925,14 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
                 num_sos_events = [num_tens[:, -1:] for num_tens in num_prefixes]
                 sos_event = [cat_sos_events, num_sos_events]
 
+                # Event counters: kept on the model between the calls of one
+                # sampling loop (the rows of a batch stay in the same order).
+                counts = None
+                if self._counting():
+                    counts = self._state_of_prefix(cat_prefixes, num_prefixes)
+                    self._inference_counts = counts
                 preds, (h, c), z = self.decoder(
-                    input=sos_event, hx=(h_enc, c_enc), z=None, pred=False
+                    input=sos_event, hx=(h_enc, c_enc), z=None, pred=False, **self._count_kwargs(counts)
                 )
 
                 # Return the sample masks for consistent variational inference
@@ -783,8 +941,13 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
             # Second-n_th prediction
             else:
                 (h, c) = hx
+                counts = None
+                if self._counting():
+                    counts = self._advance(self._inference_counts, last_event[0][self.count_dec_position],
+                                           last_event[1][self.clock_dec_position] if self._clocking() else None)
+                    self._inference_counts = counts
                 preds, (h, c), _ = self.decoder(
-                    input=last_event, hx=(h, c), z=z, pred=True
+                    input=last_event, hx=(h, c), z=z, pred=True, **self._count_kwargs(counts)
                 )
                 return preds, (h, c)
 
@@ -806,6 +969,13 @@ class DropoutUncertaintyEncoderDecoderLSTM(nn.Module):
                 "dropout": self.dropout,
                 "static_data_set_categories": self.static_data_set_categories,
                 "static_enc_feat": self.static_enc_feat,
+                "categorical_conditioning": getattr(self, "categorical_conditioning", None),
+                "count_feature": getattr(self, "count_feature", None),
+                "numeric_conditioning": getattr(self, "numeric_conditioning", None),
+                "count_scale": getattr(self, "count_scale", 10.0),
+                "clock_feature": getattr(self, "clock_feature", None),
+                "clock_stats": getattr(self, "clock_stats", None),
+                "clock_scale": getattr(self, "clock_scale", 4.0),
             },
         }
         return torch.save(checkpoint, path)

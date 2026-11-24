@@ -1,0 +1,18 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Assess potential fraud",
+  "Art": "Mitarbeiter",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 301,
+  "Optionen": 36,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "User_68 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": 4.360957595199611,
+  "KI unten": -4.818870557093252,
+  "KI oben": 13.540785747492475,
+  "Beobachtete Optionen": 36,
+  "Minimum Fälle je beobachteter Option": 1,
+  "Überlappung": 0.9556313993174061,
+  "Fälle mit Wahl": 293,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 6.9346660419832915
+}

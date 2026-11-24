@@ -1,0 +1,18 @@
+{
+  "Interventionspunkt": "annehmen_bei_konzept",
+  "Art": "Control Flow",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 15844,
+  "Optionen": 2,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "1 vs. 0",
+  "Effekt (AIPW)": 2.3623182283976623,
+  "KI unten": 1.8166752937584552,
+  "KI oben": 2.9079611630368696,
+  "Beobachtete Optionen": 2,
+  "Minimum Fälle je beobachteter Option": 7883,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 15844,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 2.9983606099849567
+}

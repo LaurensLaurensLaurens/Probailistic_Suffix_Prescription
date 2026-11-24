@@ -87,9 +87,9 @@ def make(name, seed, gamma=None, model=None, xgb_model=None):
         from prescriptive.policies.psp_lookahead_policy import PSPLookaheadPolicy
         return PSPLookaheadPolicy(model or model_path("psp", "repair"), seed=seed)
     if name == "psp_erm":
-        from prescriptive.policies.psp_erm_policy import PSPERMPolicy
+        from prescriptive.policies.erm_policy.psp_erm_policy import PSPERMPolicy
         return PSPERMPolicy(model or model_path("psp", "repair"), seed=seed, **({"gamma": gamma} if gamma else {}))
-    from prescriptive.policies.psp_policy import PSPPolicy
+    from prescriptive.policies.ev_policy.psp_policy import PSPPolicy
     return PSPPolicy(model or model_path("psp", "repair"), seed=seed)
 
 

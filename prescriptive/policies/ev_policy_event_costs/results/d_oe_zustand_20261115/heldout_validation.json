@@ -1,0 +1,12 @@
+{
+  "status": "complete",
+  "requested_prefixes_per_model": 100,
+  "draws_per_prefix": 30,
+  "successful_prefixes": {
+    "D": 100,
+    "OE": 100
+  },
+  "sampling_failures": [],
+  "invalid_returned_suffixes": 0,
+  "selection": "first requested rows of original 1000 held-out prefixes, same for both models; no validation or test case used for calibration"
+}

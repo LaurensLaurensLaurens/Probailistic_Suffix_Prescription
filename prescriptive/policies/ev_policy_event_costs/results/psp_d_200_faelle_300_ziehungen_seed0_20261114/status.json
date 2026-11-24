@@ -1,0 +1,12 @@
+{
+  "pid": 2,
+  "started_at": "2026-11-14T02:58:12+01:00",
+  "samples_per_option": 300,
+  "scored_cases": 200,
+  "seed": 0,
+  "status": "interrupted",
+  "updated_at": "2026-11-14T02:58:12+01:00",
+  "checked_at": "2026-11-14T10:47:16+01:00",
+  "error": "No active process and no saved PSP results; original termination cause unavailable.",
+  "superseded_by": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/psp_d_200_faelle_300_ziehungen_seed0_20261114_neustart"
+}

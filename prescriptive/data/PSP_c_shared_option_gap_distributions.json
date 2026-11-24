@@ -1,0 +1,79 @@
+{
+  "source_model": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/models/psp_model_durchlaufzeit_real_alle_s60_normal.pkl",
+  "model_copy": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/models/psp_model_durchlaufzeit_real_alle_s60_normal_shared_gap.pkl",
+  "distributions": {
+    "angebot_nachlegen": {
+      "O_Sent (mail and online)": {
+        "mean_seconds": 430.7462306962359,
+        "std_seconds": 12796.078609721708,
+        "n": 28453,
+        "median_seconds": 22.816,
+        "zero_share": 0.0
+      },
+      "O_Create Offer": {
+        "mean_seconds": 1783.2707611075336,
+        "std_seconds": 42209.99661011437,
+        "n": 3106,
+        "median_seconds": 29.5895,
+        "zero_share": 0.0
+      }
+    },
+    "annehmen_bei_konzept": {
+      "W_Complete application|start": {
+        "mean_seconds": 104293.17914290457,
+        "std_seconds": 81324.54435826375,
+        "n": 12043,
+        "median_seconds": 86124.927,
+        "zero_share": 0.0
+      },
+      "A_Accepted": {
+        "mean_seconds": 18250.303680081302,
+        "std_seconds": 56871.3714085311,
+        "n": 7380,
+        "median_seconds": 264.923,
+        "zero_share": 0.0
+      }
+    },
+    "annehmen_nach_vervollstaendigung": {
+      "W_Complete application|resume": {
+        "mean_seconds": 70028.06636472669,
+        "std_seconds": 157267.97764519224,
+        "n": 18093,
+        "median_seconds": 8396.067,
+        "zero_share": 0.0
+      },
+      "A_Accepted": {
+        "mean_seconds": 74721.74300463269,
+        "std_seconds": 168880.7879713234,
+        "n": 7555,
+        "median_seconds": 11967.895,
+        "zero_share": 0.0
+      }
+    },
+    "handle_leads": {
+      "W_Handle leads|withdraw": {
+        "mean_seconds": 96.09005199255122,
+        "std_seconds": 1509.3273621004562,
+        "n": 13425,
+        "median_seconds": 62.529,
+        "zero_share": 0.0
+      },
+      "W_Handle leads|start": {
+        "mean_seconds": 20394.186011255115,
+        "std_seconds": 31793.878456536317,
+        "n": 2932,
+        "median_seconds": 3767.5975,
+        "zero_share": 0.0
+      }
+    }
+  },
+  "metadata": {
+    "source": "observed next-event gaps, all outer training cases excluding model.test_cases",
+    "source_cases": 25208,
+    "excluded_test_cases": 6301,
+    "parameters": "empirical mean and population standard deviation (Gaussian moment fit)",
+    "sampling": "independent draw per option and decision; lower-truncated normal at 0 seconds",
+    "draws_per_case_and_option": 1,
+    "note": "truncation changes the distribution mean relative to the raw Gaussian location"
+  }
+}

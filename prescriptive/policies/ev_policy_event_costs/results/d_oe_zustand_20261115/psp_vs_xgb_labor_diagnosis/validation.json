@@ -1,0 +1,12 @@
+{
+  "benchmark_inputs_unchanged": true,
+  "fixed_bank_states": 12,
+  "draws_per_option": 100,
+  "horizons": [
+    "policy_window",
+    "up_to_1000"
+  ],
+  "completed_rankings": 24,
+  "failures": 0,
+  "caveat": "Descriptive path differences and exploratory fixed-bank-state predictions; no causal attribution or architecture-only comparison. Case bootstrap does not capture resource coupling or between-seed uncertainty."
+}

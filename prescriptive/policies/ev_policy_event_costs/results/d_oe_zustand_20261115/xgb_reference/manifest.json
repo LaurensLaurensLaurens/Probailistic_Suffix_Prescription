@@ -1,0 +1,38 @@
+{
+  "prepared_at": "2026-11-15T18:01:30+01:00",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "scored_cases": 200,
+  "warmup": 700,
+  "cooldown": 1300,
+  "allocation": "random",
+  "model": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/models/xgb_model_durchlaufzeit_xgb_real_10k_neuepunkte.pkl",
+  "trained_on": {
+    "echter Log": "bpic17",
+    "outcome": "durchlaufzeit",
+    "cases": 10000,
+    "points": [
+      "angebot_nachlegen",
+      "annehmen_bei_konzept",
+      "annehmen_nach_vervollstaendigung",
+      "handle_leads"
+    ]
+  },
+  "source_sha256": {
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/scripts/evaluate_xgb_current_reference.py": "093c32477e10f1b01bf25d43d00fd0d35c41c62a261f8649772e641cbf9a124f",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/models/xgb_model_durchlaufzeit_xgb_real_10k_neuepunkte.pkl": "48293d905b7084785870fb84f65f52097562844bff41260677aab1302e4528da",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/d_oe_zustand_20261115/catalog.yaml": "3a45637895f0238ec7b8879431966282732990dc4e410ca00af24f433963097a",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/d_oe_zustand_20261115/event_costs.yaml": "6e743f987dc5f3e3e4e3380b46bcd3ab65282f9868594262fd5ee2f65ce62f32",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/xgb_policy.py": "099c21d178dc8381c6947967a979246c99ac480eda80e323c68a48dfb8e5cd42",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/estimators/xgb_model.py": "575abb46112efaa3a7179df672c465bdb4ba82eb03f638147a9c8854ffcfcfc1",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/process-simulation-engine/simulation/dataset_simulator.py": "af4405f24430c8b73a3ac0696431515f9a6197e865c0aa6000cda2f61cfa5234",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/process-simulation-engine/simulation/case_engine_lifecycle_aware.py": "ba1914a2aa6e35e5521d8df0f4833bf76ee276bbe2177cc4b7edfdc2a5c0a3af",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/process-simulation-engine/interventions/work_state.py": "21ba19fe9005625b219c71872b748b9073b080b6b5cd6af2c52689318bf4ed70"
+  },
+  "baseline": "same three completed bank jobs as the current corrected D/OE comparison",
+  "objective": "negative_cycle_days",
+  "costs": "secondary measured outcome; this XGBoost is not trained to optimize event costs"
+}

@@ -1,0 +1,14 @@
+{
+  "D": {
+    "O_Create Offer|complete": 3169,
+    "A_Accepted|complete": 1808,
+    "O_Sent (mail and online)|complete": 21,
+    "W_Shortened completion|suspend": 2
+  },
+  "OE": {
+    "O_Create Offer|complete": 1805,
+    "A_Accepted|complete": 3132,
+    "O_Sent (mail and online)|complete": 56,
+    "W_Shortened completion|suspend": 7
+  }
+}

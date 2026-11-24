@@ -1,0 +1,9 @@
+{
+  "status": "complete",
+  "started_at": "2026-11-15T15:58:05+01:00",
+  "decisions": 0,
+  "model": "bank",
+  "objective": "reference",
+  "seed": 0,
+  "updated_at": "2026-11-15T15:58:32+01:00"
+}

@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "annehmen_nach_vervollstaendigung",
+  "Art": "Control Flow",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 18150,
+  "Optionen": 2,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "1 vs. 0",
+  "Effekt (AIPW)": 0.02271512182126689,
+  "KI unten": 0.00796719959379103,
+  "KI oben": 0.03746304404874275,
+  "Zielereignis": "O_Accepted",
+  "Entscheidungsfälle vor Ausschluss": 18150,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 10547,
+  "Beobachtete Zielquote": 0.5811019283746557,
+  "Beobachtete Optionen": 2,
+  "Minimum Fälle je beobachteter Option": 8947,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 18150,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 3.3323528670007363
+}

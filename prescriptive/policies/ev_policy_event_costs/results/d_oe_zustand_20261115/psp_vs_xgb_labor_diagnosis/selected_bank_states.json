@@ -1,0 +1,110 @@
+[
+  {
+    "case": "Application_728",
+    "point": "angebot_nachlegen",
+    "prefix_events": 7,
+    "options": [
+      "O_Sent (mail and online)",
+      "O_Create Offer"
+    ]
+  },
+  {
+    "case": "Application_799",
+    "point": "angebot_nachlegen",
+    "prefix_events": 20,
+    "options": [
+      "O_Sent (mail and online)",
+      "O_Create Offer"
+    ]
+  },
+  {
+    "case": "Application_788",
+    "point": "angebot_nachlegen",
+    "prefix_events": 20,
+    "options": [
+      "O_Sent (mail and online)",
+      "O_Create Offer"
+    ]
+  },
+  {
+    "case": "Application_772",
+    "point": "annehmen_bei_konzept",
+    "prefix_events": 6,
+    "options": [
+      "W_Complete application|start",
+      "A_Accepted"
+    ]
+  },
+  {
+    "case": "Application_868",
+    "point": "annehmen_bei_konzept",
+    "prefix_events": 6,
+    "options": [
+      "W_Complete application|start",
+      "A_Accepted"
+    ]
+  },
+  {
+    "case": "Application_831",
+    "point": "annehmen_bei_konzept",
+    "prefix_events": 6,
+    "options": [
+      "W_Complete application|start",
+      "A_Accepted"
+    ]
+  },
+  {
+    "case": "Application_734",
+    "point": "annehmen_nach_vervollstaendigung",
+    "prefix_events": 10,
+    "options": [
+      "W_Complete application|resume",
+      "A_Accepted"
+    ]
+  },
+  {
+    "case": "Application_775",
+    "point": "annehmen_nach_vervollstaendigung",
+    "prefix_events": 4,
+    "options": [
+      "W_Complete application|resume",
+      "A_Accepted"
+    ]
+  },
+  {
+    "case": "Application_780",
+    "point": "annehmen_nach_vervollstaendigung",
+    "prefix_events": 8,
+    "options": [
+      "W_Complete application|resume",
+      "A_Accepted"
+    ]
+  },
+  {
+    "case": "Application_895",
+    "point": "handle_leads",
+    "prefix_events": 3,
+    "options": [
+      "W_Handle leads|withdraw",
+      "W_Handle leads|start"
+    ]
+  },
+  {
+    "case": "Application_818",
+    "point": "handle_leads",
+    "prefix_events": 3,
+    "options": [
+      "W_Handle leads|withdraw",
+      "W_Handle leads|start"
+    ]
+  },
+  {
+    "case": "Application_703",
+    "point": "handle_leads",
+    "prefix_events": 3,
+    "options": [
+      "W_Handle leads|withdraw",
+      "W_Handle leads|start"
+    ]
+  }
+]

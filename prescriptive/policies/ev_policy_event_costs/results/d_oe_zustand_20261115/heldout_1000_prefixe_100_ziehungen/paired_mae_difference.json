@@ -1,0 +1,18 @@
+[
+  {
+    "model": "D",
+    "complete_1000_prefix_comparison": false,
+    "paired_prefixes": 999,
+    "mae_new_minus_old_days": 0.3082566075142583,
+    "paired_case_bootstrap95_low": 0.14321654506558967,
+    "paired_case_bootstrap95_high": 0.4778711742994355
+  },
+  {
+    "model": "OE",
+    "complete_1000_prefix_comparison": false,
+    "paired_prefixes": 999,
+    "mae_new_minus_old_days": 0.05550678874697288,
+    "paired_case_bootstrap95_low": -0.11731849442399844,
+    "paired_case_bootstrap95_high": 0.22970893526588643
+  }
+]

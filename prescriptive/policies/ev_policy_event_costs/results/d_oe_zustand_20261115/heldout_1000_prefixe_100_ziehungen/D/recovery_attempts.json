@@ -1,0 +1,22 @@
+{
+  "case": "Application_513583760",
+  "prefix_length": 7,
+  "method": "additional independent calls to the unchanged sampler; first complete n=100 result retained, no selection by prediction error",
+  "attempts": [
+    {
+      "seed": 20261115,
+      "status": "failed",
+      "error": "No complete state-consistent suffix after 21 attempts"
+    },
+    {
+      "seed": 20261116,
+      "status": "failed",
+      "error": "No complete state-consistent suffix after 21 attempts"
+    },
+    {
+      "seed": 20261117,
+      "status": "failed",
+      "error": "No complete state-consistent suffix after 21 attempts"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "reaktionszeit_antrag",
+  "Art": "Variable",
+  "Daten": "RCT",
+  "Entscheidungsfälle": 30000,
+  "Optionen": 2,
+  "Propensity": "bekannte Randomisierung",
+  "Vergleich": "langsam vs. schnell (zugewiesene Frist, ITT)",
+  "Effekt (AIPW)": -0.006774054633577665,
+  "KI unten": -0.022152374235568414,
+  "KI oben": 0.008604264968413083,
+  "Zielereignis": "O_Accepted",
+  "Entscheidungsfälle vor Ausschluss": 30000,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 17769,
+  "Beobachtete Zielquote": 0.5923,
+  "Beobachtete Optionen": 2,
+  "Minimum Fälle je beobachteter Option": 14954,
+  "Überlappung": 1.0,
+  "Fälle mit Wahl": 30000,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 3.343239239999093
+}

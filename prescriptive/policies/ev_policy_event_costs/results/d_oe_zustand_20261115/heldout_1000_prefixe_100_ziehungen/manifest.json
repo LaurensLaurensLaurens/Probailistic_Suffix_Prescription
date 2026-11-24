@@ -1,0 +1,24 @@
+{
+  "prepared_at": "2026-11-15T17:23:31+01:00",
+  "prefixes_per_model": 1000,
+  "draws_per_prefix": 100,
+  "batch_size": 10,
+  "torch_initial_seed": 0,
+  "workers": 2,
+  "source_sha256": {
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/scripts/evaluate_stateful_1000.py": "5cf1624f3d9ff3115dcf0225e97c5a26441be85f362ec7b7a70b7036002c2a21",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/scripts/results_100k/suffixguete/prefixe.csv": "e4f78fe1b398df28bab10de463f007dd1d5f0b8c748f3e5a49211da650609619",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/scripts/results_100k/voll_real_alle_s60_token_oe_suffixguete/prefixe.csv": "adf7085e282b758e16857b52d8573cafab392bf8e71ae692626f9b0d18504e0f",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/d_oe_zustand_20261115/catalog.yaml": "3a45637895f0238ec7b8879431966282732990dc4e410ca00af24f433963097a",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/d_oe_zustand_20261115/event_costs.yaml": "6e743f987dc5f3e3e4e3380b46bcd3ab65282f9868594262fd5ee2f65ce62f32",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/d_oe_zustand_20261115/models/D_stateful.pkl": "82450f43b900fa17ec387706765b90400bfef88ca28d99116b2531bc9f384fe3",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/d_oe_zustand_20261115/models/OE_stateful.pkl": "d19e4f29e585d0bd2d179b025257fc5b2cdce4fec0906bbd3ff8af2e1e99e2b9",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/estimators/psp_model.py": "ea2506d2ec8759164145eff8174d2d9f481765c88ed11cf3b5b26b5c9435667c",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/estimators/conditional_gaps.py": "69f22327276e08388d389bd28b4dafcc8bf5325140f3e4ea28260c7f76b18d95",
+    "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/process-simulation-engine/interventions/work_state.py": "21ba19fe9005625b219c71872b748b9073b080b6b5cd6af2c52689318bf4ed70"
+  },
+  "baseline_mae_days": {
+    "D": 7.8143779748284,
+    "OE": 7.984120493378791
+  }
+}

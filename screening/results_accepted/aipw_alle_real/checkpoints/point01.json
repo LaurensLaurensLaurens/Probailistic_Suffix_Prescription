@@ -1,0 +1,23 @@
+{
+  "Interventionspunkt": "handle_leads",
+  "Art": "Control Flow",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 20423,
+  "Optionen": 2,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "1 vs. 0",
+  "Effekt (AIPW)": -0.11833913207011043,
+  "KI unten": -0.13978615584896983,
+  "KI oben": -0.09689210829125103,
+  "Zielereignis": "O_Accepted",
+  "Entscheidungsfälle vor Ausschluss": 20423,
+  "Ziel bereits erreicht: ausgeschlossen": 0,
+  "Ziel später erreicht": 10064,
+  "Beobachtete Zielquote": 0.49277775057533174,
+  "Beobachtete Optionen": 2,
+  "Minimum Fälle je beobachteter Option": 3621,
+  "Überlappung": 0.972971649610733,
+  "Fälle mit Wahl": 20423,
+  "Status": "geschätzt",
+  "Laufzeit (s)": 9.417119903024286
+}

@@ -1,0 +1,236 @@
+# Katalog und Laufparameter je Datensatz: alle Interventionen, die die Organisation in den Logs realistisch
+# beeinflussen kann, und was ein Lauf davon nutzt. Gelesen mit interventions.candidates() und
+# helpers/datasets.dataset_info(); im Simulator ausführbar sind die Einträge mit intervention.
+#
+# Je Datensatz lauf: die Laufparameter von scripts/main.py und prescriptive_guide.ipynb
+#   mitarbeiterwahl  Interventionspunkte (Namen von Mitarbeiter-Kandidaten), an denen die Policy den Mitarbeiter wählt:
+#                    im Simulator (interventions.employee_points) und in der Offline- und Online-Auswertung (--eval-point
+#                    wählt einen anderen). Unabhängig von der Control-Flow-Intervention (standard_intervention)
+#   zuteilung        wie die Engine die Mitarbeiter zuteilt, wo keine Policy wählt (alle Arbeitsschritte außerhalb der
+#                    mitarbeiterwahl, und dort, wenn keine Policy gesetzt ist oder sie None zurückgibt): eine Strategie
+#                    aus resources/selection_strategies.py, random, round_robin oder shortest_queue (Standard random;
+#                    ein start bekommt zuerst den letzten Bearbeiter des Falls, wenn er frei ist). Der Vergleich der
+#                    Policies läuft gegen diese Zuteilung (interventions.run_allocation)
+#
+# Je Eintrag:
+#   art              control_flow (ob bzw. welche Aktivität folgt) oder variable (Wert eines Attributs, Mitarbeiter, Zeitpunkt)
+#   intervention     Name der Intervention, wenn sie im Simulator oder Screening als eigene Einheit läuft
+#   test             Definition für das Screening (prescriptive/helpers/screening/):
+#                    control_flow (und Variablen, die eine Aktivität sind, z. B. Change Price): decision (Entscheidungs-
+#                    Event: erstes complete-Event dieser Aktivität), action bzw. action_contains (Aktivitäten der Aktion,
+#                    genau bzw. als Teil des Namens) und rule: next_event (direkt nach decision kommt eine der beiden
+#                    Optionen in action, Namen in names; nur dann ist es ein Entscheidungspunkt), follows_before_next_decision, follows_later oder
+#                    first_activity (der Fall beginnt mit der Aktion; entschieden zu Fallbeginn). Bei next_event: lifecycle ist der
+#                    Lifecycle von decision (Standard complete), eine Option ist eine Aktivität oder Aktivität|Lifecycle; action_lifecycle:
+#                    Lifecycle der Aktions-Events (Standard complete; bei Arbeitsschritten z. B. start = bearbeitet)
+#                    variable, mit kind:
+#                      attribute_bins  Wert von attribute am Entscheidungs-Event (optional geteilt durch ratio_to), in
+#                                      Klassen: bins (Grenzen), labels (Namen)
+#                      case_attribute  Wert des Fallattributs attribute (entschieden zu Fallbeginn)
+#                      resource        wer das Entscheidungs-Event ausführt (resource_column, Standard org:resource);
+#                                      decision bzw. decision_contains, optional lifecycle (Standard complete)
+#                      lag_bins        Stunden vom Entscheidungs-Event bis zur Aktion (wie bei control_flow), in Klassen;
+#                                      bins: median teilt am Median; optional action_lifecycle
+#                    exclude_features: Merkmale, die die Wahl selbst enthalten (aus X genommen)
+#                    skip: Grund, warum die Variable nicht testbar ist
+#
+# Mitarbeiter-Kandidaten "Mitarbeiter: <Tätigkeit>" (am Ende der Interventionen je Datensatz): für jede Tätigkeit, bei
+# der die Wahl des Mitarbeiters eine eigene Entscheidung ist: kein Systemschritt (höchstens 50 % durch Systemnutzer),
+# mindestens 100 Fälle, höchstens 60 % derselbe Mitarbeiter wie bei der letzten Arbeit davor (sonst Teil einer Sitzung)
+# und höchstens 50 % erstes Event des Falls (sonst legt der Mitarbeiter den Fall an). Gezählt am ersten Beginn (start),
+# wo es ihn gibt, sonst am ersten complete-Event; ohne Tätigkeiten, die ein Mitarbeiter-Kandidat oben schon abdeckt.
+# Neu prüfen: prescriptive/helpers/screening/candidates.py, resource_decision_points(datensatz, log).
+# "Mitarbeiter: <Tätigkeit> (resume)": die erste Wiederaufnahme der Tätigkeit im Fall, von Hand ergänzt; dort übernimmt meist
+# ein anderer Mitarbeiter (BPIC17: nur 6 bis 27 % derselbe wie in der Sitzung davor), resource_decision_points prüft sie nicht.
+#
+# Je Datensatz outcome: type (optional beschreibung), berechnet im Preprocessing (preprocessing/outcome.py) als Spalte outcome je
+# Fall. Standard für alle Datensätze: negative_cycle_days, die negative Durchlaufzeit in Tagen vom ersten bis zum letzten Event
+# des Falls. Daneben outcome_optionen (Name -> Block wie outcome, gewählt mit scripts/main.py --outcome): BPIC17 gewinn (profit,
+# wie preprocessing/BPIC2017/outcome.py; im Eintrag Aktivitäten und Kosten der Aktion, die Kostensätze je Arbeitsstunde und je Tag
+# in prescriptive/helpers/parameters.py).
+# Je Datensatz standard_intervention: die Intervention, die Simulator und Pipeline nehmen, wenn keine gewählt ist (der
+# Name eines Control-Flow-Kandidaten mit rule next_event). Wie der Simulator je Datensatz läuft, steht in
+# seinen Bausteinen (simulation/dataset_simulator.py).
+# Je Datensatz screening: Merkmale am Entscheidungspunkt (Fall- und Event-Attribute), Systemnutzer (regulärer Ausdruck;
+# gilt auch für Engine, Arbeitszeit und Anrufer in prescriptive/) und optional max_cases (zufällige Auswahl). Die Namen beziehen sich auf das Log nach dem Preprocessing.
+#
+# Nicht beeinflussbar (und deshalb nicht aufgeführt): Handlungen von Kunden, Nutzern und Lieferanten, Systemschritte,
+# feste Fallattribute.
+
+bpic17:
+  event_log: eventlog/eventlog.xes.gz
+  standard_intervention: channel
+  # Laufparameter (scripts/main.py, prescriptive_guide.ipynb)
+  lauf:
+    # Interventionspunkte, an denen die Policy den Mitarbeiter wählt (Namen der Kandidaten unten)
+    mitarbeiterwahl: ["Mitarbeiter: W_Call incomplete files", "Mitarbeiter: W_Complete application", "Mitarbeiter: W_Handle leads", "Mitarbeiter: W_Validate application", "Mitarbeiter: W_Call after offers (resume)", "Mitarbeiter: W_Call incomplete files (resume)", "Mitarbeiter: W_Complete application (resume)", "Mitarbeiter: W_Validate application (resume)"]
+    # Weitere Control-Flow-Punkte neben standard_intervention (Namen der Kandidaten unten); am selben Entscheidungs-Event: eine Wahl mit allen Optionen
+    control_flow: ["handle_leads", "annehmen_nach_vervollstaendigung", "angebot_nachlegen", "neues_angebot_beim_nachfassen"]
+    # true: keine Control-Flow-Punkte, auch standard_intervention nicht (Lauf nur mit den Mitarbeiterpunkten)
+    nur_mitarbeiter: false
+    # Ankunftslast: 1 wie im Log, 3 dreimal so viele Fälle je Tag (gilt für RCT und Online-Auswertung); Warm- und Auslauf müssen mitwachsen
+    ankunft_faktor: 1
+    # Zuteilung der Mitarbeiter, wo keine Policy wählt: random, round_robin oder shortest_queue
+    zuteilung: random
+  outcome:
+    type: negative_cycle_days
+    beschreibung: negative Durchlaufzeit in Tagen (vom ersten bis zum letzten Event des Falls)
+  outcome_optionen:
+    gewinn: {type: profit, outcome_activity: A_Pending, call_activity: A_Incomplete, call_cost: 250.0}
+  screening:
+    case_attributes: [case:LoanGoal, case:ApplicationType]
+    numeric_attributes: [case:RequestedAmount]
+    event_numeric: [OfferedAmount, NumberOfTerms, MonthlyCost, FirstWithdrawalAmount]
+    system_users: "^User_1$"
+  interventionen:
+    - name: channel
+      art: control_flow
+      test: {decision: O_Created, action: ["O_Sent (mail and online)", "O_Sent (online only)"], names: [mail_and_online, online_only], rule: next_event}
+      intervention: channel
+    - name: handle_leads
+      art: control_flow
+      test: {decision: "W_Handle leads", lifecycle: schedule, action: ["W_Handle leads|withdraw", "W_Handle leads|start"], names: [kein_rueckruf, rueckruf], rule: next_event}
+    - name: annehmen_nach_vervollstaendigung
+      art: control_flow
+      test: {decision: "W_Complete application", lifecycle: suspend, action: ["W_Complete application|resume", "A_Accepted"], names: [weiter_bearbeiten, annehmen], rule: next_event}
+    - name: angebot_nachlegen
+      art: control_flow
+      test: {decision: O_Created, action: ["O_Sent (mail and online)", "O_Create Offer"], names: [senden, weiteres_angebot], rule: next_event}
+    - name: neues_angebot_beim_nachfassen
+      art: control_flow
+      test: {decision: "W_Call after offers", lifecycle: suspend, action: ["W_Call after offers|resume", "O_Create Offer"], names: [anrufen, neues_angebot], rule: next_event}
+    - name: "Mitarbeiter: W_Call incomplete files"
+      art: variable
+      test: {kind: resource, decision: "W_Call incomplete files", lifecycle: start}
+    - name: "Mitarbeiter: W_Complete application"
+      art: variable
+      test: {kind: resource, decision: "W_Complete application", lifecycle: start}
+    - name: "Mitarbeiter: W_Handle leads"
+      art: variable
+      test: {kind: resource, decision: "W_Handle leads", lifecycle: start}
+    - name: "Mitarbeiter: W_Validate application"
+      art: variable
+      test: {kind: resource, decision: "W_Validate application", lifecycle: start}
+    - name: "Mitarbeiter: W_Call after offers (resume)"
+      art: variable
+      test: {kind: resource, decision: "W_Call after offers", lifecycle: resume}
+    - name: "Mitarbeiter: W_Call incomplete files (resume)"
+      art: variable
+      test: {kind: resource, decision: "W_Call incomplete files", lifecycle: resume}
+    - name: "Mitarbeiter: W_Complete application (resume)"
+      art: variable
+      test: {kind: resource, decision: "W_Complete application", lifecycle: resume}
+    - name: "Mitarbeiter: W_Validate application (resume)"
+      art: variable
+      test: {kind: resource, decision: "W_Validate application", lifecycle: resume}
+
+bpic19:
+  event_log: eventlog/bpic2019/BPI_Challenge_2019.xes.gz
+  prozess: Einkauf (Bestellpositionen), Konzern in den Niederlanden
+  standard_intervention: remove_payment_block
+  # Laufparameter (scripts/main.py, prescriptive_guide.ipynb)
+  lauf:
+    # Interventionspunkte, an denen die Policy den Mitarbeiter wählt (Namen der Kandidaten unten): nur diese beiden sind eine echte Wahl,
+    # Clear Invoice macht zu 89 % eine Person im Zahlungslauf, bei Record Goods Receipt steht die Person eher für den Standort
+    mitarbeiterwahl: ["invoice_worker", "block_remover"]
+    # Weitere Control-Flow-Punkte neben standard_intervention (Namen der Kandidaten unten); am selben Entscheidungs-Event: eine Wahl mit allen Optionen
+    control_flow: []
+    # true: keine Control-Flow-Punkte, auch standard_intervention nicht (Lauf nur mit den Mitarbeiterpunkten)
+    nur_mitarbeiter: true
+    # Ankunftslast: ohne Belegung keine Wirkung (simulation/case_engine_lifecycle_unaware.py), muss 1 sein
+    ankunft_faktor: 1
+    # Ohne Wirkung: wo keine Policy wählt, zieht das Modell den Mitarbeiter
+    zuteilung: random
+  outcome:
+    type: negative_cycle_days
+    beschreibung: negative Durchlaufzeit in Tagen (vom ersten bis zum letzten Event des Falls)
+  screening:
+    case_attributes: ["case:Spend area text", "case:Sub spend area text", "case:Item Type", "case:Item Category", "case:Document Type", "case:Vendor", "case:Company"]
+    numeric_attributes: []
+    event_numeric: ["Cumulative net worth (EUR)"]
+    system_users: "NONE|batch"
+    max_cases: 50000
+  interventionen:
+    - name: remove_payment_block
+      art: control_flow
+      test: {decision: "Record Invoice Receipt", action: ["Clear Invoice", "Remove Payment Block"], names: [direkt_ausgleichen, sperre_loesen], rule: next_event}
+      intervention: remove_payment_block
+    - name: invoice_worker
+      art: variable
+      test: {kind: resource, decision: "Record Invoice Receipt"}
+    - name: block_remover
+      art: variable
+      test: {kind: resource, decision: "Remove Payment Block"}
+    - name: "Mitarbeiter: Block Purchase Order Item"
+      art: variable
+      test: {kind: resource, decision: "Block Purchase Order Item"}
+    - name: "Mitarbeiter: Cancel Goods Receipt"
+      art: variable
+      test: {kind: resource, decision: "Cancel Goods Receipt"}
+    - name: "Mitarbeiter: Cancel Invoice Receipt"
+      art: variable
+      test: {kind: resource, decision: "Cancel Invoice Receipt"}
+    - name: "Mitarbeiter: Cancel Subsequent Invoice"
+      art: variable
+      test: {kind: resource, decision: "Cancel Subsequent Invoice"}
+    - name: "Mitarbeiter: Change Approval for Purchase Order"
+      art: variable
+      test: {kind: resource, decision: "Change Approval for Purchase Order"}
+    - name: "Mitarbeiter: Change Delivery Indicator"
+      art: variable
+      test: {kind: resource, decision: "Change Delivery Indicator"}
+    - name: "Mitarbeiter: Change Price"
+      art: variable
+      test: {kind: resource, decision: "Change Price"}
+    - name: "Mitarbeiter: Change Quantity"
+      art: variable
+      test: {kind: resource, decision: "Change Quantity"}
+    - name: "Mitarbeiter: Clear Invoice"
+      art: variable
+      test: {kind: resource, decision: "Clear Invoice"}
+    - name: "Mitarbeiter: Receive Order Confirmation"
+      art: variable
+      test: {kind: resource, decision: "Receive Order Confirmation"}
+    - name: "Mitarbeiter: Record Goods Receipt"
+      art: variable
+      test: {kind: resource, decision: "Record Goods Receipt"}
+    - name: "Mitarbeiter: Record Subsequent Invoice"
+      art: variable
+      test: {kind: resource, decision: "Record Subsequent Invoice"}
+    - name: "Mitarbeiter: Set Payment Block"
+      art: variable
+      test: {kind: resource, decision: "Set Payment Block"}
+
+
+repair:
+  event_log: eventlog/repair/repair_workshop.xes.gz
+  prozess: Reparaturwerkstatt, synthetisch mit bekannter Wahrheit (process-simulation-engine/simulation/repair_workshop.py, Log unter der Hausregel)
+  standard_intervention: nacharbeit
+  lauf:
+    mitarbeiterwahl: ["Mitarbeiter: W_repair"]
+    control_flow: []
+    nur_mitarbeiter: true
+    ankunft_faktor: 1
+    # Ohne Policy wählt der gelernte Simulator zufällig unter den Freien (wie bei BPIC); die Hausregel der Werkstatt kennt er nicht
+    zuteilung: random
+  outcome:
+    type: negative_cycle_days
+    beschreibung: negative Durchlaufzeit in Tagen (vom ersten bis zum letzten Event des Falls)
+  # Kosten (prescriptive/costs/repair): -(Lohnkosten aller Arbeitsschritte + cost_per_day x Durchlaufzeit) in €, Stundensätze je
+  # Mitarbeiter und Zeitpunkt nach Tarif (rates.py); kosten_b: derselbe Fall mit Tarif B (Tarifwechsel nach dem Training)
+  outcome_optionen:
+    kosten: {type: negative_repair_cost, tarif: A, cost_per_day: 400.0, beschreibung: "negative Kosten in € (Lohnkosten nach Tarif A + 400 € je Tag Durchlaufzeit)"}
+    kosten_b: {type: negative_repair_cost, tarif: B, cost_per_day: 400.0, beschreibung: "negative Kosten in € (Lohnkosten nach Tarif B + 400 € je Tag Durchlaufzeit)"}
+  screening:
+    case_attributes: ["case:device"]
+    numeric_attributes: []
+    system_users: "^system$"
+  interventionen:
+    # Nur für standard_intervention (der Lauf hat nur den Mitarbeiterpunkt): nach der Qualitätsprüfung versenden oder nacharbeiten
+    - name: nacharbeit
+      art: control_flow
+      test: {decision: W_quality_check, action: ["W_shipping|start", "W_repair|start"], names: [versenden, nacharbeiten], rule: next_event}
+    # Wer repariert: Mechaniker 1-9 unterscheiden sich je Gerätetyp in Dauer und Nacharbeit, Expertinnen 1-3 sind bei allen schnell
+    - name: "Mitarbeiter: W_repair"
+      art: variable
+      test: {kind: resource, decision: W_repair, lifecycle: start}

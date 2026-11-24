@@ -1,0 +1,16 @@
+{
+  "created": "12.11.2026 13:21 CET",
+  "original_files": 79,
+  "screening_rows": 28,
+  "current_rows": 20,
+  "employee_effect_rows": 183,
+  "historical_propensity_rows": 511,
+  "validation_rows": 17,
+  "validation_employee_rows": 553,
+  "current_results": {
+    "nein: kaum Überlappung": 9,
+    "nein: kein Policy-Gewinn gegenüber fester Regel": 8,
+    "nein: zu wenige Fälle (unter 200 je Option)": 2,
+    "unsicher: Placebo auffällig": 1
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "outcomes": {
+    "accepted": {
+      "event": "O_Accepted",
+      "label": "Erfolgreiche Angebotsannahme"
+    },
+    "returned": {
+      "event": "O_Returned",
+      "label": "Rücksendung des unterschriebenen Angebots"
+    }
+  },
+  "points": [
+    "channel",
+    "handle_leads",
+    "annehmen_nach_vervollstaendigung",
+    "angebot_nachlegen",
+    "neues_angebot_beim_nachfassen",
+    "Mitarbeiter: W_Call incomplete files",
+    "Mitarbeiter: W_Complete application",
+    "Mitarbeiter: W_Handle leads",
+    "Mitarbeiter: W_Validate application",
+    "Mitarbeiter: W_Call after offers (resume)",
+    "Mitarbeiter: W_Call incomplete files (resume)",
+    "Mitarbeiter: W_Complete application (resume)",
+    "Mitarbeiter: W_Validate application (resume)",
+    "annehmen_bei_konzept",
+    "angebotshoehe",
+    "laufzeit",
+    "erste_auszahlung",
+    "reaktionszeit_antrag",
+    "Mitarbeiter: W_Assess potential fraud",
+    "Mitarbeiter: W_Handle leads (resume)"
+  ],
+  "seed": 20261112,
+  "folds": 5,
+  "outcome_model": "XGBoost binary:logistic, constant fallback for single-class training arms",
+  "risk_set": "first target event strictly after decision, or no target observed; already achieved targets excluded",
+  "unit": "application; at least one future offer reaches target before recorded trace end",
+  "multiplicity": "Holm over all estimable option contrasts per dataset and endpoint",
+  "input_sha256": {
+    "screening/results_cycle_time/vollstaendig_lauf/real.pkl": "ed48c8b2816d72ff911db759a2d996e5ccfc4a43a0cf5a96d448b6d465682a5a",
+    "screening/results_cycle_time/rct_30000/daten/log.pkl": "cc20a1b398eb048c2018e2d9d2b912359c5f9d12d37b60db22c28898b925f932",
+    "screening/results_cycle_time/rct_30000/daten/entscheidungen.pkl": "73f98929995a1ac97bb7e817cfd191052f03a84840ca9cfa1b1eec4f3904c5f5",
+    "screening/results_cycle_time/rct_30000/daten/rct.json": "25e75836bc39d662d7453c07c898ec441020cb71d44eeabbd70686dcb738a495"
+  },
+  "source_sha256": {
+    "screening/run_acceptance.py": "2fa715b600e9a40c7d9561cc36e1a314d362ae5a99808d7367451476c418dc74",
+    "screening/acceptance.py": "fae3b4d1502635f2f552ee81fedad3c9fe313643afbe6b9249ccbbbdb47334a6",
+    "screening/acceptance_report.py": "3c4dfde80d2b43caacfb79898e042ddc6f1783ad72c37f67d1394c204aa87d7d",
+    "screening/all_points.py": "d8be1555061ebdd338c19f758f5d84770f544ad6142fc0bbcb2ac370e35285dc",
+    "screening/all_points_report.py": "59df62157551c1d6f1c776691527cfec4e850cccc6eca905150ae62b12827d20",
+    "screening/candidates.py": "5643fecdb32a5a67e2e575f1c0cd79aecb8b2a74c5ccc031bbbaf3d1b445fdcd",
+    "screening/events.py": "b93365fbc86644610c0c9a9745044d763e7eda42f825b292a2f76f46f73c10d2",
+    "screening/features.py": "afe25816ef0fcf3741c8cb480e411743c03b7dbac520b8a59f17b4646610cf40",
+    "screening/causal.py": "efa173981a50030a037f4fb8a273da7f9043e6afcade134ad1bac6883a41920f",
+    "screening/configs/bpic17_alle.yaml": "31d6788f7376f01f500425730769187c03c06e8f5e4d945e8c17b4f51b8c9ad4"
+  },
+  "rct_actual_cases": 30000,
+  "rct_regenerated": false,
+  "semantic_sources": [
+    "https://promforum.win.tue.nl/discussion/749/meaning-of-columns-selected-and-accepted",
+    "https://promforum.win.tue.nl/discussion/comment/2126/"
+  ]
+}

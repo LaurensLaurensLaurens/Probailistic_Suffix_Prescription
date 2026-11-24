@@ -180,12 +180,12 @@ def arrival_load(dataset: str) -> float:
 
 def run_allocation(dataset: str) -> str:
     """
-    Wie die Engine die Mitarbeiter zuteilt, wo keine Policy wählt (lauf.zuteilung im Katalog, Standard random): eine
-    Strategie aus resources/selection_strategies.py (random, round_robin, shortest_queue), als Name für
-    resources/case_allocation.py create_allocation.
+    Basiswahl, wenn keine Policy überschreibt: bei BPIC17 gelerntes Bankverhalten (learned), sonst random.
+    lauf.zuteilung kann für explizite Zuteilungsexperimente eine andere Strategie wählen.
     """
     from resources.selection_strategies import STRATEGY_REGISTRY
-    name = (catalog()[dataset].get("lauf") or {}).get("zuteilung") or "random"
+    from resources.case_allocation import default_allocation
+    name = (catalog()[dataset].get("lauf") or {}).get("zuteilung") or default_allocation(dataset)
     allowed = set(STRATEGY_REGISTRY) | {"learned"}  # learned: wen die echte Bank wählt (resources/BPIC2017/allocation/learned_allocation.py)
     if name not in allowed:
         raise ValueError(f"lauf.zuteilung ({dataset}): '{name}' ist keine Zuteilung, möglich: {', '.join(sorted(allowed))}")

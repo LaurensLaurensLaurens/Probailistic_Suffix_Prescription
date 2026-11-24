@@ -1,0 +1,26 @@
+{
+  "status": "complete",
+  "started_at": "2026-11-13T16:25:27.056174+00:00",
+  "objective": "negative_event_costs",
+  "dataset": "bpic17",
+  "seed": 42,
+  "requested_cases": 300,
+  "learners": [
+    "s"
+  ],
+  "cost_fingerprint": "2c7134cc6dbc8b064e95aef1161b2db2dae106ad55e77a371ffff3ccb4999396",
+  "catalog": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/data/catalog_neue_punkte.yaml",
+  "train_cases": 300,
+  "test_cases": 6301,
+  "points": [
+    "angebot_nachlegen",
+    "annehmen_bei_konzept",
+    "annehmen_nach_vervollstaendigung",
+    "handle_leads"
+  ],
+  "completed_learners": [
+    "s"
+  ],
+  "current_learner": "s",
+  "completed_at": "2026-11-13T16:25:31.885618+00:00"
+}

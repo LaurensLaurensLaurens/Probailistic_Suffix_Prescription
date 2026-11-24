@@ -1,0 +1,15 @@
+{
+  "pid": 2,
+  "started_at": "2026-11-13T17:38:00+01:00",
+  "status": "complete",
+  "updated_at": "2026-11-13T17:52:43+01:00",
+  "learners": [
+    "s",
+    "x",
+    "cf"
+  ],
+  "training_cases": "all outside test split",
+  "scored_cases": 200,
+  "psp_samples_per_option": 30,
+  "report": "/home/chair/henryks_students/laurens_ohl/Probabilistic_Suffix_Prescription/prescriptive/policies/ev_policy_event_costs/results/vergleich_200_faelle_30_ziehungen_seed0_20261113/auswertung.md"
+}

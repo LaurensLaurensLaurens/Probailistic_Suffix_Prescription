@@ -1,0 +1,18 @@
+{
+  "Interventionspunkt": "Mitarbeiter: W_Call incomplete files",
+  "Art": "Mitarbeiter",
+  "Daten": "Echtes Log",
+  "Entscheidungsfälle": 15003,
+  "Optionen": 67,
+  "Propensity": "XGBoost, Cross-Fitting, Clip [0.01; 0.99]",
+  "Vergleich": "User_100 vs. zufälliger verfügbarer Mitarbeiter",
+  "Effekt (AIPW)": 1.462862708578842,
+  "KI unten": 1.0491407086660542,
+  "KI oben": 1.8765847084916296,
+  "Beobachtete Optionen": 67,
+  "Minimum Fälle je beobachteter Option": 1,
+  "Überlappung": 0.013194210703466847,
+  "Fälle mit Wahl": 14855,
+  "Status": "geschätzt; geringe Überlappung",
+  "Laufzeit (s)": 50.26673915691208
+}

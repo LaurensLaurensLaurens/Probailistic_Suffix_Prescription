@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "identical_neural_weights": {
+    "D_original": "018717ca898a54f699120ec42aab08a3f990159be79dd136a6600c2f6df1fd4c",
+    "D_corrected": "018717ca898a54f699120ec42aab08a3f990159be79dd136a6600c2f6df1fd4c",
+    "OE_original": "9a43593e858572e5d93f124083ff75bf81c648870803b1175060b7293e0774ac",
+    "OE_corrected": "9a43593e858572e5d93f124083ff75bf81c648870803b1175060b7293e0774ac"
+  }
+}

@@ -5,7 +5,7 @@ from prescriptive.helpers.datasets import add_paths; add_paths()
 from prescriptive import profiles; profiles.set_outcome("repair", sys.argv[1] if len(sys.argv) > 1 else "kosten")
 from preprocessing import chosen_outcome_spec
 from simulation.repair_workshop import RepairWorkshop
-from prescriptive.policies.psp_policy import PSPPolicy
+from prescriptive.policies.ev_policy.psp_policy import PSPPolicy
 from prescriptive.policies.psp_lookahead_policy import PSPLookaheadPolicy
 from interventions import WAIT
 M="../prescriptive/models/psp_model_repair.pkl"; spec=chosen_outcome_spec("repair")
